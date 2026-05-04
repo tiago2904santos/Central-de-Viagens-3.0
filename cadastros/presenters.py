@@ -41,18 +41,6 @@ def apresentar_unidade_card(unidade, edit_url="#", delete_url="#"):
     }
 
 
-def apresentar_cidade_card(cidade, edit_url="#", delete_url="#"):
-    return {
-        "title": cidade.nome,
-        "subtitle": cidade.uf,
-        "meta": [
-            {"label": "UF", "value": cidade.uf},
-            {"label": "Atualizado em", "value": cidade.updated_at.strftime("%d/%m/%Y")},
-        ],
-        "actions": _actions(edit_url, delete_url),
-    }
-
-
 def apresentar_cargo_card(cargo, edit_url="#", delete_url="#"):
     return {
         "title": cargo.nome,
@@ -133,35 +121,6 @@ def apresentar_linha_lista_simples_unidade(unidade, edit_url="#", delete_url="#"
         "meta": [
             {"label": "Sigla", "value": unidade.sigla or "—"},
             {"label": "Atualizado em", "value": unidade.updated_at.strftime("%d/%m/%Y")},
-        ],
-        "edit_url": edit_url,
-        "delete_url": delete_url,
-    }
-
-
-def apresentar_linha_lista_simples_cidade(cidade, edit_url="#", delete_url="#"):
-    sigla = cidade.estado.sigla if getattr(cidade, "estado", None) else cidade.uf
-    cap = "Sim" if getattr(cidade, "capital", False) else "Não"
-    return {
-        "title": cidade.nome,
-        "meta": [
-            {"label": "UF", "value": sigla},
-            {"label": "Capital", "value": cap},
-            {"label": "Atualizado em", "value": cidade.updated_at.strftime("%d/%m/%Y")},
-        ],
-        "edit_url": edit_url,
-        "delete_url": delete_url,
-    }
-
-
-def apresentar_linha_lista_simples_estado(estado, edit_url="#", delete_url="#"):
-    cod = str(estado.codigo_ibge) if estado.codigo_ibge is not None else "—"
-    return {
-        "title": estado.nome,
-        "meta": [
-            {"label": "Sigla", "value": estado.sigla},
-            {"label": "IBGE", "value": cod},
-            {"label": "Atualizado em", "value": estado.updated_at.strftime("%d/%m/%Y")},
         ],
         "edit_url": edit_url,
         "delete_url": delete_url,

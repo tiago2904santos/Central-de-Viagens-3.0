@@ -25,8 +25,10 @@ class CombustivelAdmin(admin.ModelAdmin):
 
 @admin.register(Estado)
 class EstadoAdmin(admin.ModelAdmin):
+    """Consulta técnica — usuário comum não edita a base geográfica pela interface."""
+
     list_display = ("nome", "sigla", "codigo_ibge", "updated_at")
-    search_fields = ("nome", "sigla")
+    search_fields = ("nome", "sigla", "codigo_ibge")
     ordering = ("nome",)
 
 
@@ -39,9 +41,11 @@ class UnidadeAdmin(admin.ModelAdmin):
 
 @admin.register(Cidade)
 class CidadeAdmin(admin.ModelAdmin):
-    list_display = ("nome", "estado", "uf", "capital", "codigo_ibge", "updated_at")
-    search_fields = ("nome", "uf", "estado__nome", "estado__sigla")
-    list_filter = ("capital", "uf")
+    """Município (model `Cidade`): consulta técnica; carga via comando de importação."""
+
+    list_display = ("nome", "estado", "uf", "codigo_ibge", "capital", "latitude", "longitude", "updated_at")
+    search_fields = ("nome", "estado__nome", "estado__sigla", "codigo_ibge")
+    list_filter = ("estado", "capital")
     ordering = ("uf", "nome")
 
 

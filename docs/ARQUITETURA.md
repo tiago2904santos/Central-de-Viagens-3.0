@@ -10,14 +10,15 @@ O projeto novo pode consultar `legacy/` como referencia visual, mas nao pode imp
 
 ## App cadastros
 
-`cadastros` e o primeiro modulo fechado da arquitetura nova, com CRUD fisico para:
+`cadastros` e o primeiro modulo fechado da arquitetura nova, com CRUD fisico na interface do usuario para:
 
 - `Unidade`
-- `Cidade`
 - `Cargo`
 - `Combustivel`
 - `Servidor`
 - `Viatura`
+
+`Estado` e `Cidade` (municipio na base interna) **nao** possuem CRUD publico; sao carregados por comando de importacao e consultados via selectors / admin tecnico.
 
 Regras estruturais aplicadas:
 
@@ -55,6 +56,7 @@ A navegacao principal e declarada em `core/navigation.py` e suporta hierarquia. 
 - `Viaturas`
   - `Combustiveis`
 - `Unidades`
-- `Cidades`
 
-O estado ativo/aberto e preparado antes da renderizacao e o comportamento de abrir/fechar fica em JS centralizado. `Motoristas` nao e cadastro independente e nao deve aparecer no menu lateral. `Cidades` permanece como cadastro de banco, com importacao CSV prevista para etapa futura.
+`Estados` e `Cidades` (base geografica) **nao** aparecem no menu: sao dados internos carregados por `importar_base_geografica`.
+
+O estado ativo/aberto e preparado antes da renderizacao e o comportamento de abrir/fechar fica em JS centralizado. `Motoristas` nao e cadastro independente e nao deve aparecer no menu lateral.

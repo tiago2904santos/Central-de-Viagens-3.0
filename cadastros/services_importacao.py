@@ -153,7 +153,7 @@ class ResultadoImportacaoEstados:
 @dataclass
 class ResultadoImportacaoCidades:
     total_linhas: int = 0
-    criadas: int = 0
+    criados: int = 0
     existentes: int = 0
     atualizados: int = 0
     ignoradas: int = 0
@@ -370,7 +370,7 @@ def importar_cidades_csv(
 
         seen_in_file.add(key)
         if dry_run:
-            resultado.criadas += 1
+            resultado.criados += 1
             if capital:
                 resultado.capitais_marcadas += 1
             existing_keys.add(key)
@@ -394,7 +394,7 @@ def importar_cidades_csv(
         if to_create:
             with transaction.atomic():
                 Cidade.objects.bulk_create(to_create, batch_size=400)
-            resultado.criadas = len(to_create)
+            resultado.criados = len(to_create)
         if to_update:
             Cidade.objects.bulk_update(to_update, ["capital"], batch_size=400)
             resultado.atualizados = len(to_update)
@@ -425,11 +425,29 @@ def _importar_cidades_municipio_code(reader, resultado: ResultadoImportacaoCidad
         return resultado
 
     estados_por_sigla = {e.sigla: e for e in Estado.objects.all()}
-    existing_by_cod = dict(Cidade.objects.exclude(codigo_ibge__isnull=True).values_list("codigo_ibge", "id"))
-    existing_nome_estado = set(Cidade.objects.values_list("nome", "estado_id"))
+    todas = list(Cidade.objects.select_related("estado").all())
+    by_cod: dict[int, Cidade] = {}
+    by_ne: dict[tuple[str, int], Cidade] = {}
+    for c in todas:
+        if c.codigo_ibge is not None:
+            by_cod[int(c.codigo_ibge)] = c
+        by_ne[(c.nome, c.estado_id)] = c
+
     to_create: list[Cidade] = []
     to_update: list[Cidade] = []
+    to_update_ids: set[int] = set()
+    seen_cods: set[int] = set()
+    shadow_ne: set[tuple[str, int]] = set()
     line_no = 1
+
+    def _apply_city_updates(cid: Cidade, mud: bool) -> None:
+        if mud:
+            resultado.atualizados += 1
+            if not dry_run and cid.pk and cid.pk not in to_update_ids:
+                to_update.append(cid)
+                to_update_ids.add(cid.pk)
+        else:
+            resultado.existentes += 1
 
     for row in reader:
         line_no += 1
@@ -461,70 +479,99 @@ def _importar_cidades_municipio_code(reader, resultado: ResultadoImportacaoCidad
             resultado.erros.append((line_no, f'Estado "{sigla}" não cadastrado. Importe estados antes.'))
             continue
 
-        capital = _marcar_capital(sigla, nome)
-
         if cod_ibge is None:
             resultado.erros.append((line_no, "id_municipio inválido."))
             continue
 
-        if cod_ibge in existing_by_cod:
-            resultado.existentes += 1
-            if not dry_run:
-                cid = Cidade.objects.get(pk=existing_by_cod[cod_ibge])
-                mud = False
-                if capital and not cid.capital:
-                    cid.capital = True
-                    mud = True
-                    resultado.capitais_marcadas += 1
-                if lat is not None and cid.latitude != lat:
-                    cid.latitude = lat
-                    mud = True
-                if lon is not None and cid.longitude != lon:
-                    cid.longitude = lon
-                    mud = True
-                if mud:
-                    to_update.append(cid)
+        if cod_ibge in seen_cods:
+            resultado.ignoradas += 1
+            continue
+        seen_cods.add(cod_ibge)
+
+        capital = _marcar_capital(sigla, nome)
+        if capital:
+            resultado.capitais_marcadas += 1
+
+        obj = by_cod.get(cod_ibge)
+        if obj is not None:
+            mud = False
+            if obj.estado_id != estado.id:
+                obj.estado = estado
+                obj.uf = sigla
+                mud = True
+            if obj.nome != nome:
+                obj.nome = nome
+                mud = True
+            if lat is not None and obj.latitude != lat:
+                obj.latitude = lat
+                mud = True
+            if lon is not None and obj.longitude != lon:
+                obj.longitude = lon
+                mud = True
+            if obj.capital != capital:
+                obj.capital = capital
+                mud = True
+            _apply_city_updates(obj, mud)
             continue
 
         key_ne = (nome, estado.id)
-        if key_ne in existing_nome_estado:
-            resultado.existentes += 1
+        obj_ne = by_ne.get(key_ne)
+        if obj_ne is not None:
+            if obj_ne.codigo_ibge is not None and int(obj_ne.codigo_ibge) != cod_ibge:
+                resultado.erros.append(
+                    (line_no, f'Conflito IBGE: "{nome}" já possui outro código.'),
+                )
+                continue
+            mud = False
+            if obj_ne.codigo_ibge != cod_ibge:
+                obj_ne.codigo_ibge = cod_ibge
+                by_cod[cod_ibge] = obj_ne
+                mud = True
+            if lat is not None and obj_ne.latitude != lat:
+                obj_ne.latitude = lat
+                mud = True
+            if lon is not None and obj_ne.longitude != lon:
+                obj_ne.longitude = lon
+                mud = True
+            if obj_ne.capital != capital:
+                obj_ne.capital = capital
+                mud = True
+            _apply_city_updates(obj_ne, mud)
+            continue
+
+        if dry_run and key_ne in shadow_ne:
+            resultado.erros.append((line_no, "Município duplicado no arquivo (mesmo nome/UF)."))
             continue
 
         if dry_run:
-            resultado.criadas += 1
-            if capital:
-                resultado.capitais_marcadas += 1
-            existing_nome_estado.add(key_ne)
+            resultado.criados += 1
+            shadow_ne.add(key_ne)
             continue
 
-        to_create.append(
-            Cidade(
-                estado=estado,
-                nome=nome,
-                uf=sigla,
-                codigo_ibge=cod_ibge,
-                capital=capital,
-                latitude=lat,
-                longitude=lon,
-            )
+        novo = Cidade(
+            estado=estado,
+            nome=nome,
+            uf=sigla,
+            codigo_ibge=cod_ibge,
+            capital=capital,
+            latitude=lat,
+            longitude=lon,
         )
-        if capital:
-            resultado.capitais_marcadas += 1
-        existing_nome_estado.add(key_ne)
+        to_create.append(novo)
+        by_cod[cod_ibge] = novo
+        by_ne[(nome, estado.id)] = novo
 
     if not dry_run and to_create:
         with transaction.atomic():
             Cidade.objects.bulk_create(to_create, batch_size=400)
-        resultado.criadas = len(to_create)
-    elif dry_run:
-        pass
-    else:
-        resultado.criadas = len(to_create)
+        resultado.criados = len(to_create)
 
     if not dry_run and to_update:
-        Cidade.objects.bulk_update(to_update, ["capital", "latitude", "longitude"], batch_size=400)
-        resultado.atualizados = len(to_update)
+        Cidade.objects.bulk_update(
+            to_update,
+            ["nome", "estado_id", "uf", "codigo_ibge", "capital", "latitude", "longitude"],
+            batch_size=400,
+        )
 
     return resultado
 
@@ -600,7 +647,7 @@ def importar_municipios_csv(
         capital = _marcar_capital(sigla, nome)
 
         if dry_run:
-            resultado.criadas += 1
+            resultado.criados += 1
             if capital:
                 resultado.capitais_marcadas += 1
             existing_cod_cidade.add(cod_mun)
@@ -622,7 +669,7 @@ def importar_municipios_csv(
     if not dry_run and to_create:
         with transaction.atomic():
             Cidade.objects.bulk_create(to_create, batch_size=400)
-        resultado.criadas = len(to_create)
+        resultado.criados = len(to_create)
 
     return resultado
 

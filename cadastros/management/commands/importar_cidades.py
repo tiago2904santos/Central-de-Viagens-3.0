@@ -47,7 +47,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  Encoding: {encoding}")
         self.stdout.write("")
         self.stdout.write(f"  Linhas de dados lidas: {resultado.total_linhas}")
-        self.stdout.write(f"  Cidades criadas:       {resultado.criadas}")
+        self.stdout.write(f"  Municípios criados:    {resultado.criados}")
         self.stdout.write(f"  Já existentes (SKIP):  {resultado.existentes}")
         self.stdout.write(f"  Linhas ignoradas:      {resultado.ignoradas}")
         err_lines = [(ln, m) for ln, m in resultado.erros if ln > 0]

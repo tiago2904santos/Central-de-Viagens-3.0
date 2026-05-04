@@ -80,12 +80,12 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"    Linha {ln}: {m}"))
 
         self.stdout.write("")
-        self.stdout.write(self.style.MIGRATE_HEADING("Cidades"))
-        self.stdout.write(f"  Linhas lidas:       {resultado.cidades.total_linhas}")
-        self.stdout.write(f"  Criadas:            {resultado.cidades.criadas}")
+        self.stdout.write(self.style.MIGRATE_HEADING("Municípios (Cidade)"))
+        self.stdout.write(f"  Total (linhas):     {resultado.cidades.total_linhas}")
+        self.stdout.write(f"  Criados:            {resultado.cidades.criados}")
         self.stdout.write(f"  Já existentes:      {resultado.cidades.existentes}")
-        self.stdout.write(f"  Atualizadas:        {resultado.cidades.atualizados}")
-        self.stdout.write(f"  Ignoradas:          {resultado.cidades.ignoradas}")
+        self.stdout.write(f"  Atualizados:        {resultado.cidades.atualizados}")
+        self.stdout.write(f"  Ignorados:          {resultado.cidades.ignoradas}")
         self.stdout.write(f"  Capitais marcadas:  {resultado.cidades.capitais_marcadas}")
         err_c = [(ln, m) for ln, m in resultado.cidades.erros if ln > 0]
         self.stdout.write(f"  Erros (linhas):     {len(err_c)}")

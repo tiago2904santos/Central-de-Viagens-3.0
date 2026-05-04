@@ -46,18 +46,6 @@ NAVIGATION_ITEMS = [
                 "url_name": "cadastros:unidades_index",
                 "active_when": ["cadastros:unidade_", "cadastros:unidades_index"],
             },
-            {
-                "id": "cadastros-estados",
-                "label": "Estados",
-                "url_name": "cadastros:estados_index",
-                "active_when": ["cadastros:estado_", "cadastros:estados_index"],
-            },
-            {
-                "id": "cadastros-cidades",
-                "label": "Cidades",
-                "url_name": "cadastros:cidades_index",
-                "active_when": ["cadastros:cidade_", "cadastros:cidades_index"],
-            },
         ],
     },
     {"id": "roteiros", "label": "Roteiros", "url_name": "roteiros:index", "icon": "RT"},

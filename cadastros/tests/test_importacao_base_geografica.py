@@ -11,6 +11,8 @@ from cadastros.models import Estado
 from cadastros.services_importacao import importar_base_geografica
 from cadastros.services_importacao import importar_cidades_csv
 from cadastros.services_importacao import importar_estados_csv
+
+
 class ImportacaoBaseGeograficaTests(TestCase):
     def _write_csv(self, content: str, suffix: str = ".csv") -> Path:
         t = tempfile.NamedTemporaryFile(
@@ -84,7 +86,7 @@ class ImportacaoBaseGeograficaTests(TestCase):
         e_est.unlink(missing_ok=True)
         m_ibge.unlink(missing_ok=True)
 
-        self.assertGreaterEqual(r.cidades.criadas, 1)
+        self.assertGreaterEqual(r.cidades.criados, 1)
         c = Cidade.objects.get(nome="CURITIBA")
         self.assertEqual(c.estado.sigla, "PR")
         self.assertTrue(c.capital)
@@ -101,9 +103,13 @@ class ImportacaoBaseGeograficaTests(TestCase):
         )
         r = importar_cidades_csv(mun, dry_run=False, fonte_municipio_code=True)
         mun.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 0)
-        self.assertGreaterEqual(r.existentes, 1)
+        self.assertEqual(r.criados, 0)
+        self.assertGreaterEqual(r.atualizados, 1)
         self.assertEqual(Cidade.objects.filter(nome="MARINGÁ", estado=est_pr).count(), 1)
+        self.assertEqual(
+            Cidade.objects.get(nome="MARINGÁ", estado=est_pr).codigo_ibge,
+            4115200,
+        )
 
     def test_dry_run_base_geografica_nao_persiste(self):
         e_est = self._write_csv("COD,NOME,SIGLA\n41,PARANÁ,PR\n")
@@ -113,7 +119,7 @@ class ImportacaoBaseGeograficaTests(TestCase):
         e_est.unlink(missing_ok=True)
         mun.unlink(missing_ok=True)
         self.assertGreater(r.estados.criados + r.estados.existentes, 0)
-        self.assertGreater(r.cidades.criadas, 0)
+        self.assertGreater(r.cidades.criados, 0)
         self.assertEqual(Estado.objects.count(), n_e)
         self.assertEqual(Cidade.objects.count(), n_c)
 
@@ -135,7 +141,7 @@ class ImportacaoBaseGeograficaTests(TestCase):
         mun.unlink(missing_ok=True)
         out = buf.getvalue().lower()
         self.assertIn("estados", out)
-        self.assertIn("cidades", out)
+        self.assertIn("munic", out)
         self.assertEqual(Cidade.objects.count(), n_c)
 
     def test_comando_arquivo_municipios_inexistente(self):
@@ -155,5 +161,5 @@ class ImportacaoBaseGeograficaTests(TestCase):
         mun = self._write_csv("nome,uf\nCidade Orfa,ZZ\n")
         r = importar_cidades_csv(mun, dry_run=False)
         mun.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 0)
+        self.assertEqual(r.criados, 0)
         self.assertTrue(any("não cadastrado" in m for _ln, m in r.erros if _ln > 0))

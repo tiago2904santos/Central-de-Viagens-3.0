@@ -5,11 +5,12 @@
 O app `cadastros` usa listagens globais (`list_page` ou `list_page_simple`), `document_card` onde aplicavel, `form_field` e `form_actions` para os CRUDs de:
 
 - `Unidade`
-- `Cidade`
 - `Cargo`
 - `Combustivel`
 - `Servidor`
 - `Viatura`
+
+`Estado` e `Cidade` (municipio) nao possuem telas de lista/formulario no produto; a base geografica e interna.
 
 `Motorista` nao possui templates ativos.
 
@@ -22,7 +23,7 @@ O app `cadastros` usa listagens globais (`list_page` ou `list_page_simple`), `do
 
 ## Listagem simples vs cards
 
-- **Lista simples**: `list_page_simple.html`, `simple_list.html`, `simple_list_row.html`, estilos em `lists.css`. Para cadastros enxutos: Cargo, Combustivel, Unidade, Cidade.
+- **Lista simples**: `list_page_simple.html`, `simple_list.html`, `simple_list_row.html`, estilos em `lists.css`. Para cadastros enxutos: Cargo, Combustivel, Unidade.
 - **Cards**: `list_page.html` + `document_card` para Servidor, Viatura e listagens ricas futuras.
 
 ## Sidebar
@@ -35,7 +36,7 @@ O app `cadastros` usa listagens globais (`list_page` ou `list_page_simple`), `do
 - Somente o grupo **Cadastros** usa botao de expandir/recolher; dentro dele, lista plana com indentacao visual para `Cargos` (sob Servidores) e `Combustiveis` (sob Viaturas), sem segundo toggle por nivel.
 - Links principais usam `data-sidebar-root-link`; grupo expansivel usa `data-sidebar-item`, `data-sidebar-group`, `data-sidebar-expandable`; filhos do painel usam `data-sidebar-panel-link`.
 - Grupo abre ao alternar o toggle; **fecha ao navegar** para outro item principal (nao-Cadastros). Na carga da pagina: aberto se a rota for `/cadastros/`, fechado caso contrario; `localStorage` nao reabre o submenu fora de Cadastros.
-- Ordem: Servidores, Cargos, Viaturas, Combustiveis, Unidades, Cidades.
+- Ordem: Servidores, Cargos, Viaturas, Combustiveis, Unidades (sem Estados/Cidades na UI).
 - `Motoristas` nao aparece no menu porque nao e cadastro independente.
 
 ## List toolbar

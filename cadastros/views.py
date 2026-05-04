@@ -1,58 +1,40 @@
-﻿import csv
-from urllib.parse import urlencode
-
-from django.contrib import messages
-from django.http import HttpResponse
+﻿from django.contrib import messages
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
 
 from .forms import CargoForm
-from .forms import CidadeForm
 from .forms import CombustivelForm
-from .forms import EstadoForm
 from .forms import ServidorForm
 from .forms import UnidadeForm
 from .forms import ViaturaForm
 from .presenters import apresentar_linha_lista_simples_cargo
-from .presenters import apresentar_linha_lista_simples_cidade
-from .presenters import apresentar_linha_lista_simples_estado
 from .presenters import apresentar_linha_lista_simples_combustivel
 from .presenters import apresentar_linha_lista_simples_servidor
 from .presenters import apresentar_linha_lista_simples_unidade
 from .presenters import apresentar_linha_lista_simples_viatura
 from .selectors import get_cargo_by_id
-from .selectors import get_cidade_by_id
-from .selectors import get_estado_by_id
 from .selectors import get_combustivel_by_id
 from .selectors import get_servidor_by_id
 from .selectors import get_unidade_by_id
 from .selectors import get_viatura_by_id
 from .selectors import listar_cargos
-from .selectors import listar_cidades
-from .selectors import listar_estados
 from .selectors import listar_combustiveis
 from .selectors import listar_servidores
 from .selectors import listar_unidades
 from .selectors import listar_viaturas
 from .services import atualizar_cargo
-from .services import atualizar_cidade
-from .services import atualizar_estado
 from .services import atualizar_combustivel
 from .services import atualizar_servidor
 from .services import atualizar_unidade
 from .services import atualizar_viatura
 from .services import CadastroVinculadoError
 from .services import criar_cargo
-from .services import criar_cidade
-from .services import criar_estado
 from .services import criar_combustivel
 from .services import criar_servidor
 from .services import criar_unidade
 from .services import criar_viatura
 from .services import excluir_cargo
-from .services import excluir_cidade
-from .services import excluir_estado
 from .services import excluir_combustivel
 from .services import excluir_servidor
 from .services import excluir_unidade
@@ -83,93 +65,7 @@ def index(request):
                 {"title": "Viaturas", "description": "Veículos operacionais.", "href": "viaturas/"},
                 {"title": "Combustíveis", "description": "Tipos de combustível.", "href": "combustiveis/"},
                 {"title": "Unidades", "description": "Unidades administrativas.", "href": "unidades/"},
-                {"title": "Estados", "description": "Unidades federativas (UF).", "href": "estados/"},
-                {"title": "Cidades", "description": "Municípios e base geográfica.", "href": "cidades/"},
             ],
-        },
-    )
-
-
-def estados_index(request):
-    q = request.GET.get("q", "").strip()
-    estados = listar_estados(q=q)
-    rows = [
-        apresentar_linha_lista_simples_estado(
-            estado,
-            edit_url=reverse("cadastros:estado_update", args=[estado.pk]),
-            delete_url=reverse("cadastros:estado_delete", args=[estado.pk]),
-        )
-        for estado in estados
-    ]
-    return _render_listagem(
-        request,
-        "cadastros/estados/index.html",
-        {
-            "page_title": "Estados",
-            "page_description": "Unidades federativas (UF) da base geográfica.",
-            "rows": rows,
-            "q": q,
-        },
-    )
-
-
-def estado_create(request):
-    form = EstadoForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        criar_estado(form)
-        messages.success(request, "Estado criado com sucesso.")
-        return redirect("cadastros:estados_index")
-    return render(
-        request,
-        "cadastros/estados/form.html",
-        {
-            "page_title": "Novo estado",
-            "page_description": "Cadastre UF e nome oficial.",
-            "form": form,
-            "submit_label": "Criar estado",
-            "back_url": reverse("cadastros:estados_index"),
-        },
-    )
-
-
-def estado_update(request, pk):
-    estado = get_estado_by_id(pk)
-    form = EstadoForm(request.POST or None, instance=estado)
-    if request.method == "POST" and form.is_valid():
-        atualizar_estado(estado, form)
-        messages.success(request, "Estado atualizado com sucesso.")
-        return redirect("cadastros:estados_index")
-    return render(
-        request,
-        "cadastros/estados/form.html",
-        {
-            "page_title": "Editar estado",
-            "page_description": "Atualize os dados da UF.",
-            "form": form,
-            "submit_label": "Salvar estado",
-            "back_url": reverse("cadastros:estados_index"),
-        },
-    )
-
-
-def estado_delete(request, pk):
-    estado = get_estado_by_id(pk)
-    if request.method == "POST":
-        try:
-            excluir_estado(estado)
-        except CadastroVinculadoError:
-            _vinculo_error(request)
-            return redirect("cadastros:estados_index")
-        messages.success(request, "Estado excluído com sucesso.")
-        return redirect("cadastros:estados_index")
-    return render(
-        request,
-        "cadastros/estados/confirm_delete.html",
-        {
-            "page_title": "Excluir estado",
-            "page_description": "Não é possível excluir se existirem cidades vinculadas.",
-            "object": estado,
-            "back_url": reverse("cadastros:estados_index"),
         },
     )
 
@@ -254,119 +150,6 @@ def unidade_delete(request, pk):
             "page_description": "Esta ação excluirá o cadastro. Se houver vínculos com outros registros, a exclusão será bloqueada.",
             "object": unidade,
             "back_url": reverse("cadastros:unidades_index"),
-        },
-    )
-
-
-def cidades_index(request):
-    q = request.GET.get("q", "").strip()
-    cidades = listar_cidades(q=q)
-    rows = [
-        apresentar_linha_lista_simples_cidade(
-            cidade,
-            edit_url=reverse("cadastros:cidade_update", args=[cidade.pk]),
-            delete_url=reverse("cadastros:cidade_delete", args=[cidade.pk]),
-        )
-        for cidade in cidades
-    ]
-    export_base = reverse("cadastros:cidades_export_csv")
-    export_csv_url = f"{export_base}?{urlencode({'q': q})}" if q else export_base
-    return _render_listagem(
-        request,
-        "cadastros/cidades/index.html",
-        {
-            "page_title": "Cidades",
-            "page_description": "Cidades de referência para os fluxos.",
-            "rows": rows,
-            "q": q,
-            "export_csv_url": export_csv_url,
-        },
-    )
-
-
-def cidades_export_csv(request):
-    q = request.GET.get("q", "").strip()
-    cidades = listar_cidades(q=q)
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    response["Content-Disposition"] = 'attachment; filename="cidades.csv"'
-    response.write("\ufeff")
-    writer = csv.writer(response)
-    writer.writerow(
-        ["id", "nome", "uf", "estado_id", "capital", "codigo_ibge", "criado_em", "atualizado_em"],
-    )
-    for cidade in cidades:
-        writer.writerow(
-            [
-                cidade.pk,
-                cidade.nome,
-                cidade.uf,
-                cidade.estado_id,
-                cidade.capital,
-                cidade.codigo_ibge or "",
-                cidade.created_at.isoformat(),
-                cidade.updated_at.isoformat(),
-            ]
-        )
-    return response
-
-
-def cidade_create(request):
-    form = CidadeForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        criar_cidade(form)
-        messages.success(request, "Cidade criada com sucesso.")
-        return redirect("cadastros:cidades_index")
-    return render(
-        request,
-        "cadastros/cidades/form.html",
-        {
-            "page_title": "Nova cidade",
-            "page_description": "Cadastre uma cidade de referência.",
-            "form": form,
-            "submit_label": "Criar cidade",
-            "back_url": reverse("cadastros:cidades_index"),
-        },
-    )
-
-
-def cidade_update(request, pk):
-    cidade = get_cidade_by_id(pk)
-    form = CidadeForm(request.POST or None, instance=cidade)
-    if request.method == "POST" and form.is_valid():
-        atualizar_cidade(cidade, form)
-        messages.success(request, "Cidade atualizada com sucesso.")
-        return redirect("cadastros:cidades_index")
-    return render(
-        request,
-        "cadastros/cidades/form.html",
-        {
-            "page_title": "Editar cidade",
-            "page_description": "Atualize os dados da cidade.",
-            "form": form,
-            "submit_label": "Salvar cidade",
-            "back_url": reverse("cadastros:cidades_index"),
-        },
-    )
-
-
-def cidade_delete(request, pk):
-    cidade = get_cidade_by_id(pk)
-    if request.method == "POST":
-        try:
-            excluir_cidade(cidade)
-        except CadastroVinculadoError:
-            _vinculo_error(request)
-            return redirect("cadastros:cidades_index")
-        messages.success(request, "Cidade excluída com sucesso.")
-        return redirect("cadastros:cidades_index")
-    return render(
-        request,
-        "cadastros/cidades/confirm_delete.html",
-        {
-            "page_title": "Excluir cidade",
-            "page_description": "Esta ação excluirá o cadastro. Se houver vínculos com outros registros, a exclusão será bloqueada.",
-            "object": cidade,
-            "back_url": reverse("cadastros:cidades_index"),
         },
     )
 

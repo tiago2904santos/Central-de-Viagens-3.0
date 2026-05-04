@@ -51,6 +51,12 @@ class Estado(TimeStampedModel):
 
 
 class Cidade(TimeStampedModel):
+    """
+    Município na base geográfica interna (nomenclatura histórica: `Cidade`).
+
+    Não possui CRUD na interface do usuário; a carga é feita via importação.
+    """
+
     estado = models.ForeignKey(Estado, on_delete=models.PROTECT, related_name="cidades")
     nome = models.CharField(max_length=255)
     uf = models.CharField(max_length=2)

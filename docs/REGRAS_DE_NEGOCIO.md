@@ -7,8 +7,8 @@ O app `cadastros` centraliza dados-base reutilizados por documentos e fluxos fut
 Entidades ativas do modulo:
 
 - `Unidade`: nome e sigla.
-- `Estado`: cadastro de UF (nome, sigla 2 caracteres, `codigo_ibge` opcional). Ver seção **Base geográfica** e `docs/IMPORTACAO_BASE_GEOGRAFICA.md`.
-- `Cidade`: pertence a um `Estado`; combinação **nome + estado** é única; `uf` espelha a sigla do estado; pode ser **capital**; `codigo_ibge` e coordenadas opcionais. Carga em lote: `docs/IMPORTACAO_BASE_GEOGRAFICA.md` (comando `importar_base_geografica`). O guia `docs/IMPORTACAO_CIDADES.md` permanece como referência do fluxo somente cidades, quando aplicável.
+- `Estado`: **base interna** (UF: nome, sigla, `codigo_ibge` quando houver). Não há CRUD na interface do usuário; carga via `importar_base_geografica` (ver `docs/IMPORTACAO_BASE_GEOGRAFICA.md`). Uso futuro: roteiros, documentos, selects internos.
+- `Cidade`: no código o model chama-se `Cidade` e **representa o município** na base geográfica. Pertence a um `Estado`; **nome + estado** é único; `uf` espelha a sigla; `capital` (mapa interno de capitais); `codigo_ibge` e coordenadas quando a fonte tiver. **Não** há listagem, criação, edição ou exclusão na interface do usuário; carga somente via management command. O guia `docs/IMPORTACAO_CIDADES.md` descreve o importador de municípios isolado, quando aplicável.
 - `Cargo`: nome unico e em maiusculo.
 - `Combustivel`: nome unico e em maiusculo.
 - `Servidor`: nome unico e em maiusculo, cargo, CPF, RG opcional e unidade opcional.
@@ -53,8 +53,10 @@ Regras da base:
 
 ## Base geografica
 
-- `Estado` e um cadastro proprio (nao e apenas texto solto de UF).
-- Toda `Cidade` referencia um `Estado` (exclusao de estado com cidades vinculadas e bloqueada).
-- Uma cidade pode ser marcada como `capital` (usado em regras futuras; capitais sao identificadas na importacao por mapa UF -> nome, com comparacao normalizada de texto).
-- Roteiros usarao `Cidade` para origem e destino.
-- Nao existe ativo/inativo para estado nem cidade.
+- `Estado` e `Cidade` (município) são **dados internos**: não há telas públicas `/cadastros/estados/` nem `/cadastros/cidades/`, nem exportar/importar CSV na UI.
+- `Estado` não é texto solto de UF: existe como entidade com constraints e integridade.
+- Toda `Cidade` referencia um `Estado` via FK (`PROTECT`), para preservar integridade quando houver uso em roteiros ou outros fluxos.
+- Capitais são marcadas por mapa interno UF → nome oficial, com comparação de texto normalizada (acentos).
+- Roteiros e demais módulos usarão `Cidade` / selectors internos para origem e destino.
+- Não existe ativo/inativo para estado nem município.
+- Arquivos CSV reais em `dados/` não entram no repositório; a importação é operação técnica (`python manage.py importar_base_geografica`).

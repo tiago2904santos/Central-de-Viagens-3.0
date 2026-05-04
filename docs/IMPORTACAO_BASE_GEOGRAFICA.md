@@ -1,6 +1,10 @@
-# Importação da base geográfica (Estados e Cidades)
+# Importação da base geográfica (Estados e municípios)
 
-O cadastro de **Estados** e **Cidades** alimenta origem/destino em roteiros e demais fluxos. A carga em lote usa CSVs; o comando recomendado orquestra estados e municípios.
+**Estados** e **municípios** (model `Cidade`) são **dados internos** do sistema. O usuário comum **não** acessa CRUD desses registros pela interface; a carga é feita apenas por **management command**. Os dados alimentam roteiros, destinos, regras futuras de documentos e selects internos (`cadastros.selectors`).
+
+Não há página pública de listagem/edição, nem botão de exportar CSV de municípios na aplicação.
+
+A carga em lote usa CSVs; o comando recomendado orquestra estados e `municipio_code.csv`.
 
 ## Arquivos
 
@@ -10,7 +14,7 @@ O cadastro de **Estados** e **Cidades** alimenta origem/destino em roteiros e de
 | `municipio_code.csv` | Municípios: separador `;`, colunas `id_municipio`, `uf`, `municipio`, opcional `longitude` e `latitude`. |
 | `municipios.csv` | Alternativa: colunas `COD UF` (código IBGE do **estado**), `COD` (código do município), `NOME`. Exige estados já importados com `codigo_ibge` correspondente. |
 
-Arquivos grandes em `dados/` podem ficar só na máquina local; no repositório costumam estar no `.gitignore` (veja comentário em `.gitignore`).
+Arquivos grandes em `dados/` devem permanecer fora do Git (não commitar `dados/estados.csv`, `dados/municipio_code.csv`, etc.).
 
 ## Comando recomendado
 

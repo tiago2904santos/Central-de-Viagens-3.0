@@ -17,7 +17,13 @@ def listar_unidades(q=None):
     return queryset
 
 
-def listar_cidades(q=None):
+def listar_cidades(q=None, uf=None, capital=None):
+    """
+    Lista municípios (`Cidade`) da base geográfica interna — uso por código (roteiros, fluxos).
+
+    `uf` filtra pela sigla da UF (ex.: ``PR``).
+    `capital` filtra ``True`` / ``False`` quando informado.
+    """
     queryset = Cidade.objects.select_related("estado").order_by("estado__sigla", "nome")
     if q:
         queryset = queryset.filter(
@@ -26,14 +32,33 @@ def listar_cidades(q=None):
             | Q(estado__nome__icontains=q)
             | Q(estado__sigla__icontains=q)
         )
+    if uf:
+        queryset = queryset.filter(uf=(uf or "").strip().upper()[:2])
+    if capital is not None:
+        queryset = queryset.filter(capital=bool(capital))
     return queryset
 
 
+def listar_municipios(q=None, uf=None, capital=None):
+    """Alias de :func:`listar_cidades` (conceito: município)."""
+    return listar_cidades(q=q, uf=uf, capital=capital)
+
+
 def listar_estados(q=None):
+    """Estados da base interna (somente leitura via código / admin técnico)."""
     queryset = Estado.objects.order_by("nome")
     if q:
         queryset = queryset.filter(Q(nome__icontains=q) | Q(sigla__icontains=q))
     return queryset
+
+
+def listar_capitais():
+    """Municípios marcados como capital (`Cidade.capital=True`)."""
+    return (
+        Cidade.objects.filter(capital=True)
+        .select_related("estado")
+        .order_by("estado__sigla", "nome")
+    )
 
 
 def get_unidade_by_id(pk):
@@ -44,8 +69,18 @@ def get_cidade_by_id(pk):
     return get_object_or_404(Cidade.objects.select_related("estado"), pk=pk)
 
 
+def get_municipio_by_id(pk):
+    """Alias de :func:`get_cidade_by_id` (município na base interna)."""
+    return get_cidade_by_id(pk)
+
+
 def get_estado_by_id(pk):
     return get_object_or_404(Estado, pk=pk)
+
+
+def get_estado_by_sigla(sigla):
+    """Retorna o estado pela sigla da UF (2 caracteres)."""
+    return get_object_or_404(Estado, sigla=(sigla or "").strip().upper()[:2])
 
 
 def listar_cargos(q=None):

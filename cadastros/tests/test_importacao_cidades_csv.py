@@ -37,7 +37,7 @@ class ImportacaoCidadesCsvTests(TestCase):
         p = self._write_csv("id_municipio;uf;municipio;longitude;latitude\n1;pr;curitiba;-25;-49\n2;pr;LONDRINA;-23;-51\n")
         r = importar_cidades_csv(p, dry_run=False)
         p.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 2)
+        self.assertEqual(r.criados, 2)
         self.assertEqual(r.existentes, 0)
         self.assertTrue(Cidade.objects.filter(nome="CURITIBA", uf="PR").exists())
         self.assertTrue(Cidade.objects.filter(nome="LONDRINA", uf="PR").exists())
@@ -48,7 +48,7 @@ class ImportacaoCidadesCsvTests(TestCase):
         p = self._write_csv("nome,uf\nMaringá,pr\n", suffix=".csv")
         r = importar_cidades_csv(p, dry_run=False)
         p.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 1)
+        self.assertEqual(r.criados, 1)
         c = Cidade.objects.get(uf="PR")
         self.assertEqual(c.nome, "MARINGÁ")
 
@@ -56,21 +56,21 @@ class ImportacaoCidadesCsvTests(TestCase):
         p = self._write_csv("cidade,uf\nFoz do Iguaçu,pr\n")
         r = importar_cidades_csv(p, dry_run=False)
         p.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 1)
+        self.assertEqual(r.criados, 1)
         self.assertTrue(Cidade.objects.filter(nome="FOZ DO IGUAÇU", uf="PR").exists())
 
     def test_formato_municipio_uf(self):
         p = self._write_csv("municipio,uf\nCascavel,pr\n")
         r = importar_cidades_csv(p, dry_run=False)
         p.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 1)
+        self.assertEqual(r.criados, 1)
 
     def test_nao_duplica_existente(self):
         Cidade.objects.create(nome="PONTA GROSSA", estado=self.estado_pr)
         p = self._write_csv("municipio;uf\nPONTA GROSSA;pr\n")
         r = importar_cidades_csv(p, dry_run=False)
         p.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 0)
+        self.assertEqual(r.criados, 0)
         self.assertEqual(r.existentes, 1)
         self.assertEqual(Cidade.objects.filter(nome="PONTA GROSSA", uf="PR").count(), 1)
 
@@ -78,7 +78,7 @@ class ImportacaoCidadesCsvTests(TestCase):
         p = self._write_csv("municipio;uf\nXaxim;PRS\n")
         r = importar_cidades_csv(p, dry_run=False)
         p.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 0)
+        self.assertEqual(r.criados, 0)
         self.assertEqual(len([e for e in r.erros if e[0] > 0]), 1)
 
     def test_linha_vazia_ignorada(self):
@@ -86,14 +86,14 @@ class ImportacaoCidadesCsvTests(TestCase):
         r = importar_cidades_csv(p, dry_run=False)
         p.unlink(missing_ok=True)
         self.assertEqual(r.ignoradas, 1)
-        self.assertEqual(r.criadas, 1)
+        self.assertEqual(r.criados, 1)
 
     def test_dry_run_nao_persiste(self):
         p = self._write_csv("municipio;uf\nBlumenau;sc\n")
         n = Cidade.objects.count()
         r = importar_cidades_csv(p, dry_run=True)
         p.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 1)
+        self.assertEqual(r.criados, 1)
         self.assertEqual(Cidade.objects.count(), n)
 
     def test_comando_dry_run(self):
@@ -114,7 +114,7 @@ class ImportacaoCidadesCsvTests(TestCase):
         p = self._write_csv("municipio;uf\nAPUCARANA;pr\nAPUCARANA;pr\n")
         r = importar_cidades_csv(p, dry_run=False)
         p.unlink(missing_ok=True)
-        self.assertEqual(r.criadas, 1)
+        self.assertEqual(r.criados, 1)
         self.assertEqual(r.ignoradas, 1)
 
     def test_service_arquivo_inexistente(self):
