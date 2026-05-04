@@ -60,3 +60,4 @@ Regras da base:
 - Roteiros e demais módulos usarão `Cidade` / selectors internos para origem e destino.
 - Não existe ativo/inativo para estado nem município.
 - Arquivos CSV reais em `dados/` não entram no repositório; a importação é operação técnica (`python manage.py importar_base_geografica`).
+- Capitais seguem o mapa em `cadastros/geografia.py`; use `python manage.py auditar_base_geografica` e, se necessário, `sanear_base_geografica --fix-capitais` antes de dependências fortes (ex.: Roteiros).

@@ -48,13 +48,46 @@ python manage.py importar_cidades caminho/arquivo.csv
 
 ## Capitais
 
-Não depende de coluna no CSV. Há um mapa interno **UF → nome da capital**; o nome do município importado é comparado de forma **normalizada** (maiúsculas, espaços, remoção de acentos para comparação). Ex.: **Curitiba/PR** → `capital=True`; **Londrina/PR** → `capital=False`.
+O mapa oficial UF → nome da capital está centralizado em **`cadastros/geografia.py`** (`CAPITAIS_POR_UF`, função `eh_capital(nome, uf)`). O importador define `capital` **somente** com base nesse mapa e pode **corrigir** `capital=True` indevido em reimportações (`capitais_corrigidas` no resumo).
+
+Não depende de coluna no CSV. A comparação usa nome normalizado (maiúsculas, espaços) e **insensível a acentos** para bater com o mapa. Ex.: **Curitiba/PR** → `capital=True`; **Londrina/PR** → `capital=False`.
+
+O campo `id_municipio` / `codigo_ibge` no CSV é o **código do próprio arquivo**; pode não coincidir com o código IBGE oficial de 7 dígitos. Para base “oficial” IBGE, use fonte e colunas adequadas.
+
+## Auditoria e saneamento
+
+Antes de usar a base em **Roteiros**, recomenda-se conferir consistência:
+
+```bash
+python manage.py auditar_base_geografica
+```
+
+Para recalcular todas as capitais segundo o mapa oficial (sem alterar outros campos):
+
+```bash
+python manage.py sanear_base_geografica --dry-run --fix-capitais
+python manage.py sanear_base_geografica --fix-capitais
+```
+
+Mescla opcional de duplicados **nome + estado** (prioriza registro com `codigo_ibge`), repontando vínculos de roteiros quando necessário:
+
+```bash
+python manage.py sanear_base_geografica --dry-run --fix-duplicados
+python manage.py sanear_base_geografica --fix-duplicados
+```
+
+### Mais de uma “capital” por UF (mesmo município, grafias diferentes)
+
+Se o CSV ou dados antigos criarem duas linhas que equivalem à capital (ex.: `FLORIANOPOLIS` sem acento e `FLORIANÓPOLIS` com código), **ambas** podiam receber `capital=True` porque `eh_capital` compara nomes sem acento. A função `dedupe_capitais_por_uf()` (chamada ao final da importação `municipio_code` e após `sanear --fix-capitais`) mantém só um registro como capital por UF, preferindo o **nome canônico** do mapa oficial e, na falta dele, o registro com `codigo_ibge` preenchido.
+
+Isso **não remove** o registro extra com grafia errada: ele pode permanecer na base (ex.: total de municípios = linhas do CSV + 1). Para eliminar duplicata ortográfica, use `--fix-duplicados` apenas quando `nome + estado` for literalmente igual no banco; caso contrário trate como limpeza manual ou nova regra de mescla por nome normalizado (evolução futura).
 
 ## Duplicidade e consistência
 
 - Estado: `sigla` e `nome` únicos; `codigo_ibge` único quando preenchido.
 - Cidade: par **nome + estado** único; `codigo_ibge` único quando preenchido.
 - Reimportar a mesma combinação nome+estado ou o mesmo `codigo_ibge` não cria registro duplicado; em `municipio_code` pode haver atualização de `capital` e coordenadas em registros existentes.
+- Conflito (mesmo nome+estado com **outro** `codigo_ibge` já gravado) incrementa `conflitos` no resumo e não cria linha duplicada silenciosa.
 
 ## Cidade → Estado
 

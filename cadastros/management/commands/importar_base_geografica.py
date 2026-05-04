@@ -86,7 +86,9 @@ class Command(BaseCommand):
         self.stdout.write(f"  Já existentes:      {resultado.cidades.existentes}")
         self.stdout.write(f"  Atualizados:        {resultado.cidades.atualizados}")
         self.stdout.write(f"  Ignorados:          {resultado.cidades.ignoradas}")
+        self.stdout.write(f"  Conflitos:          {resultado.cidades.conflitos}")
         self.stdout.write(f"  Capitais marcadas:  {resultado.cidades.capitais_marcadas}")
+        self.stdout.write(f"  Capitais corrigidas: {resultado.cidades.capitais_corrigidas}")
         err_c = [(ln, m) for ln, m in resultado.cidades.erros if ln > 0]
         self.stdout.write(f"  Erros (linhas):     {len(err_c)}")
         if err_c:

@@ -7,39 +7,10 @@ from pathlib import Path
 
 from django.db import transaction
 
+from cadastros.geografia import dedupe_capitais_por_uf
+from cadastros.geografia import eh_capital
 from cadastros.models import Cidade
 from cadastros.models import Estado
-
-# Capitais por UF — comparação por nome normalizado (maiúsculas + acentos → NFKD).
-CAPITAIS_POR_UF = {
-    "AC": "RIO BRANCO",
-    "AL": "MACEIÓ",
-    "AP": "MACAPÁ",
-    "AM": "MANAUS",
-    "BA": "SALVADOR",
-    "CE": "FORTALEZA",
-    "DF": "BRASÍLIA",
-    "ES": "VITÓRIA",
-    "GO": "GOIÂNIA",
-    "MA": "SÃO LUÍS",
-    "MT": "CUIABÁ",
-    "MS": "CAMPO GRANDE",
-    "MG": "BELO HORIZONTE",
-    "PA": "BELÉM",
-    "PB": "JOÃO PESSOA",
-    "PR": "CURITIBA",
-    "PE": "RECIFE",
-    "PI": "TERESINA",
-    "RJ": "RIO DE JANEIRO",
-    "RN": "NATAL",
-    "RS": "PORTO ALEGRE",
-    "RO": "PORTO VELHO",
-    "RR": "BOA VISTA",
-    "SC": "FLORIANÓPOLIS",
-    "SP": "SÃO PAULO",
-    "SE": "ARACAJU",
-    "TO": "PALMAS",
-}
 
 
 def _strip_accents(value: str) -> str:
@@ -49,10 +20,6 @@ def _strip_accents(value: str) -> str:
 
 def _normalize_whitespace_upper(text: str) -> str:
     return " ".join((text or "").strip().split()).upper()
-
-
-def _norm_geo_compare(a: str, b: str) -> bool:
-    return _strip_accents(_normalize_whitespace_upper(a)) == _strip_accents(_normalize_whitespace_upper(b))
 
 
 def _sniff_delimiter(sample: str) -> str:
@@ -129,17 +96,6 @@ def _parse_int(raw: str) -> int | None:
         return None
 
 
-def capital_esperada_para_uf(sigla: str) -> str | None:
-    return CAPITAIS_POR_UF.get((sigla or "").strip().upper()[:2])
-
-
-def _marcar_capital(sigla_uf: str, nome_cidade: str) -> bool:
-    esp = capital_esperada_para_uf(sigla_uf)
-    if not esp:
-        return False
-    return _norm_geo_compare(nome_cidade, esp)
-
-
 @dataclass
 class ResultadoImportacaoEstados:
     total_linhas: int = 0
@@ -157,7 +113,9 @@ class ResultadoImportacaoCidades:
     existentes: int = 0
     atualizados: int = 0
     ignoradas: int = 0
+    conflitos: int = 0
     capitais_marcadas: int = 0
+    capitais_corrigidas: int = 0
     erros: list[tuple[int, str]] = field(default_factory=list)
 
 
@@ -315,10 +273,10 @@ def importar_cidades_csv(
         return resultado
 
     estados_por_sigla = {e.sigla: e for e in Estado.objects.all()}
-    existing_keys = set(Cidade.objects.values_list("nome", "estado_id"))
     seen_in_file: set[tuple[str, int]] = set()
     to_create: list[Cidade] = []
     to_update: list[Cidade] = []
+    to_update_ids: set[int] = set()
     line_no = 1
 
     for row in reader:
@@ -350,45 +308,55 @@ def importar_cidades_csv(
             )
             continue
 
-        capital = _marcar_capital(sigla, nome)
+        capital = eh_capital(nome, sigla)
+        if capital:
+            resultado.capitais_marcadas += 1
+
         key = (nome, estado.id)
 
         if key in seen_in_file:
             resultado.ignoradas += 1
             continue
 
-        if key in existing_keys:
-            resultado.existentes += 1
+        cid = Cidade.objects.filter(nome=nome, estado=estado).first()
+        if cid is not None:
             seen_in_file.add(key)
-            if capital and not dry_run:
-                cid = Cidade.objects.filter(nome=nome, estado=estado).first()
-                if cid and not cid.capital:
-                    cid.capital = True
+            old_cap = cid.capital
+            mud = old_cap != capital
+            if old_cap and not capital:
+                resultado.capitais_corrigidas += 1
+            if dry_run:
+                if mud:
+                    resultado.atualizados += 1
+                else:
+                    resultado.existentes += 1
+                continue
+            if mud:
+                cid.capital = capital
+                if cid.pk not in to_update_ids:
                     to_update.append(cid)
-                    resultado.capitais_marcadas += 1
+                    to_update_ids.add(cid.pk)
+                resultado.atualizados += 1
+            else:
+                resultado.existentes += 1
             continue
 
         seen_in_file.add(key)
         if dry_run:
             resultado.criados += 1
-            if capital:
-                resultado.capitais_marcadas += 1
-            existing_keys.add(key)
             continue
 
-        c = Cidade(
-            estado=estado,
-            nome=nome,
-            uf=sigla,
-            capital=capital,
-            codigo_ibge=None,
-            latitude=None,
-            longitude=None,
+        to_create.append(
+            Cidade(
+                estado=estado,
+                nome=nome,
+                uf=sigla,
+                capital=capital,
+                codigo_ibge=None,
+                latitude=None,
+                longitude=None,
+            )
         )
-        to_create.append(c)
-        if capital:
-            resultado.capitais_marcadas += 1
-        existing_keys.add(key)
 
     if not dry_run:
         if to_create:
@@ -397,7 +365,6 @@ def importar_cidades_csv(
             resultado.criados = len(to_create)
         if to_update:
             Cidade.objects.bulk_update(to_update, ["capital"], batch_size=400)
-            resultado.atualizados = len(to_update)
 
     return resultado
 
@@ -488,13 +455,14 @@ def _importar_cidades_municipio_code(reader, resultado: ResultadoImportacaoCidad
             continue
         seen_cods.add(cod_ibge)
 
-        capital = _marcar_capital(sigla, nome)
+        capital = eh_capital(nome, sigla)
         if capital:
             resultado.capitais_marcadas += 1
 
         obj = by_cod.get(cod_ibge)
         if obj is not None:
             mud = False
+            old_cap = obj.capital
             if obj.estado_id != estado.id:
                 obj.estado = estado
                 obj.uf = sigla
@@ -508,7 +476,9 @@ def _importar_cidades_municipio_code(reader, resultado: ResultadoImportacaoCidad
             if lon is not None and obj.longitude != lon:
                 obj.longitude = lon
                 mud = True
-            if obj.capital != capital:
+            if old_cap != capital:
+                if old_cap and not capital:
+                    resultado.capitais_corrigidas += 1
                 obj.capital = capital
                 mud = True
             _apply_city_updates(obj, mud)
@@ -518,11 +488,13 @@ def _importar_cidades_municipio_code(reader, resultado: ResultadoImportacaoCidad
         obj_ne = by_ne.get(key_ne)
         if obj_ne is not None:
             if obj_ne.codigo_ibge is not None and int(obj_ne.codigo_ibge) != cod_ibge:
+                resultado.conflitos += 1
                 resultado.erros.append(
                     (line_no, f'Conflito IBGE: "{nome}" já possui outro código.'),
                 )
                 continue
             mud = False
+            old_ne_cap = obj_ne.capital
             if obj_ne.codigo_ibge != cod_ibge:
                 obj_ne.codigo_ibge = cod_ibge
                 by_cod[cod_ibge] = obj_ne
@@ -533,7 +505,9 @@ def _importar_cidades_municipio_code(reader, resultado: ResultadoImportacaoCidad
             if lon is not None and obj_ne.longitude != lon:
                 obj_ne.longitude = lon
                 mud = True
-            if obj_ne.capital != capital:
+            if old_ne_cap != capital:
+                if old_ne_cap and not capital:
+                    resultado.capitais_corrigidas += 1
                 obj_ne.capital = capital
                 mud = True
             _apply_city_updates(obj_ne, mud)
@@ -572,6 +546,9 @@ def _importar_cidades_municipio_code(reader, resultado: ResultadoImportacaoCidad
             ["nome", "estado_id", "uf", "codigo_ibge", "capital", "latitude", "longitude"],
             batch_size=400,
         )
+
+    if not dry_run:
+        resultado.capitais_corrigidas += dedupe_capitais_por_uf()
 
     return resultado
 
@@ -639,17 +616,32 @@ def importar_municipios_csv(
             resultado.erros.append((line_no, f"Estado com código IBGE {cod_uf} não encontrado. Importe estados.csv antes."))
             continue
 
-        if cod_mun in existing_cod_cidade:
-            resultado.existentes += 1
-            continue
-
         sigla = estado.sigla
-        capital = _marcar_capital(sigla, nome)
+        capital = eh_capital(nome, sigla)
+        if capital:
+            resultado.capitais_marcadas += 1
+
+        if cod_mun in existing_cod_cidade:
+            cid = Cidade.objects.filter(codigo_ibge=cod_mun).first()
+            if cid is None:
+                resultado.existentes += 1
+                continue
+            old_cap = cid.capital
+            if old_cap != capital:
+                if old_cap and not capital:
+                    resultado.capitais_corrigidas += 1
+                if dry_run:
+                    resultado.atualizados += 1
+                else:
+                    cid.capital = capital
+                    cid.save(update_fields=["capital", "updated_at"])
+                    resultado.atualizados += 1
+            else:
+                resultado.existentes += 1
+            continue
 
         if dry_run:
             resultado.criados += 1
-            if capital:
-                resultado.capitais_marcadas += 1
             existing_cod_cidade.add(cod_mun)
             continue
 
@@ -662,8 +654,6 @@ def importar_municipios_csv(
                 capital=capital,
             )
         )
-        if capital:
-            resultado.capitais_marcadas += 1
         existing_cod_cidade.add(cod_mun)
 
     if not dry_run and to_create:
