@@ -86,6 +86,28 @@ class ImportadorCapitaisTests(TestCase):
         self.assertGreaterEqual(r.capitais_corrigidas, 1)
 
 
+class FixDuplicadosNormalizadosTests(TestCase):
+    def test_remove_ascii_duplicate_keeps_ibge(self):
+        sc = Estado.objects.create(nome="SANTA CATARINA", sigla="SC", codigo_ibge=42)
+        dup = Cidade.objects.create(nome="FLORIANOPOLIS", estado=sc, uf="SC", capital=False)
+        good = Cidade.objects.create(
+            nome="FLORIANÓPOLIS",
+            estado=sc,
+            uf="SC",
+            capital=True,
+            codigo_ibge=4450,
+        )
+        out = StringIO()
+        call_command(
+            "sanear_base_geografica",
+            "--fix-duplicados-normalizados",
+            stdout=out,
+        )
+        self.assertFalse(Cidade.objects.filter(pk=dup.pk).exists())
+        self.assertTrue(Cidade.objects.filter(pk=good.pk).exists())
+        self.assertEqual(Cidade.objects.filter(estado=sc).count(), 1)
+
+
 class DedupeCapitaisPorUfTests(TestCase):
     def test_duas_grafias_florianopolis_remantem_uma_capital(self):
         sc = Estado.objects.create(nome="SANTA CATARINA", sigla="SC", codigo_ibge=42)

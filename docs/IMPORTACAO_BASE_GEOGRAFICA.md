@@ -76,11 +76,20 @@ python manage.py sanear_base_geografica --dry-run --fix-duplicados
 python manage.py sanear_base_geografica --fix-duplicados
 ```
 
+Duplicados **mesmo estado** com nomes que só diferem por acento ou grafia leve (mesmo nome sem acento), quando aparecem como duas linhas no banco:
+
+```bash
+python manage.py sanear_base_geografica --dry-run --fix-duplicados-normalizados
+python manage.py sanear_base_geografica --fix-duplicados-normalizados
+```
+
+Mantém o registro mais completo (`codigo_ibge`, depois coordenadas), reponta vínculos de roteiros e remove o duplicado.
+
 ### Mais de uma “capital” por UF (mesmo município, grafias diferentes)
 
 Se o CSV ou dados antigos criarem duas linhas que equivalem à capital (ex.: `FLORIANOPOLIS` sem acento e `FLORIANÓPOLIS` com código), **ambas** podiam receber `capital=True` porque `eh_capital` compara nomes sem acento. A função `dedupe_capitais_por_uf()` (chamada ao final da importação `municipio_code` e após `sanear --fix-capitais`) mantém só um registro como capital por UF, preferindo o **nome canônico** do mapa oficial e, na falta dele, o registro com `codigo_ibge` preenchido.
 
-Isso **não remove** o registro extra com grafia errada: ele pode permanecer na base (ex.: total de municípios = linhas do CSV + 1). Para eliminar duplicata ortográfica, use `--fix-duplicados` apenas quando `nome + estado` for literalmente igual no banco; caso contrário trate como limpeza manual ou nova regra de mescla por nome normalizado (evolução futura).
+Para remover duplicata ortográfica (ex.: `FLORIANOPOLIS` vs `FLORIANÓPOLIS` no mesmo estado), use **`--fix-duplicados-normalizados`** (ver comandos acima).
 
 ## Duplicidade e consistência
 

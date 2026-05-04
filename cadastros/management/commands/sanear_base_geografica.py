@@ -1,9 +1,12 @@
+from collections import defaultdict
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Count
 
 from cadastros.geografia import dedupe_capitais_por_uf
 from cadastros.geografia import eh_capital
+from cadastros.geografia import nome_normalizado_duplicidade
 from cadastros.models import Cidade
 from roteiros.models import Roteiro
 from roteiros.models import TrechoRoteiro
@@ -37,20 +40,36 @@ class Command(BaseCommand):
             dest="fix_duplicados",
             help="Mesclar duplicados nome+estado (prioriza registro com codigo_ibge).",
         )
+        parser.add_argument(
+            "--fix-duplicados-normalizados",
+            action="store_true",
+            dest="fix_duplicados_normalizados",
+            help=(
+                "Mesclar duplicados no mesmo estado cujo nome normalizado (sem acento) coincide; "
+                "mantém o registro mais completo (codigo_ibge, coordenadas)."
+            ),
+        )
 
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
         fix_cap = options["fix_capitais"]
         fix_dup = options["fix_duplicados"]
+        fix_dup_norm = options["fix_duplicados_normalizados"]
 
-        if not fix_cap and not fix_dup:
-            self.stdout.write(self.style.WARNING("Informe --fix-capitais e/ou --fix-duplicados."))
+        if not fix_cap and not fix_dup and not fix_dup_norm:
+            self.stdout.write(
+                self.style.WARNING(
+                    "Informe --fix-capitais, --fix-duplicados e/ou --fix-duplicados-normalizados.",
+                ),
+            )
             return
 
         if fix_cap:
             self._fix_capitais(dry_run)
         if fix_dup:
             self._fix_duplicados(dry_run)
+        if fix_dup_norm:
+            self._fix_duplicados_normalizados(dry_run)
 
     def _fix_capitais(self, dry_run: bool) -> None:
         self.stdout.write(self.style.MIGRATE_HEADING("Corrigir capitais (mapa oficial)"))
@@ -120,4 +139,59 @@ class Command(BaseCommand):
                 removidos += 1
         self.stdout.write(f"  Grupos com duplicidade: {len(dup_rows)}")
         self.stdout.write(f"  Registros duplicados a remover: {removidos}" + (" (dry-run)" if dry_run else ""))
+        self.stdout.write("")
+
+    def _fix_duplicados_normalizados(self, dry_run: bool) -> None:
+        self.stdout.write(self.style.MIGRATE_HEADING("Mesclar duplicados (nome normalizado + estado)"))
+        by_group: dict[tuple[int, str], list[Cidade]] = defaultdict(list)
+        for c in Cidade.objects.select_related("estado").iterator():
+            key = (c.estado_id, nome_normalizado_duplicidade(c.nome))
+            by_group[key].append(c)
+
+        removidos = 0
+        grupos = 0
+        for (_estado_id, nome_norm), grupo in by_group.items():
+            if len(grupo) <= 1:
+                continue
+            grupos += 1
+            grupo.sort(
+                key=lambda x: (
+                    x.codigo_ibge is None,
+                    x.latitude is None,
+                    x.longitude is None,
+                    x.pk,
+                ),
+            )
+            keeper = grupo[0]
+            others = grupo[1:]
+            self.stdout.write(
+                f'  Grupo norm="{nome_norm}" estado_id={keeper.estado_id}: '
+                f"manter pk={keeper.pk} nome={keeper.nome!r} ibge={keeper.codigo_ibge}",
+            )
+            for o in others:
+                self.stdout.write(
+                    f"    remover pk={o.pk} nome={o.nome!r} ibge={o.codigo_ibge}",
+                )
+                if dry_run:
+                    removidos += 1
+                    continue
+                upd_fields: list[str] = []
+                if keeper.latitude is None and o.latitude is not None:
+                    keeper.latitude = o.latitude
+                    upd_fields.append("latitude")
+                if keeper.longitude is None and o.longitude is not None:
+                    keeper.longitude = o.longitude
+                    upd_fields.append("longitude")
+                if keeper.codigo_ibge is None and o.codigo_ibge is not None:
+                    keeper.codigo_ibge = o.codigo_ibge
+                    upd_fields.append("codigo_ibge")
+                with transaction.atomic():
+                    if upd_fields:
+                        upd_fields.append("updated_at")
+                        keeper.save(update_fields=upd_fields)
+                    _repoint_cidade_fks(o.pk, keeper.pk)
+                    o.delete()
+                removidos += 1
+        self.stdout.write(f"  Grupos com colisão normalizada: {grupos}")
+        self.stdout.write(f"  Registros removidos: {removidos}" + (" (dry-run)" if dry_run else ""))
         self.stdout.write("")

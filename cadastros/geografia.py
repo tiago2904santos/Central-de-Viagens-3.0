@@ -47,6 +47,15 @@ def _normalize_nome_municipio(text: str) -> str:
     return " ".join((text or "").strip().split()).upper()
 
 
+def nome_normalizado_duplicidade(nome: str) -> str:
+    """
+    Chave para agrupar municípios do mesmo estado que são o mesmo lugar com grafia diferente.
+
+    Usa maiúsculas, colapso de espaços e remoção de acentos (ex.: FLORIANOPOLIS ≡ FLORIANÓPOLIS).
+    """
+    return _strip_accents(_normalize_nome_municipio(nome))
+
+
 def capital_esperada_para_uf(sigla: str) -> str | None:
     return CAPITAIS_POR_UF.get((sigla or "").strip().upper()[:2])
 
