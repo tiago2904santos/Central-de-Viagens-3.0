@@ -289,9 +289,6 @@ class ConfiguracaoSistema(TimeStampedModel):
         related_name="+",
         verbose_name="Cidade sede padrão",
     )
-    prazo_justificativa_dias = models.PositiveIntegerField(default=10)
-    nome_orgao = models.CharField(max_length=200, blank=True)
-    sigla_orgao = models.CharField(max_length=20, blank=True)
     divisao = models.CharField(max_length=120, blank=True, default="")
     unidade = models.CharField(max_length=120, blank=True, default="")
     cep = models.CharField(max_length=9, blank=True, default="")
@@ -302,19 +299,6 @@ class ConfiguracaoSistema(TimeStampedModel):
     numero = models.CharField(max_length=20, blank=True, default="")
     telefone = models.CharField(max_length=20, blank=True, default="")
     email = models.EmailField(blank=True, default="")
-    sede = models.CharField(max_length=200, blank=True, default="")
-    nome_chefia = models.CharField(max_length=120, blank=True, default="")
-    cargo_chefia = models.CharField(max_length=120, blank=True, default="")
-    coordenador_adm_plano_trabalho = models.ForeignKey(
-        Servidor,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="+",
-        verbose_name="Coordenador administrativo padrão (Plano de Trabalho)",
-    )
-    pt_ultimo_numero = models.PositiveIntegerField(default=0)
-    pt_ano = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = "Configuração do sistema"
@@ -333,14 +317,16 @@ class ConfiguracaoSistema(TimeStampedModel):
 
     @classmethod
     def get_singleton(cls):
-        obj, _ = cls.objects.get_or_create(pk=1, defaults={"prazo_justificativa_dias": 10})
+        obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
     def save(self, *args, **kwargs):
-        self.nome_orgao = " ".join((self.nome_orgao or "").strip().split()).upper()
-        self.sigla_orgao = " ".join((self.sigla_orgao or "").strip().split()).upper()
         self.divisao = " ".join((self.divisao or "").strip().split()).upper()
         self.unidade = " ".join((self.unidade or "").strip().split()).upper()
+        self.logradouro = " ".join((self.logradouro or "").strip().split()).upper()
+        self.bairro = " ".join((self.bairro or "").strip().split()).upper()
+        self.cidade_endereco = " ".join((self.cidade_endereco or "").strip().split()).upper()
+        self.numero = " ".join((self.numero or "").strip().split()).upper()
         self.uf = (self.uf or "").strip().upper()[:2]
         self.cep = "".join(c for c in (self.cep or "") if c.isdigit())
         self.telefone = "".join(c for c in (self.telefone or "") if c.isdigit())
@@ -352,13 +338,11 @@ class AssinaturaConfiguracao(TimeStampedModel):
     TIPO_JUSTIFICATIVA = "JUSTIFICATIVA"
     TIPO_PLANO_TRABALHO = "PLANO_TRABALHO"
     TIPO_ORDEM_SERVICO = "ORDEM_SERVICO"
-    TIPO_TERMO_AUTORIZACAO = "TERMO_AUTORIZACAO"
     TIPO_CHOICES = [
         (TIPO_OFICIO, "Ofício"),
         (TIPO_JUSTIFICATIVA, "Justificativa"),
         (TIPO_PLANO_TRABALHO, "Plano de Trabalho"),
         (TIPO_ORDEM_SERVICO, "Ordem de Serviço"),
-        (TIPO_TERMO_AUTORIZACAO, "Termo de Autorização"),
     ]
 
     configuracao = models.ForeignKey(

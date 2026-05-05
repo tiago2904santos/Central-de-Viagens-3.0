@@ -737,7 +737,7 @@ def configuracao_sistema(request):
         if (form.cleaned_data.get("uf") or form.cleaned_data.get("cidade_endereco")) and not cidade_resolvida:
             messages.warning(
                 request,
-                "Base geográfica não importada ou cidade não encontrada; cidade sede padrão não foi definida.",
+                "Base geográfica não importada ou cidade do endereço não encontrada.",
             )
         messages.success(request, "Configurações salvas com sucesso.")
         return redirect("cadastros:configuracao")

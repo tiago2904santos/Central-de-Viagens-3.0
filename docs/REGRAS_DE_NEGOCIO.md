@@ -13,14 +13,15 @@ Entidades ativas do modulo:
 - `Combustivel`: nome unico e em maiusculo; opcionalmente um registro pode ser **combustivel padrao** (`is_padrao`), garantindo um unico padrao por vez.
 - `Servidor`: nome unico e em maiusculo; cargo obrigatorio no form; **CPF obrigatorio**, validado por digitos verificadores, armazenado so digitos; **RG opcional** ou marcacao **sem RG** (valor canonico interno, espelhando o legacy); **telefone opcional** (10 ou 11 digitos); unicidade condicional de CPF, RG (exceto “nao possui”) e telefone quando preenchidos; unidade opcional.
 - `Viatura`: placa unica (AAA1234 ou AAA1A23), modelo obrigatorio normalizado em maiusculo, combustivel FK e tipo (`CARACTERIZADA`/`DESCARACTERIZADA`); placa persistida sem hifen e em maiusculo; **motoristas** opcionais via relacionamento N:N com `Servidor` (sem entidade Motorista).
-- `ConfiguracaoSistema`: **singleton** institucional (orgao, cabecalho, endereco, contato, chefia, prazo de justificativa, cidade sede padrao, coordenador administrativo de PT e numeracao auxiliar de PT); usada para documentos futuros.
-- `AssinaturaConfiguracao`: assinante preferencial por **tipo de documento** (oficio, justificativa, plano de trabalho, ordem de servico, termo), apontando para `Servidor`, com ordem por tipo e `ativo` tecnico; nao e assinatura digital, apenas configuracao.
+- `ConfiguracaoSistema`: **singleton** institucional simplificado (divisao, unidade, endereco dos documentos, contato e cidade sede resolvida internamente por cidade/UF); usada para documentos futuros.
+- `AssinaturaConfiguracao`: assinante preferencial por **tipo de documento** (oficio, justificativa, plano de trabalho e ordem de servico), apontando para `Servidor`, com ordem por tipo e `ativo` tecnico; nao e assinatura digital, apenas configuracao.
 
 ## Regras obrigatorias
 
 - Nao existe cadastro de `Motorista`; motoristas de viatura sao apenas `Servidor` selecionados no relacionamento da viatura.
 - `Servidor` nao possui matricula.
 - `Viatura` nao possui marca nem unidade.
+- Configuracoes nao possuem nome orgao, sigla orgao, sede separada, chefia, prazos, numeracao, assinatura de termo nem segundo assinante de oficio.
 - Cadastros nao possuem ativo/inativo.
 - Exclusao e fisica.
 - Quando existir vinculo relevante, exclusao deve ser bloqueada com mensagem clara.

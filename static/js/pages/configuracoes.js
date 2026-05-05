@@ -58,7 +58,15 @@
   }
 
   function initConfiguracoesForm(form) {
-    ["#id_divisao", "#id_unidade", "#id_sigla_orgao", "#id_uf"].forEach((selector) => {
+    [
+      "#id_divisao",
+      "#id_unidade",
+      "#id_logradouro",
+      "#id_numero",
+      "#id_bairro",
+      "#id_cidade_endereco",
+      "#id_uf",
+    ].forEach((selector) => {
       const input = form.querySelector(selector);
       if (!input) return;
       input.addEventListener("input", () => {

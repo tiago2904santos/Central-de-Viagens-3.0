@@ -58,13 +58,13 @@ Templates usam apenas components globais. CSS/JS por pagina seguem proibidos.
 A tela de configuracao segue o mesmo padrao arquitetural dos cadastros:
 
 - view orquestra singleton, form, messages e redirect;
-- `cadastros.services.salvar_configuracao_sistema()` persiste configuracao, resolve cidade sede e grava assinaturas por `update_or_create`;
+- `cadastros.services.salvar_configuracao_sistema()` persiste apenas divisao, unidade, endereco dos documentos e contato, resolve cidade sede internamente e grava quatro assinaturas por `update_or_create`;
 - `cadastros.services.resolver_cidade_sede_por_endereco()` concentra a comparacao tolerante a acentos;
-- `cadastros.selectors.build_configuracao_context()` prepara um contexto reutilizavel para documentos;
+- `cadastros.selectors.build_configuracao_context()` prepara um contexto reutilizavel para documentos com sede derivada de cidade/UF;
 - API interna `/cadastros/api/cep/<cep>/` encapsula ViaCEP;
 - JS da pagina fica em `static/js/pages/configuracoes.js`, enquanto mascaras globais permanecem em `static/js/components/masks.js`.
 
-O app novo nao importa codigo do legacy em runtime; a tela apenas adapta as regras documentadas e auditadas do legacy.
+O app novo nao importa codigo do legacy em runtime. Configuracoes nao possui nome orgao, sigla orgao, sede separada, chefia, prazos, numeracao, assinatura de termo nem segundo assinante de oficio.
 
 ## Navegacao lateral
 

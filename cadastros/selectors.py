@@ -1,6 +1,7 @@
 ﻿from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
+from .models import AssinaturaConfiguracao
 from .models import Cargo
 from .models import ConfiguracaoSistema
 from .models import Cidade
@@ -123,7 +124,17 @@ def get_configuracao_sistema():
 def build_configuracao_context():
     configuracao = get_configuracao_sistema()
     assinaturas = {}
-    for assinatura in configuracao.assinaturas.select_related("servidor").order_by("tipo", "ordem"):
+    tipos_documentais = {
+        AssinaturaConfiguracao.TIPO_OFICIO,
+        AssinaturaConfiguracao.TIPO_JUSTIFICATIVA,
+        AssinaturaConfiguracao.TIPO_PLANO_TRABALHO,
+        AssinaturaConfiguracao.TIPO_ORDEM_SERVICO,
+    }
+    assinaturas_qs = configuracao.assinaturas.select_related("servidor").filter(
+        tipo__in=tipos_documentais,
+        ordem=1,
+    ).order_by("tipo", "ordem")
+    for assinatura in assinaturas_qs:
         if not assinatura.ativo or not assinatura.servidor_id:
             continue
         assinaturas.setdefault(assinatura.tipo, []).append(
@@ -134,14 +145,12 @@ def build_configuracao_context():
             },
         )
 
+    sede_documental = " / ".join(
+        value for value in [configuracao.cidade_endereco, configuracao.uf] if value
+    )
     return {
-        "nome_orgao": configuracao.nome_orgao,
-        "sigla_orgao": configuracao.sigla_orgao,
         "divisao": configuracao.divisao,
         "unidade": configuracao.unidade,
-        "sede": configuracao.sede,
-        "nome_chefia": configuracao.nome_chefia,
-        "cargo_chefia": configuracao.cargo_chefia,
         "cep": configuracao.cep,
         "cep_formatado": configuracao.cep_formatado,
         "logradouro": configuracao.logradouro,
@@ -149,13 +158,9 @@ def build_configuracao_context():
         "bairro": configuracao.bairro,
         "cidade_endereco": configuracao.cidade_endereco,
         "uf": configuracao.uf,
+        "sede_documental": sede_documental,
         "telefone": configuracao.telefone,
         "telefone_formatado": configuracao.telefone_formatado,
         "email": configuracao.email,
-        "cidade_sede_padrao": configuracao.cidade_sede_padrao,
-        "coordenador_adm_plano_trabalho": configuracao.coordenador_adm_plano_trabalho,
-        "prazo_justificativa_dias": configuracao.prazo_justificativa_dias,
-        "pt_ultimo_numero": configuracao.pt_ultimo_numero,
-        "pt_ano": configuracao.pt_ano,
         "assinaturas": assinaturas,
     }

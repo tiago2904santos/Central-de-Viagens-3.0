@@ -53,13 +53,14 @@ def salvar_configuracao_sistema(form):
 
 def salvar_assinaturas_configuracao(configuracao, cleaned_data):
     mapping = [
-        ("assinatura_oficio_1", AssinaturaConfiguracao.TIPO_OFICIO, 1),
-        ("assinatura_oficio_2", AssinaturaConfiguracao.TIPO_OFICIO, 2),
-        ("assinatura_justificativas", AssinaturaConfiguracao.TIPO_JUSTIFICATIVA, 1),
-        ("assinatura_planos_trabalho", AssinaturaConfiguracao.TIPO_PLANO_TRABALHO, 1),
-        ("assinatura_ordens_servico", AssinaturaConfiguracao.TIPO_ORDEM_SERVICO, 1),
-        ("assinatura_termo_autorizacao", AssinaturaConfiguracao.TIPO_TERMO_AUTORIZACAO, 1),
+        ("assinatura_oficio", AssinaturaConfiguracao.TIPO_OFICIO, 1),
+        ("assinatura_justificativa", AssinaturaConfiguracao.TIPO_JUSTIFICATIVA, 1),
+        ("assinatura_plano_trabalho", AssinaturaConfiguracao.TIPO_PLANO_TRABALHO, 1),
+        ("assinatura_ordem_servico", AssinaturaConfiguracao.TIPO_ORDEM_SERVICO, 1),
     ]
+    tipos_validos = [tipo for _, tipo, _ in mapping]
+    configuracao.assinaturas.exclude(tipo__in=tipos_validos, ordem=1).delete()
+
     for field_name, tipo, ordem in mapping:
         servidor = cleaned_data.get(field_name)
         AssinaturaConfiguracao.objects.update_or_create(
