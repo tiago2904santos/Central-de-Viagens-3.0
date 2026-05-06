@@ -1,3 +1,5 @@
+from decimal import Decimal, InvalidOperation
+
 from django.urls import reverse
 
 from core.presenters.actions import build_delete_action
@@ -16,22 +18,18 @@ def _label_cidade_uf(cidade, estado):
     return "—"
 
 
-def _periodo_resumo(roteiro):
-    pontos = [
-        p
-        for p in [
-            getattr(roteiro, "saida_dt", None),
-            getattr(roteiro, "chegada_dt", None),
-            getattr(roteiro, "retorno_saida_dt", None),
-            getattr(roteiro, "retorno_chegada_dt", None),
-        ]
-        if p
-    ]
-    if not pontos:
-        return "Período a definir"
-    inicio = min(pontos)
-    fim = max(pontos)
-    return f"{inicio:%d/%m/%Y %H:%M} até {fim:%d/%m/%Y %H:%M}"
+def _format_brl(valor):
+    if valor is None:
+        return None
+    try:
+        dec = valor if isinstance(valor, Decimal) else Decimal(str(valor))
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+    dec = dec.quantize(Decimal("0.01"))
+    texto = f"{dec:.2f}"
+    inteiro, frac = texto.split(".")
+    inteiro_fmt = f"{int(inteiro):,}".replace(",", ".")
+    return f"R$ {inteiro_fmt},{frac}"
 
 
 def _format_trecho_dt(dt):
@@ -53,17 +51,9 @@ def apresentar_roteiro_card(roteiro):
     else:
         titulo_rota = origem_txt if origem_txt != "—" else f"Roteiro #{roteiro.pk}"
 
-    if destinos_todos:
-        destino_txt = ", ".join(_label_cidade_uf(d.cidade, d.estado) for d in destinos_todos)
-    else:
-        destino_txt = "—"
-
     detail_url = reverse("roteiros:detalhe", args=[roteiro.pk])
     edit_url = reverse("roteiros:editar", args=[roteiro.pk])
     delete_url = reverse("roteiros:excluir", args=[roteiro.pk])
-    qtd = getattr(roteiro, "trechos_count", None)
-    if qtd is None:
-        qtd = roteiro.trechos.count()
 
     status = roteiro.get_status_display() if hasattr(roteiro, "get_status_display") else roteiro.status
     status_code = getattr(roteiro, "status", "") or ""
@@ -89,21 +79,20 @@ def apresentar_roteiro_card(roteiro):
             }
         )
 
-    diarias_txt = (roteiro.quantidade_diarias or "").strip() or "—"
+    diaria_moeda = _format_brl(getattr(roteiro, "valor_diarias", None))
+    diaria_resumo = (roteiro.quantidade_diarias or "").strip()
+    diaria_vazio = not diaria_moeda and not diaria_resumo
 
     return {
         "title": titulo_rota,
         "subtitle": "Roteiro reutilizável para documentos",
         "status": status,
+        "status_chip_label": (status or "").upper(),
         "status_chip_class": status_chip_class,
         "status_variant": status_variant,
-        "meta": [
-            {"label": "Sede", "value": origem_txt},
-            {"label": "Destinos", "value": destino_txt},
-            {"label": "Período", "value": _periodo_resumo(roteiro)},
-            {"label": "Trechos", "value": str(qtd)},
-            {"label": "Diárias", "value": diarias_txt},
-        ],
+        "diaria_moeda": diaria_moeda,
+        "diaria_resumo": diaria_resumo,
+        "diaria_vazio": diaria_vazio,
         "trechos": trechos_payload,
         "actions": [build_open_action(detail_url), build_edit_action(edit_url), build_delete_action(delete_url)],
     }

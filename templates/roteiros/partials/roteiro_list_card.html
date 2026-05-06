@@ -1,40 +1,42 @@
 <article class="roteiro-list-card roteiro-list-card--status-{{ card.status_variant|default:'outro' }}">
-  <header class="roteiro-list-card__header">
-    <div class="roteiro-list-card__heading">
-      {% if card.status %}
-        <span class="status-chip {{ card.status_chip_class|default:'status-chip--muted' }}">{{ card.status }}</span>
-      {% endif %}
+  <div class="roteiro-list-card__top">
+    <div class="roteiro-list-card__title-row">
       <h3 class="roteiro-list-card__title">{{ card.title|default:"Roteiro" }}</h3>
+      {% if card.status_chip_label %}
+        <span class="status-chip roteiro-list-card__status-chip {{ card.status_chip_class|default:'status-chip--muted' }}">{{ card.status_chip_label }}</span>
+      {% endif %}
+    </div>
+    <div class="roteiro-list-card__sub-block">
       {% if card.subtitle %}
         <p class="roteiro-list-card__subtitle">{{ card.subtitle }}</p>
       {% endif %}
+      <aside class="roteiro-list-card__diaria" aria-label="Valor da diária">
+        <span class="roteiro-list-card__diaria-heading">Valor da diária</span>
+        {% if card.diaria_vazio %}
+          <p class="roteiro-list-card__diaria-line roteiro-list-card__diaria-line--muted">Não calculado</p>
+        {% else %}
+          {% if card.diaria_moeda %}
+            <p class="roteiro-list-card__diaria-line roteiro-list-card__diaria-line--moeda">{{ card.diaria_moeda }}</p>
+          {% endif %}
+          {% if card.diaria_resumo %}
+            <p class="roteiro-list-card__diaria-line">{{ card.diaria_resumo }}</p>
+          {% endif %}
+        {% endif %}
+      </aside>
     </div>
-  </header>
-  {% if card.meta %}
-    <dl class="roteiro-list-card__meta">
-      {% for item in card.meta %}
-        <div class="roteiro-list-card__meta-item">
-          <dt>{{ item.label }}</dt>
-          <dd>{{ item.value }}</dd>
-        </div>
-      {% endfor %}
-    </dl>
-  {% endif %}
+  </div>
   {% if card.trechos %}
-    <details class="roteiro-list-card__trechos">
-      <summary class="roteiro-list-card__trechos-summary">Ver trechos</summary>
-      <ul class="roteiro-list-card__trechos-list">
-        {% for t in card.trechos %}
-          <li class="roteiro-list-card__trecho">
-            <div class="roteiro-list-card__trecho-rota">{{ t.rota }}</div>
-            <div class="roteiro-list-card__trecho-times">
-              <span><span class="roteiro-list-card__trecho-label">Saída:</span> {{ t.saida }}</span>
-              <span><span class="roteiro-list-card__trecho-label">Chegada:</span> {{ t.chegada }}</span>
-            </div>
-          </li>
-        {% endfor %}
-      </ul>
-    </details>
+    <ul class="roteiro-list-card__trechos-list">
+      {% for t in card.trechos %}
+        <li class="roteiro-list-card__trecho">
+          <div class="roteiro-list-card__trecho-rota">{{ t.rota }}</div>
+          <div class="roteiro-list-card__trecho-times">
+            <span><span class="roteiro-list-card__trecho-label">Saída:</span> {{ t.saida }}</span>
+            <span><span class="roteiro-list-card__trecho-label">Chegada:</span> {{ t.chegada }}</span>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
   {% endif %}
   <footer class="roteiro-list-card__actions document-actions">
     {% if card.actions %}
