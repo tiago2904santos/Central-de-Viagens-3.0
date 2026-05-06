@@ -145,14 +145,13 @@ html[data-theme="light-dark"] .roteiro-list-card {
 }
 
 /*
- * Corpo: uma única linha no grid — coluna de trechos + 2 painéis.
- * Os três itens esticam à mesma altura (align-items: stretch).
+ * Corpo: 2 colunas — trechos (~60%) | bloco “Diárias” com dois sub-blocos (valor | composição).
  */
 .roteiro-list-card__body {
   align-items: stretch;
   display: grid;
-  gap: 10px;
-  grid-template-columns: minmax(0, 1.45fr) minmax(220px, 0.75fr) minmax(220px, 0.75fr);
+  gap: 12px;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
   margin-top: var(--space-1);
 }
 
@@ -166,42 +165,78 @@ html[data-theme="light-dark"] .roteiro-list-card {
   min-width: 0;
 }
 
-.roteiro-list-card__diarias-total,
-.roteiro-list-card__diarias-composicao {
-  align-items: center;
+.roteiro-list-card__diarias-col {
   align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.roteiro-list-card__diarias-box {
   background: rgba(11, 58, 102, 0.055);
   border: 1px solid rgba(11, 58, 102, 0.11);
   border-radius: var(--radius-md);
   box-sizing: border-box;
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  justify-content: center;
+  gap: var(--space-2);
   min-height: 0;
-  padding: var(--space-3) var(--space-3);
-  text-align: center;
+  padding: var(--space-2) var(--space-3) var(--space-3);
 }
 
-.roteiro-list-card__diarias-total {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.roteiro-list-card__diarias-composicao {
-  grid-column: 3;
-  grid-row: 1;
-}
-
-html[data-theme="dark-dark"] .roteiro-list-card__diarias-total,
-html[data-theme="dark-dark"] .roteiro-list-card__diarias-composicao,
-html[data-theme="light-dark"] .roteiro-list-card__diarias-total,
-html[data-theme="light-dark"] .roteiro-list-card__diarias-composicao {
-  background: rgba(255, 255, 255, 0.06);
+html[data-theme="dark-dark"] .roteiro-list-card__diarias-box,
+html[data-theme="light-dark"] .roteiro-list-card__diarias-box {
+  background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-.roteiro-list-card__diarias-panel--vazio {
-  justify-content: center;
+.roteiro-list-card__diarias-box-title {
+  color: var(--theme-text-heading);
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.roteiro-list-card__diarias-box-panels {
+  align-items: stretch;
+  display: grid;
+  flex: 1 1 auto;
+  gap: var(--space-2);
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+  min-width: 0;
+}
+
+.roteiro-list-card__diarias-subblock {
+  align-items: flex-start;
+  background: rgba(11, 58, 102, 0.04);
+  border: 1px solid rgba(11, 58, 102, 0.1);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 0;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+html[data-theme="dark-dark"] .roteiro-list-card__diarias-subblock,
+html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.roteiro-list-card__diarias-subblock--vazio {
+  justify-content: flex-start;
 }
 
 .roteiro-list-card__diarias-panel-heading {
@@ -210,7 +245,7 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-composicao {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
   text-transform: uppercase;
 }
 
@@ -242,26 +277,27 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-composicao {
 }
 
 .roteiro-list-card__diarias-composicao-list {
-  align-items: center;
+  align-items: flex-start;
   color: var(--theme-text-heading);
   display: flex;
   filter: none;
   flex: 0 1 auto;
-  flex-wrap: wrap;
+  flex-direction: column;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  gap: var(--space-2) var(--space-3);
-  justify-content: center;
+  gap: 2px;
+  justify-content: flex-start;
   line-height: 1.4;
   list-style: none;
   margin: 0;
   padding: 0;
   text-shadow: none;
+  width: 100%;
   word-break: break-word;
 }
 
 .roteiro-list-card__diarias-composicao-list li {
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .roteiro-list-card__trecho {
@@ -311,7 +347,7 @@ html[data-theme="light-dark"] .roteiro-list-card__trecho {
 
 @media (max-width: 1100px) {
   .roteiro-list-card__body {
-    grid-template-columns: minmax(0, 1fr) minmax(180px, 220px) minmax(180px, 220px);
+    grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr);
   }
 }
 
@@ -333,21 +369,26 @@ html[data-theme="light-dark"] .roteiro-list-card__trecho {
     grid-row: unset;
   }
 
-  .roteiro-list-card__diarias-total,
-  .roteiro-list-card__diarias-composicao {
+  .roteiro-list-card__diarias-col {
     flex: 0 1 auto;
     grid-column: unset;
     grid-row: unset;
-    min-height: 0;
     width: 100%;
   }
 
-  .roteiro-list-card__diarias-composicao-list {
-    justify-content: flex-start;
+  .roteiro-list-card__diarias-box {
+    flex: 0 1 auto;
   }
 
-  .roteiro-list-card__diarias-composicao-list li {
-    white-space: normal;
+  .roteiro-list-card__diarias-box-panels {
+    grid-template-columns: 1fr 1fr;
+    min-height: 5.5rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .roteiro-list-card__diarias-box-panels {
+    grid-template-columns: 1fr;
   }
 }
 

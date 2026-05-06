@@ -22,29 +22,36 @@
         </div>
       {% endfor %}
     </div>
-    <aside class="roteiro-list-card__diarias-total{% if card.diaria_vazio %} roteiro-list-card__diarias-panel--vazio{% endif %}" aria-label="Valor da diária">
-      <span class="roteiro-list-card__diarias-panel-heading">Valor da diária</span>
-      {% if card.diaria_vazio %}
-        <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">Não calculado</p>
-      {% elif card.diaria_moeda %}
-        <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--moeda">{{ card.diaria_moeda }}</p>
-      {% else %}
-        <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">—</p>
-      {% endif %}
-    </aside>
-    <aside class="roteiro-list-card__diarias-composicao" aria-label="Composição das diárias">
-      <span class="roteiro-list-card__diarias-panel-heading">Composição</span>
-      {% if card.diaria_composicao_linhas %}
-        <ul class="roteiro-list-card__diarias-composicao-list">
-          {% for linha in card.diaria_composicao_linhas %}
-            <li>{{ linha }}</li>
-          {% endfor %}
-        </ul>
-      {% elif card.diaria_vazio %}
-        <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">—</p>
-      {% else %}
-        <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">—</p>
-      {% endif %}
+    <aside class="roteiro-list-card__diarias-col" aria-label="Diárias">
+      <div class="roteiro-list-card__diarias-box">
+        <span class="roteiro-list-card__diarias-box-title">Diárias</span>
+        <div class="roteiro-list-card__diarias-box-panels">
+          <div class="roteiro-list-card__diarias-subblock roteiro-list-card__diarias-subblock--valor{% if card.diaria_vazio %} roteiro-list-card__diarias-subblock--vazio{% endif %}">
+            <span class="roteiro-list-card__diarias-panel-heading">Valor da diária</span>
+            {% if card.diaria_vazio %}
+              <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">Não calculado</p>
+            {% elif card.diaria_moeda %}
+              <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--moeda">{{ card.diaria_moeda }}</p>
+            {% else %}
+              <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">—</p>
+            {% endif %}
+          </div>
+          <div class="roteiro-list-card__diarias-subblock roteiro-list-card__diarias-subblock--composicao">
+            <span class="roteiro-list-card__diarias-panel-heading">Composição</span>
+            {% if card.diaria_composicao_linhas %}
+              <ul class="roteiro-list-card__diarias-composicao-list">
+                {% for linha in card.diaria_composicao_linhas %}
+                  <li>{{ linha }}</li>
+                {% endfor %}
+              </ul>
+            {% elif card.diaria_vazio %}
+              <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">—</p>
+            {% else %}
+              <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">—</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
     </aside>
   </div>
   <footer class="roteiro-list-card__actions document-actions">
