@@ -205,7 +205,17 @@ def api_cidades_por_estado(request, estado_id):
 
 @require_http_methods(["POST"])
 def calcular_diarias(request):
-    _, _, validated, resultado = roteiro_logic._build_roteiro_diarias_from_request(request)
+    try:
+        _, _, validated, resultado = roteiro_logic._build_roteiro_diarias_from_request(request)
+    except ValueError as exc:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": str(exc) or "Revise os dados do roteiro antes de calcular as diárias.",
+                "errors": [str(exc)] if str(exc) else [],
+            },
+            status=400,
+        )
     if not validated["ok"]:
         return JsonResponse(
             {
