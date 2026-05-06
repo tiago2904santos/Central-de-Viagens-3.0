@@ -1,4 +1,5 @@
 from django.db.models import Count
+from django.db.models import Prefetch
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
@@ -9,9 +10,24 @@ from .models import RoteiroTrecho
 
 
 def listar_roteiros(q=None):
+    trechos_qs = (
+        RoteiroTrecho.objects.select_related(
+            "origem_estado",
+            "origem_cidade",
+            "origem_cidade__estado",
+            "destino_estado",
+            "destino_cidade",
+            "destino_cidade__estado",
+        )
+        .order_by("ordem", "pk")
+    )
     queryset = (
         Roteiro.objects.select_related("origem_estado", "origem_cidade", "origem_cidade__estado")
-        .prefetch_related("destinos__cidade", "destinos__estado")
+        .prefetch_related(
+            "destinos__cidade",
+            "destinos__estado",
+            Prefetch("trechos", queryset=trechos_qs),
+        )
         .annotate(trechos_count=Count("trechos", distinct=True))
         .order_by("-updated_at")
     )

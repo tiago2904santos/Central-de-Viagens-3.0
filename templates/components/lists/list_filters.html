@@ -1,3 +1,5 @@
-<div class="list-filters" aria-label="Filtros">
-  <span class="status-chip status-chip--muted">Filtros em breve</span>
-</div>
+{% if list_filter_slots %}
+  <div class="list-filters" aria-label="Filtros">
+    {{ list_filter_slots }}
+  </div>
+{% endif %}

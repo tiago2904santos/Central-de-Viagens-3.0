@@ -26,7 +26,7 @@
     </header>
 
     <div class="app-page__toolbar">
-      {% include "components/lists/list_toolbar.html" with search_placeholder=search_placeholder q=q action_label="" action_url="" only %}
+      {% include "components/lists/list_toolbar.html" with search_placeholder=search_placeholder q=q action_label="" action_url="" search_clear_url=search_clear_url|default:"" search_form_action=search_form_action|default:"" only %}
     </div>
 
     {% if flush_cards %}

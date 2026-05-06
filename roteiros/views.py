@@ -73,8 +73,10 @@ def index(request):
         "roteiros/index.html",
         {
             "page_title": "Roteiros",
-            "page_description": "Monte sede, destinos e trechos com o mesmo fluxo do sistema anterior.",
+            "page_description": "Sede, destinos, período, trechos e diárias prontos para reutilizar em documentos.",
             "create_url": reverse("roteiros:novo"),
+            "search_clear_url": reverse("roteiros:index"),
+            "empty_message": "Nenhum roteiro cadastrado ainda.",
             "cards": cards,
             "q": q,
         },

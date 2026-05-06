@@ -4,6 +4,7 @@ from core.presenters.actions import build_delete_action
 from core.presenters.actions import build_edit_action
 from core.presenters.actions import build_open_action
 from . import roteiro_logic
+from .models import Roteiro
 
 
 def _label_cidade_uf(cidade, estado):
@@ -30,19 +31,30 @@ def _periodo_resumo(roteiro):
         return "Período a definir"
     inicio = min(pontos)
     fim = max(pontos)
-    if inicio.date() == fim.date():
-        return f"{inicio:%d/%m/%Y %H:%M} – {fim:%H:%M}"
     return f"{inicio:%d/%m/%Y %H:%M} até {fim:%d/%m/%Y %H:%M}"
+
+
+def _format_trecho_dt(dt):
+    if not dt:
+        return "—"
+    return f"{dt:%d/%m/%Y %H:%M}"
 
 
 def apresentar_roteiro_card(roteiro):
     origem_txt = _label_cidade_uf(roteiro.origem_cidade, roteiro.origem_estado)
     destinos_todos = list(roteiro.destinos.all()) if roteiro.pk else []
-    destinos = destinos_todos[:3]
-    if destinos:
-        destino_txt = ", ".join(_label_cidade_uf(d.cidade, d.estado) for d in destinos)
-        if len(destinos_todos) > 3:
-            destino_txt += "…"
+    destino_principal_txt = "—"
+    if destinos_todos:
+        primeiro = destinos_todos[0]
+        destino_principal_txt = _label_cidade_uf(primeiro.cidade, primeiro.estado)
+
+    if destino_principal_txt != "—":
+        titulo_rota = f"{origem_txt} → {destino_principal_txt}"
+    else:
+        titulo_rota = origem_txt if origem_txt != "—" else f"Roteiro #{roteiro.pk}"
+
+    if destinos_todos:
+        destino_txt = ", ".join(_label_cidade_uf(d.cidade, d.estado) for d in destinos_todos)
     else:
         destino_txt = "—"
 
@@ -54,23 +66,45 @@ def apresentar_roteiro_card(roteiro):
         qtd = roteiro.trechos.count()
 
     status = roteiro.get_status_display() if hasattr(roteiro, "get_status_display") else roteiro.status
-    status_class = (
-        "status-chip--active" if roteiro.status == getattr(roteiro, "STATUS_FINALIZADO", "") else "status-chip--draft"
-    )
+    status_code = getattr(roteiro, "status", "") or ""
+    if status_code == Roteiro.STATUS_FINALIZADO:
+        status_chip_class = "status-chip--completed"
+        status_variant = "finalizado"
+    elif status_code == Roteiro.STATUS_RASCUNHO:
+        status_chip_class = "status-chip--draft"
+        status_variant = "rascunho"
+    else:
+        status_chip_class = "status-chip--muted"
+        status_variant = "outro"
+
+    trechos_payload = []
+    for trecho in roteiro.trechos.all():
+        orig_t = _label_cidade_uf(trecho.origem_cidade, trecho.origem_estado)
+        dest_t = _label_cidade_uf(trecho.destino_cidade, trecho.destino_estado)
+        trechos_payload.append(
+            {
+                "rota": f"{orig_t} → {dest_t}",
+                "saida": _format_trecho_dt(trecho.saida_dt),
+                "chegada": _format_trecho_dt(trecho.chegada_dt),
+            }
+        )
+
+    diarias_txt = (roteiro.quantidade_diarias or "").strip() or "—"
 
     return {
-        "title": origem_txt + " → " + destino_txt if destino_txt != "—" else (origem_txt or "Roteiro"),
-        "subtitle": "Roteiro reutilizável (fluxo legacy)",
+        "title": titulo_rota,
+        "subtitle": "Roteiro reutilizável para documentos",
         "status": status,
-        "status_class": status_class,
+        "status_chip_class": status_chip_class,
+        "status_variant": status_variant,
         "meta": [
             {"label": "Sede", "value": origem_txt},
             {"label": "Destinos", "value": destino_txt},
             {"label": "Período", "value": _periodo_resumo(roteiro)},
             {"label": "Trechos", "value": str(qtd)},
-            {"label": "Diárias", "value": roteiro.quantidade_diarias or "—"},
+            {"label": "Diárias", "value": diarias_txt},
         ],
-        "body": (roteiro.observacoes or "").strip() or "Roteiro cadastrado para reutilização nos documentos.",
+        "trechos": trechos_payload,
         "actions": [build_open_action(detail_url), build_edit_action(edit_url), build_delete_action(delete_url)],
     }
 

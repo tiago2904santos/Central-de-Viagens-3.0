@@ -1,7 +1,46 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Roteiros{% endblock %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/roteiros-list.css' %}">
+{% endblock %}
+
 {% block content %}
-  {% include "components/lists/list_page.html" with title=page_title description=page_description eyebrow="Roteiros" brand_mark="RT" search_placeholder="Buscar por nome, origem ou destino" cards=cards empty_message="Nenhum roteiro cadastrado ainda." action_label="Novo roteiro" action_url=create_url q=q flush_cards=True only %}
+  <div class="app-page app-page--roteiros-list">
+    <div class="app-page__shell">
+      <header class="app-page-hero app-page-hero--hybrid app-page-hero--roteiros-list" aria-labelledby="roteiros-list-title">
+        <div class="app-page-hero__stage">
+          <div class="app-page-hero__roteiros-head">
+            <div class="app-page-hero__roteiros-text">
+              <span class="app-page-hero__eyebrow">Roteiros</span>
+              <h1 class="app-page-hero__title" id="roteiros-list-title">{{ page_title }}</h1>
+              {% if page_description %}
+                <p class="app-page-hero__roteiros-sub">{{ page_description }}</p>
+              {% endif %}
+            </div>
+            {% if create_url %}
+              <div class="app-page-hero__roteiros-actions">
+                {% include "components/buttons/action_button.html" with href=create_url label="Novo roteiro" variant="primary" only %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="app-page-hero__ribbon" aria-hidden="true"></div>
+      </header>
+
+      <div class="app-page__toolbar">
+        {% include "components/lists/list_toolbar.html" with search_placeholder="Buscar por sede, destino ou observações" q=q search_clear_url=search_clear_url action_label="" action_url="" only %}
+      </div>
+
+      <div class="list-grid list-grid--roteiros">
+        {% for card in cards %}
+          {% include "roteiros/partials/roteiro_list_card.html" with card=card only %}
+        {% empty %}
+          {% include "components/lists/list_empty.html" with message=empty_message action_label="Novo roteiro" action_url=create_url only %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 {% endblock %}
