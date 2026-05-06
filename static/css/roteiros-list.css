@@ -72,8 +72,8 @@
   box-shadow: var(--theme-shadow-block);
   box-sizing: border-box;
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   transition:
     border-color var(--transition-base),
     box-shadow var(--transition-base);
@@ -107,7 +107,7 @@ html[data-theme="light-dark"] .roteiro-list-card {
 
 .roteiro-list-card__top {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .roteiro-list-card__title-row {
@@ -136,21 +136,24 @@ html[data-theme="light-dark"] .roteiro-list-card {
   margin-bottom: 0;
 }
 
-.roteiro-list-card__sub-block {
-  align-items: flex-start;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3) var(--space-4);
-  justify-content: space-between;
-}
-
 .roteiro-list-card__subtitle {
   color: var(--theme-text-muted);
-  flex: 1 1 160px;
   font-size: 12px;
   line-height: 1.35;
   margin: 0;
-  max-width: 42ch;
+  max-width: 56ch;
+}
+
+.roteiro-list-card__content {
+  align-items: start;
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+}
+
+.roteiro-list-card__trechos-col {
+  display: grid;
+  gap: var(--space-2);
   min-width: 0;
 }
 
@@ -158,9 +161,9 @@ html[data-theme="light-dark"] .roteiro-list-card {
   background: rgba(11, 58, 102, 0.06);
   border: 1px solid rgba(11, 58, 102, 0.12);
   border-radius: var(--radius-md);
-  flex: 0 1 auto;
-  max-width: min(100%, 20rem);
+  box-sizing: border-box;
   padding: var(--space-2) var(--space-3);
+  width: 100%;
 }
 
 html[data-theme="dark-dark"] .roteiro-list-card__diaria,
@@ -207,6 +210,7 @@ html[data-theme="light-dark"] .roteiro-list-card__diaria {
   gap: var(--space-2);
   list-style: none;
   margin: 0;
+  min-width: 0;
   padding: 0;
 }
 
@@ -214,7 +218,9 @@ html[data-theme="light-dark"] .roteiro-list-card__diaria {
   background: rgba(11, 58, 102, 0.04);
   border: 1px solid rgba(11, 58, 102, 0.1);
   border-radius: var(--radius-md);
+  box-sizing: border-box;
   padding: var(--space-2) var(--space-3);
+  width: 100%;
 }
 
 html[data-theme="dark-dark"] .roteiro-list-card__trecho,
@@ -249,7 +255,7 @@ html[data-theme="light-dark"] .roteiro-list-card__trecho {
   border-top: 1px solid var(--theme-border-card);
   justify-content: flex-end;
   margin: 0;
-  padding-top: var(--space-3);
+  padding-top: var(--space-2);
 }
 
 .roteiro-list-card__actions .btn {
@@ -258,12 +264,18 @@ html[data-theme="light-dark"] .roteiro-list-card__trecho {
   text-align: center;
 }
 
-@media (max-width: 640px) {
-  .roteiro-list-card__diaria {
-    max-width: 100%;
-    width: 100%;
+@media (max-width: 900px) {
+  .roteiro-list-card__content {
+    gap: var(--space-2);
+    grid-template-columns: 1fr;
   }
 
+  .roteiro-list-card__diaria {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
   .roteiro-list-card__actions {
     justify-content: stretch;
   }
