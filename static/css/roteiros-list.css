@@ -144,100 +144,128 @@ html[data-theme="light-dark"] .roteiro-list-card {
   max-width: 56ch;
 }
 
-.roteiro-list-card__content {
+/* Corpo: 3 colunas — trechos | diárias total | diárias composição */
+.roteiro-list-card__body {
   align-items: stretch;
   display: grid;
-  gap: var(--space-3);
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  gap: var(--space-2);
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px) minmax(180px, 240px);
 }
 
-.roteiro-list-card__trechos-col {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-height: 100%;
+.roteiro-list-card__trecho-slot {
   min-width: 0;
 }
 
-.roteiro-list-card__diaria {
-  align-self: stretch;
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(1) {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(2) {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(3) {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(4) {
+  grid-column: 1;
+  grid-row: 4;
+}
+
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(5) {
+  grid-column: 1;
+  grid-row: 5;
+}
+
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(6) {
+  grid-column: 1;
+  grid-row: 6;
+}
+
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(7) {
+  grid-column: 1;
+  grid-row: 7;
+}
+
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(8) {
+  grid-column: 1;
+  grid-row: 8;
+}
+
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(9) {
+  grid-column: 1;
+  grid-row: 9;
+}
+
+.roteiro-list-card__body > .roteiro-list-card__trecho-slot:nth-child(10) {
+  grid-column: 1;
+  grid-row: 10;
+}
+
+/* 0–2 trechos: total e composição lado a lado, altura da pilha de trechos */
+.roteiro-list-card--diarias-pair .roteiro-list-card__diarias-total {
+  grid-column: 2;
+  grid-row: 1 / -1;
+}
+
+.roteiro-list-card--diarias-pair .roteiro-list-card__diarias-composicao {
+  grid-column: 3;
+  grid-row: 1 / -1;
+}
+
+/* 3+ trechos: total nas duas colunas acima; composição nas duas abaixo */
+.roteiro-list-card--diarias-stack .roteiro-list-card__diarias-total {
+  grid-column: 2 / 4;
+  grid-row: 1 / span 2;
+}
+
+.roteiro-list-card--diarias-stack .roteiro-list-card__diarias-composicao {
+  grid-column: 2 / 4;
+  grid-row: 3 / -1;
+  justify-content: flex-start;
+  min-height: 4.75rem;
+}
+
+.roteiro-list-card__diarias-total,
+.roteiro-list-card__diarias-composicao {
   background: rgba(11, 58, 102, 0.06);
   border: 1px solid rgba(11, 58, 102, 0.12);
   border-radius: var(--radius-md);
   box-sizing: border-box;
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
-  min-height: 100%;
-  padding: var(--space-3) var(--space-4);
-  width: 100%;
+  min-height: 0;
+  padding: var(--space-3);
 }
 
-html[data-theme="dark-dark"] .roteiro-list-card__diaria,
-html[data-theme="light-dark"] .roteiro-list-card__diaria {
+html[data-theme="dark-dark"] .roteiro-list-card__diarias-total,
+html[data-theme="dark-dark"] .roteiro-list-card__diarias-composicao,
+html[data-theme="light-dark"] .roteiro-list-card__diarias-total,
+html[data-theme="light-dark"] .roteiro-list-card__diarias-composicao {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-.roteiro-list-card__diaria--vazio .roteiro-list-card__diaria-inner {
+.roteiro-list-card__diarias-panel--vazio {
   justify-content: center;
-  min-height: 6rem;
 }
 
-.roteiro-list-card__diaria-inner {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-height: 100%;
-}
-
-.roteiro-list-card__diaria-block--valor {
-  flex-shrink: 0;
-}
-
-.roteiro-list-card__diaria-block--composicao {
-  flex-shrink: 0;
-}
-
-.roteiro-list-card__diaria-spacer {
-  flex: 1 1 auto;
-  min-height: var(--space-2);
-}
-
-.roteiro-list-card__diaria-heading {
+.roteiro-list-card__diarias-panel-heading {
   color: var(--theme-text-subtle);
   display: block;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.08em;
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-2);
   text-transform: uppercase;
 }
 
-.roteiro-list-card__diaria-subheading {
-  color: var(--theme-text-subtle);
-  display: block;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  margin-bottom: var(--space-1);
-  text-transform: uppercase;
-}
-
-.roteiro-list-card__diaria-composicao-list {
-  color: var(--theme-text-heading);
-  display: grid;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  gap: 2px;
-  line-height: 1.4;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  word-break: break-word;
-}
-
-.roteiro-list-card__diaria-line {
+.roteiro-list-card__diarias-panel-line {
   color: var(--theme-text-heading);
   font-size: var(--font-size-xs);
   font-weight: 600;
@@ -246,29 +274,28 @@ html[data-theme="light-dark"] .roteiro-list-card__diaria {
   word-break: break-word;
 }
 
-.roteiro-list-card__diaria-line + .roteiro-list-card__diaria-line {
-  margin-top: 2px;
-}
-
-.roteiro-list-card__diaria-line--moeda {
+.roteiro-list-card__diarias-panel-line--moeda {
   font-size: var(--font-size-sm);
   font-weight: 700;
 }
 
-.roteiro-list-card__diaria-line--muted {
+.roteiro-list-card__diarias-panel-line--muted {
   color: var(--theme-text-muted);
   font-weight: 500;
-  margin: 0;
-  text-align: center;
 }
 
-.roteiro-list-card__trechos-list {
+.roteiro-list-card__diarias-composicao-list {
+  color: var(--theme-text-heading);
   display: grid;
-  gap: var(--space-2);
+  flex: 1 1 auto;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  gap: var(--space-1);
+  line-height: 1.4;
   list-style: none;
   margin: 0;
-  min-width: 0;
   padding: 0;
+  word-break: break-word;
 }
 
 .roteiro-list-card__trecho {
@@ -322,31 +349,30 @@ html[data-theme="light-dark"] .roteiro-list-card__trecho {
 }
 
 @media (max-width: 900px) {
-  .roteiro-list-card__content {
+  .roteiro-list-card__body {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-2);
-    grid-template-columns: 1fr;
   }
 
-  .roteiro-list-card__trechos-col {
+  .roteiro-list-card__body > .roteiro-list-card__trecho-slot {
+    grid-column: unset !important;
+    grid-row: unset !important;
+  }
+
+  .roteiro-list-card--diarias-pair .roteiro-list-card__diarias-total,
+  .roteiro-list-card--diarias-pair .roteiro-list-card__diarias-composicao,
+  .roteiro-list-card--diarias-stack .roteiro-list-card__diarias-total,
+  .roteiro-list-card--diarias-stack .roteiro-list-card__diarias-composicao {
+    flex: 0 1 auto;
+    grid-column: unset;
+    grid-row: unset;
     min-height: 0;
+    width: 100%;
   }
 
-  .roteiro-list-card__diaria {
-    max-width: 100%;
+  .roteiro-list-card--diarias-stack .roteiro-list-card__diarias-composicao {
     min-height: 0;
-  }
-
-  .roteiro-list-card__diaria-inner {
-    min-height: 0;
-  }
-
-  .roteiro-list-card__diaria-spacer {
-    display: none;
-  }
-
-  .roteiro-list-card__diaria--vazio .roteiro-list-card__diaria-inner {
-    min-height: 0;
-    padding-block: var(--space-2);
   }
 }
 

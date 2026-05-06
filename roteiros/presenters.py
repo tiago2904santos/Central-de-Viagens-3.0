@@ -96,7 +96,6 @@ def apresentar_roteiro_card(roteiro):
     diaria_composicao_linhas = _composicao_diarias_linhas(diaria_resumo)
     diaria_vazio = not diaria_moeda and not diaria_composicao_linhas
     trechos_count = len(trechos_payload)
-    trechos_tier = min(trechos_count, 4)
 
     return {
         "title": titulo_rota,
@@ -111,7 +110,6 @@ def apresentar_roteiro_card(roteiro):
         "diaria_vazio": diaria_vazio,
         "trechos": trechos_payload,
         "trechos_count": trechos_count,
-        "trechos_tier": trechos_tier,
         "actions": [build_open_action(detail_url), build_edit_action(edit_url), build_delete_action(delete_url)],
     }
 
