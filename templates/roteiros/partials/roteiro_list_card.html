@@ -11,8 +11,8 @@
     {% endif %}
   </div>
   <div class="roteiro-list-card__body">
-    {% for t in card.trechos %}
-      <div class="roteiro-list-card__trecho-slot">
+    <div class="roteiro-list-card__trechos-col">
+      {% for t in card.trechos %}
         <div class="roteiro-list-card__trecho">
           <div class="roteiro-list-card__trecho-rota">{{ t.rota }}</div>
           <div class="roteiro-list-card__trecho-times">
@@ -20,8 +20,8 @@
             <span><span class="roteiro-list-card__trecho-label">Chegada:</span> {{ t.chegada }}</span>
           </div>
         </div>
-      </div>
-    {% endfor %}
+      {% endfor %}
+    </div>
     <aside class="roteiro-list-card__diarias-total{% if card.diaria_vazio %} roteiro-list-card__diarias-panel--vazio{% endif %}" aria-label="Valor da diária">
       <span class="roteiro-list-card__diarias-panel-heading">Valor da diária</span>
       {% if card.diaria_vazio %}
