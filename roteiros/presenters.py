@@ -38,6 +38,18 @@ def _format_trecho_dt(dt):
     return f"{dt:%d/%m/%Y %H:%M}"
 
 
+def _composicao_diarias_linhas(texto):
+    raw = (texto or "").strip()
+    if not raw:
+        return []
+    linhas = []
+    for chunk in raw.replace("\n", "+").split("+"):
+        item = chunk.strip()
+        if item:
+            linhas.append(item)
+    return linhas
+
+
 def apresentar_roteiro_card(roteiro):
     origem_txt = _label_cidade_uf(roteiro.origem_cidade, roteiro.origem_estado)
     destinos_todos = list(roteiro.destinos.all()) if roteiro.pk else []
@@ -81,7 +93,10 @@ def apresentar_roteiro_card(roteiro):
 
     diaria_moeda = _format_brl(getattr(roteiro, "valor_diarias", None))
     diaria_resumo = (roteiro.quantidade_diarias or "").strip()
-    diaria_vazio = not diaria_moeda and not diaria_resumo
+    diaria_composicao_linhas = _composicao_diarias_linhas(diaria_resumo)
+    diaria_vazio = not diaria_moeda and not diaria_composicao_linhas
+    trechos_count = len(trechos_payload)
+    trechos_tier = min(trechos_count, 4)
 
     return {
         "title": titulo_rota,
@@ -92,8 +107,11 @@ def apresentar_roteiro_card(roteiro):
         "status_variant": status_variant,
         "diaria_moeda": diaria_moeda,
         "diaria_resumo": diaria_resumo,
+        "diaria_composicao_linhas": diaria_composicao_linhas,
         "diaria_vazio": diaria_vazio,
         "trechos": trechos_payload,
+        "trechos_count": trechos_count,
+        "trechos_tier": trechos_tier,
         "actions": [build_open_action(detail_url), build_edit_action(edit_url), build_delete_action(delete_url)],
     }
 

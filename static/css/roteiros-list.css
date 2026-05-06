@@ -145,24 +145,30 @@ html[data-theme="light-dark"] .roteiro-list-card {
 }
 
 .roteiro-list-card__content {
-  align-items: start;
+  align-items: stretch;
   display: grid;
   gap: var(--space-3);
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
 }
 
 .roteiro-list-card__trechos-col {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
+  min-height: 100%;
   min-width: 0;
 }
 
 .roteiro-list-card__diaria {
+  align-self: stretch;
   background: rgba(11, 58, 102, 0.06);
   border: 1px solid rgba(11, 58, 102, 0.12);
   border-radius: var(--radius-md);
   box-sizing: border-box;
-  padding: var(--space-2) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: var(--space-3) var(--space-4);
   width: 100%;
 }
 
@@ -170,6 +176,32 @@ html[data-theme="dark-dark"] .roteiro-list-card__diaria,
 html[data-theme="light-dark"] .roteiro-list-card__diaria {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.1);
+}
+
+.roteiro-list-card__diaria--vazio .roteiro-list-card__diaria-inner {
+  justify-content: center;
+  min-height: 6rem;
+}
+
+.roteiro-list-card__diaria-inner {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 100%;
+}
+
+.roteiro-list-card__diaria-block--valor {
+  flex-shrink: 0;
+}
+
+.roteiro-list-card__diaria-block--composicao {
+  flex-shrink: 0;
+}
+
+.roteiro-list-card__diaria-spacer {
+  flex: 1 1 auto;
+  min-height: var(--space-2);
 }
 
 .roteiro-list-card__diaria-heading {
@@ -180,6 +212,29 @@ html[data-theme="light-dark"] .roteiro-list-card__diaria {
   letter-spacing: 0.08em;
   margin-bottom: var(--space-1);
   text-transform: uppercase;
+}
+
+.roteiro-list-card__diaria-subheading {
+  color: var(--theme-text-subtle);
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-1);
+  text-transform: uppercase;
+}
+
+.roteiro-list-card__diaria-composicao-list {
+  color: var(--theme-text-heading);
+  display: grid;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  gap: 2px;
+  line-height: 1.4;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  word-break: break-word;
 }
 
 .roteiro-list-card__diaria-line {
@@ -203,6 +258,8 @@ html[data-theme="light-dark"] .roteiro-list-card__diaria {
 .roteiro-list-card__diaria-line--muted {
   color: var(--theme-text-muted);
   font-weight: 500;
+  margin: 0;
+  text-align: center;
 }
 
 .roteiro-list-card__trechos-list {
@@ -270,8 +327,26 @@ html[data-theme="light-dark"] .roteiro-list-card__trecho {
     grid-template-columns: 1fr;
   }
 
+  .roteiro-list-card__trechos-col {
+    min-height: 0;
+  }
+
   .roteiro-list-card__diaria {
     max-width: 100%;
+    min-height: 0;
+  }
+
+  .roteiro-list-card__diaria-inner {
+    min-height: 0;
+  }
+
+  .roteiro-list-card__diaria-spacer {
+    display: none;
+  }
+
+  .roteiro-list-card__diaria--vazio .roteiro-list-card__diaria-inner {
+    min-height: 0;
+    padding-block: var(--space-2);
   }
 }
 
