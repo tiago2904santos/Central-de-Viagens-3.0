@@ -1,4 +1,4 @@
-<article class="roteiro-list-card roteiro-list-card--status-{{ card.status_variant|default:'outro' }} roteiro-list-card--trechos-{{ card.trechos_count|default:0 }} roteiro-list-card--diarias-{% if card.trechos_count >= 3 %}stack{% else %}pair{% endif %}">
+<article class="roteiro-list-card roteiro-list-card--status-{{ card.status_variant|default:'outro' }} roteiro-list-card--trechos-{{ card.trechos_count|default:0 }}">
   <div class="roteiro-list-card__top">
     <div class="roteiro-list-card__title-row">
       <h3 class="roteiro-list-card__title">{{ card.title|default:"Roteiro" }}</h3>
@@ -22,8 +22,8 @@
         </div>
       </div>
     {% endfor %}
-    <aside class="roteiro-list-card__diarias-total{% if card.diaria_vazio %} roteiro-list-card__diarias-panel--vazio{% endif %}" aria-label="Valor total das diárias">
-      <span class="roteiro-list-card__diarias-panel-heading">Valor total</span>
+    <aside class="roteiro-list-card__diarias-total{% if card.diaria_vazio %} roteiro-list-card__diarias-panel--vazio{% endif %}" aria-label="Valor da diária">
+      <span class="roteiro-list-card__diarias-panel-heading">Valor da diária</span>
       {% if card.diaria_vazio %}
         <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">Não calculado</p>
       {% elif card.diaria_moeda %}
@@ -33,7 +33,7 @@
       {% endif %}
     </aside>
     <aside class="roteiro-list-card__diarias-composicao" aria-label="Composição das diárias">
-      <span class="roteiro-list-card__diarias-panel-heading">Composição das diárias</span>
+      <span class="roteiro-list-card__diarias-panel-heading">Composição</span>
       {% if card.diaria_composicao_linhas %}
         <ul class="roteiro-list-card__diarias-composicao-list">
           {% for linha in card.diaria_composicao_linhas %}
