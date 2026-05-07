@@ -7,6 +7,9 @@ def index(request):
         "oficios/index.html",
         {
             "page_title": "Oficios",
-            "page_description": "Documento principal do sistema, com vinculos opcionais a roteiro e evento.",
+            "page_description": (
+                "Módulo em preparação arquitetural: Ofícios irão consumir o núcleo documental "
+                "e reutilizar blocos do domínio de roteiros sem prometer CRUD completo nesta etapa."
+            ),
         },
     )

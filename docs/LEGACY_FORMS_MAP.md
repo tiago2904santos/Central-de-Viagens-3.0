@@ -8,6 +8,12 @@
 
 **Mixin comum:** `FormComErroInvalidMixin` (em `cadastros/forms.py` e `eventos/forms.py`, cópias quase idênticas) remove classes especiais de `<select>`, atributos de searchable-select, e marca `is-invalid` nos widgets após `full_clean`.
 
+## Leitura obrigatória para fase atual
+
+- **Já absorvido no 3.0:** padrão de forms em `cadastros` e contratos de validação no núcleo documental.
+- **Referência funcional (a migrar por etapas):** forms de `oficios`, `termos`, `justificativas`, `planos_trabalho` e `ordens_servico`, com decomposição orientada a services.
+- **Não migrar como está:** forms órfãos/legados sem uso ativo e forms monolíticos que concentram validação + orquestração de fluxo.
+
 ---
 
 ## Convenções de status

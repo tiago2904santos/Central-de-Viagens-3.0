@@ -7,6 +7,12 @@
 
 **Observação:** Não existem `legacy/eventos/document_renderer.py`, `document_generator.py`, `downloads.py`, `placeholders.py` nem `assinatura*` soltos na raiz de `eventos/` — a geração documental concentra-se em `eventos/services/documentos/` e módulos relacionados. `eventos/termos.py` complementa contexto de termos às views.
 
+## Leitura obrigatória para fase atual
+
+- **Já absorvido no 3.0:** núcleo base em `documentos/services/` (tipos, registry, validação, filenames e contratos de renderer).
+- **Referência funcional (a migrar por etapas):** context builders por domínio, regras de negócio de ofícios/termos/justificativas/PT/OS e integrações de assinatura.
+- **Não migrar como está:** dependência direta de conversor de ambiente sem contrato explícito, acoplamento de contexto legado a models antigos e serviços com responsabilidade excessiva em um único arquivo.
+
 ---
 
 ## Documentos DOCX/PDF

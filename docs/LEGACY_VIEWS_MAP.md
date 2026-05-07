@@ -2,6 +2,12 @@
 
 Guia para migração funcional **sem inventar comportamento**: toda regra descrita aqui existe no código legacy em `legacy/central de viagens 2.0/`. O projeto novo **não importa** legacy em runtime.
 
+## Leitura obrigatória para fase atual
+
+- **Já absorvido no 3.0:** base arquitetural de `cadastros`, módulo `roteiros` e núcleo técnico inicial de `documentos`.
+- **Referência funcional (a migrar por etapas):** fluxos de `oficios`, `termos`, `justificativas`, `planos_trabalho`, `ordens_servico`, `prestacoes_contas`, `diario_bordo` e partes de `assinaturas`.
+- **Não migrar como está:** monólitos de view com múltiplas responsabilidades, duplicações (ex.: duas defs de `termos_global`) e acoplamento direto de regra de negócio em camada HTTP.
+
 ---
 
 ## Arquivos de views analisados (legacy)
