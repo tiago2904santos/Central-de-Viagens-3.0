@@ -4,6 +4,80 @@
   gap: var(--space-4);
 }
 
+.app-page--roteiros-list .app-page__toolbar {
+  background: var(--route-card-bg);
+  border: 1px solid var(--route-card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--theme-shadow-block);
+}
+
+.app-page--roteiros-list .app-page__toolbar input,
+.app-page--roteiros-list .app-page__toolbar select {
+  background: var(--route-field-bg);
+  border-color: var(--route-field-border);
+  color: var(--route-field-text);
+}
+
+.app-page--roteiros-list .app-page__toolbar input::placeholder {
+  color: var(--route-field-placeholder);
+}
+
+.app-page--roteiros-list .btn-primary,
+.app-page--roteiros-list .btn-secondary,
+.app-page--roteiros-list .btn-danger,
+.app-page--roteiros-list .btn-muted {
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-xs);
+  font-weight: 800;
+}
+
+.app-page--roteiros-list .btn-primary {
+  background: var(--route-button-primary-bg);
+  border-color: var(--route-button-primary-border);
+  color: var(--route-button-primary-text);
+}
+
+.app-page--roteiros-list .btn-primary:hover,
+.app-page--roteiros-list .btn-primary:focus-visible {
+  background: var(--route-button-primary-hover-bg);
+  border-color: var(--route-button-primary-hover-border);
+  color: var(--route-button-primary-text);
+}
+
+.app-page--roteiros-list .btn-secondary,
+.app-page--roteiros-list .btn-muted {
+  background: var(--route-button-secondary-bg);
+  border-color: var(--route-button-secondary-border);
+  color: var(--route-button-secondary-text);
+}
+
+.app-page--roteiros-list .btn-secondary:hover,
+.app-page--roteiros-list .btn-secondary:focus-visible,
+.app-page--roteiros-list .btn-muted:hover,
+.app-page--roteiros-list .btn-muted:focus-visible {
+  background: var(--route-button-secondary-hover-bg);
+  border-color: var(--route-button-secondary-hover-border);
+  color: var(--route-button-secondary-text);
+}
+
+.app-page--roteiros-list .btn-danger {
+  background: var(--route-button-danger-bg);
+  border-color: var(--route-button-danger-border);
+  color: var(--route-button-danger-text);
+}
+
+.app-page--roteiros-list .btn-danger:hover,
+.app-page--roteiros-list .btn-danger:focus-visible {
+  background: var(--route-button-danger-hover-bg);
+  border-color: var(--route-button-danger-hover-border);
+  color: var(--route-button-danger-text);
+}
+
+.app-page--roteiros-list .btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--route-focus-ring), var(--shadow-xs);
+  outline: none;
+}
+
 .app-page-hero--roteiros-list {
   box-shadow: var(--theme-shadow-block);
 }
@@ -122,6 +196,26 @@
   flex-shrink: 0;
   letter-spacing: 0.04em;
   margin-bottom: 0;
+  min-height: 26px;
+  padding: 5px 12px;
+}
+
+.roteiro-list-card__status-chip.status-chip--draft {
+  background: var(--route-status-draft-bg);
+  border-color: var(--route-status-draft-border);
+  color: var(--route-status-draft-text);
+}
+
+.roteiro-list-card__status-chip.status-chip--completed {
+  background: var(--route-status-final-bg);
+  border-color: var(--route-status-final-border);
+  color: var(--route-status-final-text);
+}
+
+.roteiro-list-card__status-chip.status-chip--muted {
+  background: var(--route-status-muted-bg);
+  border-color: var(--route-status-muted-border);
+  color: var(--route-status-muted-text);
 }
 
 .roteiro-list-card__subtitle {
@@ -495,7 +589,7 @@
 }
 
 .roteiro-list-card__actions {
-  border-top: 1px solid var(--theme-border-card);
+  border-top: 1px solid var(--route-card-inner-border);
   justify-content: flex-end;
   margin: 0;
   padding-top: var(--space-1);

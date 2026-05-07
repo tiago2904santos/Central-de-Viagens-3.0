@@ -158,13 +158,44 @@
 
   --route-card-bg: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
   --route-card-border: #dbe7f2;
-  --route-card-inner-bg: #f1f6fb;
+  --route-card-inner-bg: #ffffff;
   --route-card-inner-border: #d8e4ef;
   --route-form-shell-bg: #ffffff;
   --route-section-bg: #ffffff;
   --route-section-soft-bg: #f7fbff;
   --route-section-border: #dbe7f2;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
+  --route-field-bg: #ffffff;
+  --route-field-border: #bfd2e4;
+  --route-field-text: #132238;
+  --route-field-placeholder: #71839a;
+  --route-field-disabled-bg: #edf3f9;
+  --route-field-disabled-text: #63788f;
+  --route-button-primary-bg: linear-gradient(180deg, #0e5088 0%, #0b3a66 100%);
+  --route-button-primary-border: #0b3a66;
+  --route-button-primary-text: #ffffff;
+  --route-button-primary-hover-bg: linear-gradient(180deg, #124f83 0%, #082f55 100%);
+  --route-button-primary-hover-border: #082f55;
+  --route-button-secondary-bg: #f7fbff;
+  --route-button-secondary-border: #b9cbe0;
+  --route-button-secondary-text: #0b3a66;
+  --route-button-secondary-hover-bg: #eaf3fc;
+  --route-button-secondary-hover-border: #8fb1d0;
+  --route-button-danger-bg: linear-gradient(180deg, #c93636 0%, #a92222 100%);
+  --route-button-danger-border: #8f1f18;
+  --route-button-danger-text: #ffffff;
+  --route-button-danger-hover-bg: linear-gradient(180deg, #b92f2f 0%, #941b1b 100%);
+  --route-button-danger-hover-border: #7f1712;
+  --route-status-draft-bg: #fff1cf;
+  --route-status-draft-border: #d8a21b;
+  --route-status-draft-text: #704800;
+  --route-status-final-bg: #e5f6ef;
+  --route-status-final-border: #16805a;
+  --route-status-final-text: #07583c;
+  --route-status-muted-bg: #edf3f9;
+  --route-status-muted-border: #b9cbe0;
+  --route-status-muted-text: #334c63;
+  --route-focus-ring: rgba(21, 91, 154, 0.18);
 }
 
 /* ========== 1 dark-light — fundo escuro + div clara ========== */
@@ -255,7 +286,7 @@ html[data-theme="dark-light"] {
 
   --route-card-bg: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
   --route-card-border: #dbe7f2;
-  --route-card-inner-bg: #f1f6fb;
+  --route-card-inner-bg: #ffffff;
   --route-card-inner-border: #d8e4ef;
   --route-form-shell-bg: #ffffff;
   --route-section-bg: #ffffff;
@@ -383,6 +414,37 @@ html[data-theme="dark-dark"] {
   --route-section-soft-bg: #24384e;
   --route-section-border: #344960;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
+  --route-field-bg: #22364b;
+  --route-field-border: #405872;
+  --route-field-text: #f2f7ff;
+  --route-field-placeholder: #b7c7dc;
+  --route-field-disabled-bg: #172638;
+  --route-field-disabled-text: #9fb1c8;
+  --route-button-primary-bg: linear-gradient(180deg, #1a659d 0%, #0b3a66 100%);
+  --route-button-primary-border: #2b6d9d;
+  --route-button-primary-text: #ffffff;
+  --route-button-primary-hover-bg: linear-gradient(180deg, #2474ae 0%, #0d4678 100%);
+  --route-button-primary-hover-border: #3c83b8;
+  --route-button-secondary-bg: #22364b;
+  --route-button-secondary-border: #53708c;
+  --route-button-secondary-text: #f0f6ff;
+  --route-button-secondary-hover-bg: #2a4058;
+  --route-button-secondary-hover-border: #6d8dad;
+  --route-button-danger-bg: linear-gradient(180deg, #c93636 0%, #962222 100%);
+  --route-button-danger-border: #d75a52;
+  --route-button-danger-text: #ffffff;
+  --route-button-danger-hover-bg: linear-gradient(180deg, #d94848 0%, #a92b2b 100%);
+  --route-button-danger-hover-border: #ef766f;
+  --route-status-draft-bg: #3a2f1a;
+  --route-status-draft-border: #d8a21b;
+  --route-status-draft-text: #ffe3a3;
+  --route-status-final-bg: #14382e;
+  --route-status-final-border: #39a87e;
+  --route-status-final-text: #bcf4dc;
+  --route-status-muted-bg: #24384e;
+  --route-status-muted-border: #53708c;
+  --route-status-muted-text: #d2deeb;
+  --route-focus-ring: rgba(116, 170, 224, 0.24);
 }
 
 /* ========== 3 light-light — fundo claro + div clara ========== */
@@ -471,7 +533,7 @@ html[data-theme="light-light"] {
 
   --route-card-bg: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
   --route-card-border: #dbe7f2;
-  --route-card-inner-bg: #f1f6fb;
+  --route-card-inner-bg: #ffffff;
   --route-card-inner-border: #d8e4ef;
   --route-form-shell-bg: #ffffff;
   --route-section-bg: #ffffff;
@@ -597,6 +659,37 @@ html[data-theme="light-dark"] {
   --route-section-soft-bg: #24384e;
   --route-section-border: #344960;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
+  --route-field-bg: #22364b;
+  --route-field-border: #405872;
+  --route-field-text: #f2f7ff;
+  --route-field-placeholder: #b7c7dc;
+  --route-field-disabled-bg: #172638;
+  --route-field-disabled-text: #9fb1c8;
+  --route-button-primary-bg: linear-gradient(180deg, #1a659d 0%, #0b3a66 100%);
+  --route-button-primary-border: #2b6d9d;
+  --route-button-primary-text: #ffffff;
+  --route-button-primary-hover-bg: linear-gradient(180deg, #2474ae 0%, #0d4678 100%);
+  --route-button-primary-hover-border: #3c83b8;
+  --route-button-secondary-bg: #22364b;
+  --route-button-secondary-border: #53708c;
+  --route-button-secondary-text: #f0f6ff;
+  --route-button-secondary-hover-bg: #2a4058;
+  --route-button-secondary-hover-border: #6d8dad;
+  --route-button-danger-bg: linear-gradient(180deg, #c93636 0%, #962222 100%);
+  --route-button-danger-border: #d75a52;
+  --route-button-danger-text: #ffffff;
+  --route-button-danger-hover-bg: linear-gradient(180deg, #d94848 0%, #a92b2b 100%);
+  --route-button-danger-hover-border: #ef766f;
+  --route-status-draft-bg: #3a2f1a;
+  --route-status-draft-border: #d8a21b;
+  --route-status-draft-text: #ffe3a3;
+  --route-status-final-bg: #14382e;
+  --route-status-final-border: #39a87e;
+  --route-status-final-text: #bcf4dc;
+  --route-status-muted-bg: #24384e;
+  --route-status-muted-border: #53708c;
+  --route-status-muted-text: #d2deeb;
+  --route-focus-ring: rgba(116, 170, 224, 0.24);
 }
 
 /* Seletor 4 temas — visual fixo sidebar (cores só --sidebar-*) */
