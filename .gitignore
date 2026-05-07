@@ -26,3 +26,4 @@ dados/estados.csv
 __pycache__/
 *.pyc
 db.sqlite3
+legacy/
