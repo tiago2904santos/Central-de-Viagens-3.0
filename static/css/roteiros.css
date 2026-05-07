@@ -1061,7 +1061,7 @@
 }
 
 .roteiro-editor--avulso .roteiro-editor__drag-handle {
-  background: var(--route-card-inner-bg);
+  background: var(--color-card);
   border: 1px solid var(--route-card-inner-border);
   border-radius: var(--radius-md);
   color: var(--color-heading);
@@ -2070,7 +2070,7 @@ html[data-theme="dark-dark"] .roteiro-editor--avulso .oficio-step3-route-item,
 html[data-theme="light-dark"] .roteiro-editor--avulso .oficio-step3-route-item,
 html[data-theme="dark-dark"] .roteiro-editor--avulso .roteiro-editor__drag-handle,
 html[data-theme="light-dark"] .roteiro-editor--avulso .roteiro-editor__drag-handle {
-  background: var(--route-card-inner-bg);
+  background: var(--color-card);
 }
 
 html[data-theme="dark-dark"] .roteiro-editor--avulso .roteiro-editor__section-title,
