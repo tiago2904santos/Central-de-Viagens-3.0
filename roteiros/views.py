@@ -31,7 +31,6 @@ from .services.routing.route_preview_service import calculate_route_preview
 
 logger = logging.getLogger(__name__)
 from .models import Roteiro
-from . import roteiro_logic
 from .presenters import (
     apresentar_contexto_formulario_roteiro_avulso,
     apresentar_pagina_detalhe_roteiro,
@@ -45,6 +44,7 @@ from .selectors import (
 )
 from .services import (
     atualizar_roteiro,
+    calcular_diarias_roteiro_request,
     carregar_opcoes_rotas_avulsas_salvas,
     criar_roteiro,
     excluir_roteiro,
@@ -221,7 +221,7 @@ def api_cidades_por_estado(request, estado_id):
 @require_http_methods(["POST"])
 def calcular_diarias(request):
     try:
-        _, _, validated, resultado = roteiro_logic._build_roteiro_diarias_from_request(request)
+        _, _, validated, resultado = calcular_diarias_roteiro_request(request)
     except ValueError as exc:
         return JsonResponse(
             {

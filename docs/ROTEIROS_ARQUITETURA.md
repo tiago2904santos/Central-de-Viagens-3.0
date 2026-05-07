@@ -4,7 +4,7 @@
 
 Itens conhecidos que **nao bloqueiam** o uso de Roteiros como referencia arquitetural, enquanto o fluxo em producao estiver correto:
 
-1. **`roteiro_logic`** ainda concentra montagem pesada de contexto do wizard (diarias, JSON, URLs de API). Evolucao: fatiar sem mudar contrato de template quando houver necessidade.
+1. **`roteiro_logic`** agora opera como fachada de compatibilidade, delegando parse/estado/contexto/defaults para serviços menores em `roteiros/services/`.
 2. **Components de dominio** ainda sao wrappers finos sobre `roteiros/partials/roteiro/` em varios blocos. Evolucao: extrair HTML compartilhado quando o **segundo** modulo (ex.: Oficios) reutilizar o mesmo bloco.
 3. **`roteiros.css`** mantem o visual denso e especifico do wizard avulso (`roteiro-editor__*`, temas). **`domain.css`** cobre tokens semanticos; migracao em massa de regras nao e obrigatoria antes do aceite.
 4. **Extração adicional** so deve ser feita quando Oficios/Planos/OS forem efetivamente reutilizar os mesmos blocos — evitar refatoracao antecipada.
@@ -26,7 +26,7 @@ Outras observacoes de validacao:
 
 ### 2. O que ainda ficou acoplado
 
-- `roteiro_logic._build_roteiro_form_context` ainda concentra montagem pesada de contexto (diarias, JSON, URLs de API). O presenter apenas delega; evolucao natural e fatiar essa funcao em partes menores sem mudar contrato do template.
+- `roteiro_logic._build_roteiro_form_context` permanece ponto de entrada legado, mas com helpers extraídos para módulos menores (`editor_parser`, `editor_context`, `editor_state`, `map_defaults`).
 - Partials em `roteiros/partials/roteiro/` continuam com HTML e classes `roteiro-editor__*` especificas do fluxo legacy; os components de dominio sao wrappers finos ate outro modulo precisar dos mesmos blocos.
 
 ### 3. O que ainda e especifico demais de Roteiros
@@ -83,7 +83,16 @@ Outras observacoes de validacao:
 | `preparar_estado_editor_roteiro_para_get` | Destinos/trechos/step3 para GET. |
 | `normalizar_destinos_e_trechos_apos_erro_post` | Reexibe form apos POST invalido. |
 | `validar_submissao_editor_roteiro` | Parse step3 + validacao + diarias (sem HTTP). |
+| `calcular_diarias_roteiro_request` | Façade para cálculo de diárias mantendo contrato do endpoint. |
+| `montar_contexto_editor_roteiro` | Entrada oficial para contexto do editor sem regra em presenter/view. |
 | `criar_roteiro` / `atualizar_roteiro` / `excluir_roteiro` | Transacao e persistencia. |
+
+## Serviços internos do editor
+
+- `roteiros/services/editor_parser.py`: parse de `step3`/POST/state (inteiros, datas/horas, decimal, destinos, trechos).
+- `roteiros/services/editor_context.py`: helpers puros de localidade e equivalência (`cidade/UF`) usados no wizard.
+- `roteiros/services/editor_state.py`: estado de bate-volta e dedupe de retorno final sem dependência de view.
+- `roteiros/services/map_defaults.py`: defaults de mapa e resolução de UF por CEP para bootstrap do editor.
 
 **Nota:** `calcular_diarias` na view continua chamando `roteiro_logic._build_roteiro_diarias_from_request(request)` porque o endpoint exige o objeto request completo do Django; documentado para nao confundir com “view gorda” de regra nova — e o mesmo caminho ja usado antes.
 

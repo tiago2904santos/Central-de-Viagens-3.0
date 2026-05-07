@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from roteiros import roteiro_logic
 from roteiros.models import Roteiro
+from roteiros.services.editor_state import dedupe_step3_loop_retorno_final
 from roteiros.services.roteiro_editor import _apply_saved_map_route_from_post
 
 
@@ -88,6 +89,7 @@ def _apply_step3_snapshot(roteiro, snapshots):
     state = (snapshots or {}).get("roteiro_state")
     if not isinstance(state, dict):
         return
+    state = dedupe_step3_loop_retorno_final(state)
     validated = roteiro_logic._validate_step3_state(state)
     if not validated.get("ok"):
         return

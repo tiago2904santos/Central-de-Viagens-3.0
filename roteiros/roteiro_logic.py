@@ -23,95 +23,40 @@ from roteiros.services.diarias import (
     locations_equivalent,
 )
 from roteiros.models import Roteiro, RoteiroDestino, RoteiroTrecho
+from roteiros.services.editor_context import (
+    step3_get_local_parts,
+    step3_local_label,
+    step3_locations_equivalent,
+)
+from roteiros.services.editor_parser import (
+    extract_step3_posted_trechos,
+    parse_destinos_post,
+    parse_int,
+    parse_step3_date,
+    parse_step3_decimal,
+    parse_step3_time,
+    step3_date_input,
+    step3_decimal_input,
+    step3_time_input,
+)
+from roteiros.services.editor_state import (
+    build_step3_bate_volta_diario_state,
+    dedupe_step3_loop_retorno_final,
+    step3_trecho_duplica_retorno,
+)
+from roteiros.services.map_defaults import build_roteiro_map_defaults
 from roteiros.services.valor_extenso import valor_por_extenso_ptbr
 
 ROTEIRO_MODO_EVENTO = "EVENTO_EXISTENTE"
 ROTEIRO_MODO_PROPRIO = "ROTEIRO_PROPRIO"
-MAPA_UF_FALLBACK = "PR"
-MAPA_UF_CENTERS = {
-    "AC": {"lat": -8.77, "lng": -70.55, "zoom": 6},
-    "AL": {"lat": -9.62, "lng": -36.82, "zoom": 7},
-    "AP": {"lat": 1.41, "lng": -51.77, "zoom": 6},
-    "AM": {"lat": -3.47, "lng": -65.1, "zoom": 5},
-    "BA": {"lat": -12.96, "lng": -41.7, "zoom": 6},
-    "CE": {"lat": -5.2, "lng": -39.53, "zoom": 7},
-    "DF": {"lat": -15.8, "lng": -47.86, "zoom": 9},
-    "ES": {"lat": -19.57, "lng": -40.65, "zoom": 7},
-    "GO": {"lat": -15.98, "lng": -49.86, "zoom": 6},
-    "MA": {"lat": -4.96, "lng": -45.27, "zoom": 6},
-    "MT": {"lat": -12.64, "lng": -55.42, "zoom": 6},
-    "MS": {"lat": -20.51, "lng": -54.54, "zoom": 6},
-    "MG": {"lat": -18.51, "lng": -44.55, "zoom": 6},
-    "PA": {"lat": -3.79, "lng": -52.48, "zoom": 6},
-    "PB": {"lat": -7.12, "lng": -36.72, "zoom": 7},
-    "PR": {"lat": -24.89, "lng": -51.55, "zoom": 7},
-    "PE": {"lat": -8.38, "lng": -37.86, "zoom": 7},
-    "PI": {"lat": -7.72, "lng": -42.73, "zoom": 6},
-    "RJ": {"lat": -22.25, "lng": -42.66, "zoom": 8},
-    "RN": {"lat": -5.81, "lng": -36.59, "zoom": 7},
-    "RS": {"lat": -30.17, "lng": -53.5, "zoom": 6},
-    "RO": {"lat": -10.83, "lng": -63.34, "zoom": 6},
-    "RR": {"lat": 1.99, "lng": -61.33, "zoom": 6},
-    "SC": {"lat": -27.33, "lng": -50.44, "zoom": 7},
-    "SP": {"lat": -22.19, "lng": -48.79, "zoom": 7},
-    "SE": {"lat": -10.57, "lng": -37.45, "zoom": 8},
-    "TO": {"lat": -10.25, "lng": -48.25, "zoom": 6},
-}
-MAPA_CEP_RANGES = (
-    ("AC", ((69900000, 69999999),)),
-    ("AL", ((57000000, 57999999),)),
-    ("AP", ((68900000, 68999999),)),
-    ("AM", ((69000000, 69299999), (69400000, 69899999))),
-    ("BA", ((40000000, 48999999),)),
-    ("CE", ((60000000, 63999999),)),
-    ("DF", ((70000000, 72799999), (73000000, 73699999))),
-    ("ES", ((29000000, 29999999),)),
-    ("GO", ((72800000, 72999999), (73700000, 76799999))),
-    ("MA", ((65000000, 65999999),)),
-    ("MT", ((78000000, 78899999),)),
-    ("MS", ((79000000, 79999999),)),
-    ("MG", ((30000000, 39999999),)),
-    ("PA", ((66000000, 68899999),)),
-    ("PB", ((58000000, 58999999),)),
-    ("PR", ((80000000, 87999999),)),
-    ("PE", ((50000000, 56999999),)),
-    ("PI", ((64000000, 64999999),)),
-    ("RJ", ((20000000, 28999999),)),
-    ("RN", ((59000000, 59999999),)),
-    ("RS", ((90000000, 99999999),)),
-    ("RO", ((76800000, 76999999),)),
-    ("RR", ((69300000, 69399999),)),
-    ("SC", ((88000000, 89999999),)),
-    ("SP", ((1000000, 19999999),)),
-    ("SE", ((49000000, 49999999),)),
-    ("TO", ((77000000, 77999999),)),
-)
-
-
 def _resolve_uf_from_cep(cep: str) -> str:
-    cep_digits = "".join(c for c in (cep or "") if c.isdigit())
-    if len(cep_digits) != 8:
-        return MAPA_UF_FALLBACK
-    cep_int = int(cep_digits)
-    for uf, ranges in MAPA_CEP_RANGES:
-        for start, end in ranges:
-            if start <= cep_int <= end:
-                return uf
-    return MAPA_UF_FALLBACK
+    from roteiros.services.map_defaults import resolve_uf_from_cep
+
+    return resolve_uf_from_cep(cep)
 
 
 def _build_roteiro_map_defaults():
-    try:
-        config = ConfiguracaoSistema.get_singleton()
-        uf = _resolve_uf_from_cep(config.cep)
-    except Exception:
-        uf = MAPA_UF_FALLBACK
-    center = MAPA_UF_CENTERS.get(uf) or MAPA_UF_CENTERS[MAPA_UF_FALLBACK]
-    return {
-        "uf": uf,
-        "default_center": [center["lat"], center["lng"]],
-        "default_zoom": center["zoom"],
-    }
+    return build_roteiro_map_defaults()
 
 
 def _parse_destinos_post(request):
@@ -119,26 +64,7 @@ def _parse_destinos_post(request):
     Extrai da request.POST lista de (estado_id, cidade_id).
     Retorna (lista de tuplas (estado_id, cidade_id), erro ou None).
     """
-    prefix_estado = 'destino_estado_'
-    prefix_cidade = 'destino_cidade_'
-    indices = set()
-    for key in request.POST:
-        if key.startswith(prefix_estado):
-            try:
-                idx = int(key[len(prefix_estado):])
-                indices.add(idx)
-            except ValueError:
-                pass
-    destinos = []
-    for idx in sorted(indices):
-        estado_id = request.POST.get(f'{prefix_estado}{idx}')
-        cidade_id = request.POST.get(f'{prefix_cidade}{idx}')
-        if estado_id and cidade_id:
-            try:
-                destinos.append((int(estado_id), int(cidade_id)))
-            except (TypeError, ValueError):
-                pass
-    return destinos
+    return parse_destinos_post(request.POST)
 
 
 def _get_parana_estado():
@@ -308,97 +234,46 @@ def _atualizar_datas_roteiro_apos_salvar_trechos(roteiro):
         roteiro.save(update_fields=update_fields)
 
 def _parse_int(value):
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
+    return parse_int(value)
 
 
 def _parse_step3_date(value):
-    raw = str(value or '').strip()
-    if not raw:
-        return None
-    try:
-        return datetime.strptime(raw, '%Y-%m-%d').date()
-    except ValueError:
-        return None
+    return parse_step3_date(value)
 
 
 def _parse_step3_time(value):
-    raw = str(value or '').strip()
-    if not raw:
-        return None
-    try:
-        return datetime.strptime(raw[:5], '%H:%M').time().replace(second=0, microsecond=0)
-    except ValueError:
-        return None
+    return parse_step3_time(value)
 
 
 def _step3_date_input(value):
-    if not value:
-        return ''
-    if isinstance(value, str):
-        return value
-    return value.strftime('%Y-%m-%d')
+    return step3_date_input(value)
 
 
 def _step3_time_input(value):
-    if not value:
-        return ''
-    if isinstance(value, str):
-        return value[:5]
-    return value.strftime('%H:%M')
+    return step3_time_input(value)
 
 
 def _step3_local_label(cidade=None, estado=None):
-    cidade_nome = ''
-    estado_sigla = ''
-    if cidade:
-        cidade_nome = cidade.nome
-        estado_sigla = getattr(getattr(cidade, 'estado', None), 'sigla', '') or estado_sigla
-    if estado and not estado_sigla:
-        estado_sigla = estado.sigla
-    if cidade_nome and estado_sigla:
-        return f'{cidade_nome}/{estado_sigla}'
-    return cidade_nome or estado_sigla or ''
+    return step3_local_label(cidade=cidade, estado=estado)
 
 
 def _step3_get_local_parts(cidade=None, estado=None, nome=''):
-    cidade_nome = ''
-    estado_sigla = ''
-    if cidade:
-        cidade_nome = getattr(cidade, 'nome', '') or ''
-        estado_sigla = getattr(getattr(cidade, 'estado', None), 'sigla', '') or ''
-    if estado and not estado_sigla:
-        estado_sigla = getattr(estado, 'sigla', '') or ''
-    if nome and not cidade_nome:
-        raw_nome = str(nome or '').strip()
-        if '/' in raw_nome:
-            cidade_nome, _, maybe_uf = raw_nome.partition('/')
-            if not estado_sigla:
-                estado_sigla = maybe_uf.strip().upper()
-        else:
-            cidade_nome = raw_nome
-    return cidade_nome.strip(), estado_sigla.strip().upper()
+    return step3_get_local_parts(cidade=cidade, estado=estado, nome=nome)
 
 
 def _step3_locations_equivalent(*, cidade_a=None, estado_a=None, nome_a='', cidade_b=None, estado_b=None, nome_b=''):
-    cidade_a_nome, estado_a_sigla = _step3_get_local_parts(cidade=cidade_a, estado=estado_a, nome=nome_a)
-    cidade_b_nome, estado_b_sigla = _step3_get_local_parts(cidade=cidade_b, estado=estado_b, nome=nome_b)
-    return locations_equivalent(cidade_a_nome, estado_a_sigla, cidade_b_nome, estado_b_sigla)
+    return step3_locations_equivalent(
+        cidade_a=cidade_a,
+        estado_a=estado_a,
+        nome_a=nome_a,
+        cidade_b=cidade_b,
+        estado_b=estado_b,
+        nome_b=nome_b,
+    )
 
 
 def _build_step3_bate_volta_diario_state(data=None):
-    payload = data or {}
-    return {
-        'ativo': bool(payload.get('ativo')),
-        'data_inicio': payload.get('data_inicio') or '',
-        'data_fim': payload.get('data_fim') or '',
-        'ida_saida_hora': payload.get('ida_saida_hora') or '',
-        'ida_tempo_min': payload.get('ida_tempo_min') or '',
-        'volta_saida_hora': payload.get('volta_saida_hora') or '',
-        'volta_tempo_min': payload.get('volta_tempo_min') or '',
-    }
+    return build_step3_bate_volta_diario_state(data)
 
 
 def _step3_values_equal(a, b):
@@ -414,63 +289,20 @@ def _step3_minutes_equal(a, b):
 
 
 def _step3_trecho_duplica_retorno(trecho, retorno, sede_estado_id=None, sede_cidade_id=None):
-    if not trecho or not retorno:
-        return False
-    if sede_estado_id and _parse_int(trecho.get('destino_estado_id')) != _parse_int(sede_estado_id):
-        return False
-    if sede_cidade_id and _parse_int(trecho.get('destino_cidade_id')) != _parse_int(sede_cidade_id):
-        return False
-    checks = (
-        ('saida_data', 'saida_data'),
-        ('saida_hora', 'saida_hora'),
-        ('chegada_data', 'chegada_data'),
-        ('chegada_hora', 'chegada_hora'),
+    return step3_trecho_duplica_retorno(
+        trecho=trecho,
+        retorno=retorno,
+        sede_estado_id=sede_estado_id,
+        sede_cidade_id=sede_cidade_id,
     )
-    if any(not _step3_values_equal(trecho.get(a), retorno.get(b)) for a, b in checks):
-        return False
-    if not _step3_minutes_equal(trecho.get('tempo_cru_estimado_min'), retorno.get('tempo_cru_estimado_min')):
-        return False
-    if not _step3_minutes_equal(trecho.get('tempo_adicional_min'), retorno.get('tempo_adicional_min')):
-        return False
-    if not _step3_minutes_equal(trecho.get('duracao_estimada_min'), retorno.get('duracao_estimada_min')):
-        return False
-    retorno_saida = str(retorno.get('saida_cidade') or retorno.get('origem_nome') or '').strip()
-    retorno_chegada = str(retorno.get('chegada_cidade') or retorno.get('destino_nome') or '').strip()
-    if retorno_saida and not _step3_values_equal(trecho.get('origem_nome'), retorno_saida):
-        return False
-    if retorno_chegada and not _step3_values_equal(trecho.get('destino_nome'), retorno_chegada):
-        return False
-    return True
 
 
 def _dedupe_step3_loop_retorno_final(state):
-    """Remove do payload de ida o deslocamento que ja esta representado no bloco Retorno."""
-    bate_volta_diario = _build_step3_bate_volta_diario_state((state or {}).get('bate_volta_diario'))
-    trechos = (state or {}).get('trechos') or []
-    if not bate_volta_diario['ativo'] or not trechos:
-        return state
-    retorno = (state or {}).get('retorno') or {}
-    if _step3_trecho_duplica_retorno(
-        trechos[-1],
-        retorno,
-        sede_estado_id=(state or {}).get('sede_estado_id'),
-        sede_cidade_id=(state or {}).get('sede_cidade_id'),
-    ):
-        state['trechos'] = trechos[:-1]
-    return state
+    return dedupe_step3_loop_retorno_final(state)
 
 
 def _extract_step3_posted_trechos(request):
-    pattern = re.compile(r'^trecho_(\d+)_(.+)$')
-    indexed = {}
-    for key in request.POST:
-        match = pattern.match(key)
-        if not match:
-            continue
-        idx = int(match.group(1))
-        field_name = match.group(2)
-        indexed.setdefault(idx, {})[field_name] = request.POST.get(key)
-    return [indexed[idx] for idx in sorted(indexed)]
+    return extract_step3_posted_trechos(request.POST)
 
 
 def _infer_step3_destinos_from_trechos(raw_trechos, sede_estado=None, sede_cidade=None):
@@ -642,27 +474,11 @@ def _build_step3_state_from_estrutura(estrutura, destinos_atuais, sede_estado_id
 
 
 def _parse_step3_decimal(value):
-    raw = str(value or '').strip()
-    if not raw:
-        return None
-    try:
-        if ',' in raw and '.' in raw:
-            if raw.rfind(',') > raw.rfind('.'):
-                raw = raw.replace('.', '').replace(',', '.')
-            else:
-                raw = raw.replace(',', '')
-        else:
-            raw = raw.replace(',', '.')
-        return Decimal(raw)
-    except (InvalidOperation, TypeError, ValueError):
-        return None
+    return parse_step3_decimal(value)
 
 
 def _step3_decimal_input(value):
-    decimal_value = _parse_step3_decimal(value)
-    if decimal_value is None:
-        return ''
-    return f'{decimal_value.quantize(Decimal("0.01")):.2f}'
+    return step3_decimal_input(value)
 
 
 def _step3_resolve_travel_minutes(raw_minutes, total_minutes, additional_minutes=0):

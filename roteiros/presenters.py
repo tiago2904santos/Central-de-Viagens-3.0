@@ -5,8 +5,8 @@ from django.urls import reverse
 from core.presenters.actions import build_delete_action
 from core.presenters.actions import build_edit_action
 from core.presenters.actions import build_open_action
-from . import roteiro_logic
 from .models import Roteiro
+from .services import montar_contexto_editor_roteiro
 from .services.diarias import infer_tipo_destino_from_paradas
 from .services.valor_extenso import valor_por_extenso_ptbr
 
@@ -170,7 +170,7 @@ def apresentar_contexto_formulario_roteiro_avulso(
     route_options,
 ):
     """Contexto do wizard de roteiro avulso (dict para template); sem HTML."""
-    return roteiro_logic._build_roteiro_form_context(
+    return montar_contexto_editor_roteiro(
         evento=evento,
         form=form,
         obj=obj,

@@ -165,6 +165,37 @@ def validar_submissao_editor_roteiro(post, route_state_map, roteiro=None):
     return step3_state, validated, diarias_resultado
 
 
+def calcular_diarias_roteiro_request(request, *, roteiro=None, evento=None):
+    return roteiro_logic._build_roteiro_diarias_from_request(
+        request,
+        roteiro=roteiro,
+        evento=evento,
+    )
+
+
+def montar_contexto_editor_roteiro(
+    *,
+    evento,
+    form,
+    obj,
+    destinos_atuais,
+    trechos_list,
+    is_avulso,
+    step3_state,
+    route_options,
+):
+    return roteiro_logic._build_roteiro_form_context(
+        evento=evento,
+        form=form,
+        obj=obj,
+        destinos_atuais=destinos_atuais,
+        trechos_list=trechos_list,
+        is_avulso=is_avulso,
+        step3_state=step3_state,
+        route_options=route_options,
+    )
+
+
 @transaction.atomic
 def criar_roteiro(form, step3_state, validated, diarias_resultado):
     roteiro = form.save(commit=False)
