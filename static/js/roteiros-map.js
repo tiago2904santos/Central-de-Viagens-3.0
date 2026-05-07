@@ -62,6 +62,10 @@
     return document.getElementById(id);
   }
 
+  function getEditorForm() {
+    return document.getElementById('oficio-roteiro-form') || document.getElementById('oficio-step3-form');
+  }
+
   function persistRouteInForm(route, points) {
     var geometryInput = $('id_map_route_geometry_json');
     var pointsInput = $('id_map_route_points_json');
@@ -418,7 +422,7 @@
   }
 
   function postCalcular(force) {
-    var form = document.getElementById('oficio-roteiro-form');
+    var form = getEditorForm();
     if (!form) return;
     var urlPersistido = form.getAttribute('data-api-calcular-rota-url');
     var urlPreview = form.getAttribute('data-api-calcular-rota-preview-url');
@@ -521,7 +525,7 @@
   }
 
   function init() {
-    var form = document.getElementById('oficio-roteiro-form');
+    var form = getEditorForm();
     var container = $('roteiro-mapa-container');
     if (!form || !container) return;
 

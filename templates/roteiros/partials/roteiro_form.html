@@ -65,3 +65,6 @@
 {{ roteiro_state_json|default:'{}'|json_script:"roteiro-state-data" }}
 {{ roteiros_evento_json|default_if_none:''|json_script:"roteiro-routes-data" }}
 {{ roteiro_diarias_resultado|default_if_none:''|json_script:"roteiro-diarias-data" }}
+{{ roteiro_state_json|default:'{}'|json_script:"step3-state-data" }}
+{{ roteiros_evento_json|default_if_none:''|json_script:"step3-routes-data" }}
+{{ roteiro_diarias_resultado|default_if_none:''|json_script:"step3-diarias-data" }}
