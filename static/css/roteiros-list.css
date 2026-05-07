@@ -323,6 +323,42 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
   margin: 0 4px 0 2px;
 }
 
+.roteiro-list-card--trechos-2.roteiro-list-card--layout-compact .roteiro-list-card__diarias-box {
+  gap: 5px;
+  padding: 8px 10px 10px;
+}
+
+.roteiro-list-card--trechos-2.roteiro-list-card--layout-compact .roteiro-list-card__diarias-box-title {
+  font-size: 10px;
+  line-height: 1.1;
+  margin-bottom: 2px;
+  padding-top: 0;
+}
+
+.roteiro-list-card--trechos-2.roteiro-list-card--layout-compact .roteiro-list-card__diarias-box-panels {
+  gap: 6px;
+}
+
+.roteiro-list-card--trechos-2.roteiro-list-card--layout-compact .roteiro-list-card__diarias-subblock {
+  gap: 2px;
+  padding: 8px 10px;
+}
+
+.roteiro-list-card--trechos-2.roteiro-list-card--layout-compact .roteiro-list-card__diarias-panel-heading {
+  font-size: 9px;
+  line-height: 1.1;
+  margin-bottom: 1px;
+}
+
+.roteiro-list-card--trechos-2.roteiro-list-card--layout-compact .roteiro-list-card__diarias-panel-line--moeda {
+  font-size: clamp(1.05rem, 1.35vw, 1.2rem);
+}
+
+.roteiro-list-card--trechos-2.roteiro-list-card--layout-compact .roteiro-list-card__diarias-composicao-list {
+  font-size: clamp(0.92rem, 1.1vw, 1.05rem);
+  line-height: 1.25;
+}
+
 .roteiro-list-card--layout-expanded-3 .roteiro-list-card__diarias-box {
   gap: 10px;
   padding: 14px 16px 16px;
