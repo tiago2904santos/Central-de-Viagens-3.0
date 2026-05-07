@@ -91,36 +91,51 @@ def index(request):
                     "title": "Servidores",
                     "description": "Pessoas vinculadas aos fluxos.",
                     "href": reverse("cadastros:servidores_index"),
+                    "eyebrow": "Cadastro",
                 },
                 {
                     "title": "Cargos",
                     "description": "Cargos utilizados em servidores.",
                     "href": reverse("cadastros:cargos_index"),
+                    "eyebrow": "Cadastro",
                 },
                 {
                     "title": "Viaturas",
                     "description": "Veículos operacionais.",
                     "href": reverse("cadastros:viaturas_index"),
+                    "eyebrow": "Cadastro",
                 },
                 {
                     "title": "Combustíveis",
                     "description": "Tipos de combustível.",
                     "href": reverse("cadastros:combustiveis_index"),
+                    "eyebrow": "Cadastro",
                 },
                 {
                     "title": "Unidades",
                     "description": "Unidades administrativas.",
                     "href": reverse("cadastros:unidades_index"),
+                    "eyebrow": "Cadastro",
                 },
                 {
                     "title": "Cidades",
                     "description": "Base geográfica de referência dos fluxos.",
                     "href": reverse("cadastros:cidades_index"),
+                    "eyebrow": "Cadastro",
                 },
                 {
                     "title": "Configurações do sistema",
                     "description": "Dados institucionais e assinaturas por tipo de documento.",
                     "href": reverse("cadastros:configuracao"),
+                    "eyebrow": "Sistema",
+                },
+            ],
+            "internal_modules": [
+                {
+                    "title": "Estados",
+                    "description": "Base administrativa interna para suporte à malha de cidades.",
+                    "href": reverse("cadastros:estados_index"),
+                    "eyebrow": "Base interna",
                 },
             ],
         },
@@ -143,9 +158,10 @@ def estados_index(request):
         "cadastros/estados/index.html",
         {
             "page_title": "Estados",
-            "page_description": "Unidades federativas (UF) da base geográfica.",
+            "page_description": "Base administrativa interna de unidades federativas (UF).",
             "rows": rows,
             "q": q,
+            "page_eyebrow": "Cadastros internos",
         },
     )
 
@@ -317,6 +333,7 @@ def cidades_index(request):
             "rows": rows,
             "q": q,
             "export_csv_url": export_csv_url,
+            "page_eyebrow": "Cadastros",
         },
     )
 

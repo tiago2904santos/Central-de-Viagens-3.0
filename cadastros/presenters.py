@@ -147,8 +147,9 @@ def apresentar_linha_lista_simples_combustivel(combustivel, edit_url="#", delete
 def apresentar_linha_lista_simples_unidade(unidade, edit_url="#", delete_url="#"):
     return {
         "title": unidade.nome,
+        "badges": [],
         "meta": [
-            {"label": "Sigla", "value": unidade.sigla or "—"},
+            build_meta("Sigla", unidade.sigla or "—"),
         ],
         "edit_url": edit_url,
         "delete_url": delete_url,
@@ -158,11 +159,15 @@ def apresentar_linha_lista_simples_unidade(unidade, edit_url="#", delete_url="#"
 def apresentar_linha_lista_simples_cidade(cidade, edit_url="#", delete_url="#"):
     sigla = cidade.estado.sigla if getattr(cidade, "estado", None) else cidade.uf
     cap = "Sim" if getattr(cidade, "capital", False) else "Não"
+    badges = []
+    if getattr(cidade, "capital", False):
+        badges.append(build_badge("Capital", "accent"))
     return {
         "title": cidade.nome,
+        "badges": badges,
         "meta": [
-            {"label": "UF", "value": sigla},
-            {"label": "Capital", "value": cap},
+            build_meta("UF", sigla),
+            build_meta("Capital", cap),
         ],
         "edit_url": edit_url,
         "delete_url": delete_url,
@@ -173,9 +178,10 @@ def apresentar_linha_lista_simples_estado(estado, edit_url="#", delete_url="#"):
     cod = str(estado.codigo_ibge) if estado.codigo_ibge is not None else "—"
     return {
         "title": estado.nome,
+        "badges": [],
         "meta": [
-            {"label": "Sigla", "value": estado.sigla},
-            {"label": "IBGE", "value": cod},
+            build_meta("Sigla", estado.sigla),
+            build_meta("IBGE", cod),
         ],
         "edit_url": edit_url,
         "delete_url": delete_url,
@@ -189,12 +195,13 @@ def apresentar_linha_lista_simples_servidor(servidor, edit_url="#", delete_url="
     cargo_label = servidor.cargo.nome if servidor.cargo else "—"
     return {
         "title": servidor.nome,
+        "badges": [],
         "meta": [
-            {"label": "Cargo", "value": cargo_label},
-            {"label": "CPF", "value": _format_cpf(servidor.cpf)},
-            {"label": "RG", "value": _format_rg(servidor.rg, sem_rg=servidor.sem_rg)},
-            {"label": "Telefone", "value": _format_telefone(servidor.telefone)},
-            {"label": "Unidade", "value": unidade_label},
+            build_meta("Cargo", cargo_label),
+            build_meta("CPF", _format_cpf(servidor.cpf)),
+            build_meta("RG", _format_rg(servidor.rg, sem_rg=servidor.sem_rg)),
+            build_meta("Telefone", _format_telefone(servidor.telefone)),
+            build_meta("Unidade", unidade_label),
         ],
         "edit_url": edit_url,
         "delete_url": delete_url,
@@ -207,11 +214,12 @@ def apresentar_linha_lista_simples_viatura(viatura, edit_url="#", delete_url="#"
     title = f"{modelo} — {placa_fmt}" if modelo else placa_fmt
     return {
         "title": title,
+        "badges": [],
         "meta": [
-            {"label": "Placa", "value": placa_fmt},
-            {"label": "Combustível", "value": viatura.combustivel.nome if viatura.combustivel else "—"},
-            {"label": "Tipo", "value": viatura.get_tipo_display() if viatura.tipo else "—"},
-            {"label": "Motoristas", "value": _motoristas_label(viatura)},
+            build_meta("Placa", placa_fmt),
+            build_meta("Combustível", viatura.combustivel.nome if viatura.combustivel else "—"),
+            build_meta("Tipo", viatura.get_tipo_display() if viatura.tipo else "—"),
+            build_meta("Motoristas", _motoristas_label(viatura)),
         ],
         "edit_url": edit_url,
         "delete_url": delete_url,

@@ -37,9 +37,9 @@ O app `cadastros` usa listagens globais (`list_page` ou `list_page_simple`), `do
 - Somente o grupo **Cadastros** usa botao de expandir/recolher; dentro dele, lista plana com indentacao visual para `Cargos` (sob Servidores) e `Combustiveis` (sob Viaturas), sem segundo toggle por nivel.
 - Links principais usam `data-sidebar-root-link`; grupo expansivel usa `data-sidebar-item`, `data-sidebar-group`, `data-sidebar-expandable`; filhos do painel usam `data-sidebar-panel-link`.
 - Grupo abre ao alternar o toggle; **fecha ao navegar** para outro item principal (nao-Cadastros). Na carga da pagina: aberto se a rota for `/cadastros/`, fechado caso contrario; `localStorage` nao reabre o submenu fora de Cadastros.
-- Ordem: Servidores, Cargos, Viaturas, Combustiveis, Unidades, Cidades.
+- Ordem principal no menu: Servidores, Cargos, Viaturas, Combustiveis, Unidades, Cidades.
 - `Motoristas` nao aparece no menu porque nao e cadastro independente.
-- `Estados` permanece fora do menu principal por decisao de produto: base interna/administrativa, com rota mantida em `cadastros:estados_index`.
+- `Estados` e tratado como base interna/administrativa: rota mantida em `cadastros:estados_index`, com exposicao na landing de Cadastros em bloco de base interna (sem entrar no menu lateral principal).
 
 ## List toolbar
 
@@ -79,6 +79,7 @@ O componente renderiza um card clicavel com icone, titulo, descricao e badge `LI
 ### Campo com acao (`input_with_action.html`)
 
 Para select ao lado de link **Gerenciar** (ex.: Cargo, Unidade, Combustivel em cadastros), usar `templates/components/forms/input_with_action.html` com classes `form-field-with-action` em `static/css/forms.css`.
+Nos formularios de `Servidor` e `Viatura`, esse componente e o padrao oficial para acesso rapido aos CRUDs auxiliares (Cargo, Unidade, Combustivel), sem variacoes locais.
 
 ## Cards
 

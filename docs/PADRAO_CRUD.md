@@ -2,7 +2,7 @@
 
 ## Escopo atual
 
-No app `cadastros`, o padrao CRUD esta consolidado para `Unidade`, `Cargo`, `Combustivel`, `Servidor`, `Viatura` e a tela de **Configuracao do sistema** (`ConfiguracaoSistema` / assinaturas por tipo). `Estado`/`Cidade` seguem como base interna, sem CRUD publico nesta fase.
+No app `cadastros`, o padrao CRUD esta consolidado para `Unidade`, `Cargo`, `Combustivel`, `Servidor`, `Viatura`, `Cidade`, `Estado` e a tela de **Configuracao do sistema** (`ConfiguracaoSistema` / assinaturas por tipo). Como regra de navegacao, `Cidade` integra menu lateral e landing principal; `Estado` permanece como base administrativa interna (rota ativa e acessivel na landing de base interna).
 
 `Motorista` nao e entidade de cadastro.
 
@@ -14,6 +14,7 @@ O app `roteiros` possui CRUD publico em `/roteiros/` (listagem, novo, editar, de
 - `selectors.py`: consultas e busca por `q`.
 - `services.py` ou `services/`: criacao, atualizacao e exclusao fisica (ex.: `roteiros/services/roteiro_editor.py`).
 - `presenters.py`: dados dos cards sem HTML.
+- metadados de listagem simples e cards devem usar contrato coerente (`title`, `meta`, `badges`, `actions` quando aplicável), sem montar HTML no presenter.
 - `views.py`: fluxo request/form/service/messages/redirect.
 - integrações HTTP externas devem ser delegadas para service/infra (sem `requests` direto em view).
 - `urls.py`: rotas nomeadas padronizadas.
@@ -55,6 +56,7 @@ Não foi possível excluir este cadastro porque ele está vinculado a outros reg
 - Header oficial do CRUD: `components/layout/page_header.html`.
 - Confirmacao de exclusao via component global `components/feedback/confirm_delete_block.html`.
 - Estados vazios e alertas devem usar os components de feedback reutilizaveis.
+- Excecoes de exclusao em Cadastros devem manter contrato visual equivalente ao `confirm_delete_block` (acao danger + cancelamento secundario + contexto de risco).
 
 ## Integracao externa (exemplo canônico)
 

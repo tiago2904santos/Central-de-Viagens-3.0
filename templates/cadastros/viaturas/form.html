@@ -21,7 +21,7 @@
         <form class="form-shell" method="post" novalidate>
           {% csrf_token %}
           <div class="form-section">
-            {% include "components/forms/form_section.html" with title="Dados da viatura" description="Informe placa, modelo, combustível, tipo e opcionalmente motoristas (servidores)." only %}
+            {% include "components/forms/form_section.html" with title="Dados da viatura" description="Informe placa, modelo, combustível, tipo e motoristas (servidores) quando aplicável." only %}
             <div class="form-grid">
               {% include "components/forms/form_field.html" with field=form.placa only %}
               {% include "components/forms/form_field.html" with field=form.modelo only %}
