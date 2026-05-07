@@ -797,7 +797,7 @@ def configuracao_sistema(request):
             "page_description": "Unidade, cidade em documentos e assinantes padrão por tipo.",
             "form": form,
             "submit_label": "Salvar configuração",
-            "back_url": reverse("cadastros:index"),
+            "back_url": reverse("core:dashboard"),
         },
     )
 

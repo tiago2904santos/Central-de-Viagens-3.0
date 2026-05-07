@@ -3,11 +3,10 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-  {% url "cadastros:index" as cta_url %}
   <div class="app-page">
     <div class="app-page__shell">
       <div class="app-page__list-card app-page__list-card--placeholder">
-        {% include "components/feedback/module_placeholder.html" with title=page_title description=page_description eyebrow="Documentos" status="Depende do núcleo documental" status_class="status-chip--warning" dep_1="Concluir base de modelos e templates de termo" dep_2="Integrar fluxo com ofícios e eventos" dep_3="Padronizar geração e assinatura documental" cta_label="Abrir Cadastros de base" cta_url=cta_url only %}
+        {% include "components/feedback/module_placeholder.html" with title=page_title description=page_description eyebrow="Documentos" status="Depende do núcleo documental" status_class="status-chip--warning" dep_1="Concluir base de modelos e templates de termo" dep_2="Integrar fluxo com ofícios e eventos" dep_3="Padronizar geração e assinatura documental" only %}
       </div>
     </div>
   </div>

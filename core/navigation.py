@@ -9,7 +9,7 @@ NAVIGATION_ITEMS = [
     {
         "id": "cadastros",
         "label": "Cadastros",
-        "url_name": "cadastros:index",
+        "url_name": "cadastros:servidores_index",
         "icon": "CD",
         "active_when": ["cadastros:"],
         "children": [
@@ -45,12 +45,6 @@ NAVIGATION_ITEMS = [
                 "label": "Unidades",
                 "url_name": "cadastros:unidades_index",
                 "active_when": ["cadastros:unidade_", "cadastros:unidades_index"],
-            },
-            {
-                "id": "cadastros-cidades",
-                "label": "Cidades",
-                "url_name": "cadastros:cidades_index",
-                "active_when": ["cadastros:cidade_", "cadastros:cidades_index"],
             },
             {
                 "id": "cadastros-configuracao",
