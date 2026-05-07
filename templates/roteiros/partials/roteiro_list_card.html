@@ -40,34 +40,70 @@
           <div class="roteiro-list-card__diarias-grid" aria-label="Resumo de di&aacute;rias">
             <div class="roteiro-list-card__diarias-main{% if card.diaria_vazio %} roteiro-list-card__diarias-main--vazio{% endif %}">
               <span class="roteiro-list-card__diarias-panel-heading">Valor total</span>
-              {% if card.diaria_vazio %}
-                <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">N&atilde;o calculado</p>
-              {% elif card.diaria_moeda %}
-                <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--moeda roteiro-list-card__diarias-panel-line--moeda-large">{{ card.diaria_moeda }}</p>
-              {% else %}
-                <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">&mdash;</p>
-              {% endif %}
+              <div class="roteiro-list-card__diarias-main-content">
+                {% if card.diaria_vazio %}
+                  <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">N&atilde;o calculado</p>
+                {% elif card.diaria_moeda %}
+                  <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--moeda roteiro-list-card__diarias-panel-line--moeda-large">{{ card.diaria_moeda }}</p>
+                {% else %}
+                  <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">&mdash;</p>
+                {% endif %}
 
-              <span class="roteiro-list-card__diarias-panel-heading roteiro-list-card__diarias-extenso-label">Valor por extenso</span>
-              {% if card.diaria_extenso %}
-                <p class="roteiro-list-card__diarias-extenso">{{ card.diaria_extenso }}</p>
-              {% else %}
-                <p class="roteiro-list-card__diarias-extenso roteiro-list-card__diarias-panel-line--muted">N&atilde;o informado</p>
-              {% endif %}
+                <span class="roteiro-list-card__diarias-panel-heading roteiro-list-card__diarias-extenso-label">Valor por extenso</span>
+                {% if card.diaria_extenso %}
+                  <p class="roteiro-list-card__diarias-extenso">{{ card.diaria_extenso }}</p>
+                {% else %}
+                  <p class="roteiro-list-card__diarias-extenso roteiro-list-card__diarias-panel-line--muted">N&atilde;o informado</p>
+                {% endif %}
+              </div>
             </div>
 
             <div class="roteiro-list-card__diarias-side">
               <div class="roteiro-list-card__diarias-metric">
                 <span class="roteiro-list-card__diarias-panel-heading">Tipo destino</span>
-                {% if card.diaria_tipo_destino %}
-                  <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--strong">{{ card.diaria_tipo_destino }}</p>
+                <div class="roteiro-list-card__diarias-metric-value">
+                  {% if card.diaria_tipo_destino %}
+                    <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--strong">{{ card.diaria_tipo_destino }}</p>
+                  {% else %}
+                    <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">&mdash;</p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="roteiro-list-card__diarias-metric">
+                <span class="roteiro-list-card__diarias-panel-heading">Quantidade de di&aacute;rias</span>
+                <div class="roteiro-list-card__diarias-metric-value">
+                  {% if card.diaria_composicao_linhas %}
+                    <ul class="roteiro-list-card__diarias-composicao-list">
+                      {% for linha in card.diaria_composicao_linhas %}
+                        <li>{{ linha }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">&mdash;</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="roteiro-list-card__diarias-box-panels">
+            <div class="roteiro-list-card__diarias-subblock roteiro-list-card__diarias-subblock--valor{% if card.diaria_vazio %} roteiro-list-card__diarias-subblock--vazio{% endif %}">
+              <span class="roteiro-list-card__diarias-panel-heading">Valor da di&aacute;ria</span>
+              <div class="roteiro-list-card__diarias-metric-value">
+                {% if card.diaria_vazio %}
+                  <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">N&atilde;o calculado</p>
+                {% elif card.diaria_moeda %}
+                  <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--moeda">{{ card.diaria_moeda }}</p>
                 {% else %}
                   <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">&mdash;</p>
                 {% endif %}
               </div>
+            </div>
 
-              <div class="roteiro-list-card__diarias-metric">
-                <span class="roteiro-list-card__diarias-panel-heading">Composi&ccedil;&atilde;o</span>
+            <div class="roteiro-list-card__diarias-subblock roteiro-list-card__diarias-subblock--composicao">
+              <span class="roteiro-list-card__diarias-panel-heading">Quantidade de di&aacute;rias</span>
+              <div class="roteiro-list-card__diarias-metric-value">
                 {% if card.diaria_composicao_linhas %}
                   <ul class="roteiro-list-card__diarias-composicao-list">
                     {% for linha in card.diaria_composicao_linhas %}
@@ -78,32 +114,6 @@
                   <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">&mdash;</p>
                 {% endif %}
               </div>
-            </div>
-          </div>
-        {% else %}
-          <div class="roteiro-list-card__diarias-box-panels">
-            <div class="roteiro-list-card__diarias-subblock roteiro-list-card__diarias-subblock--valor{% if card.diaria_vazio %} roteiro-list-card__diarias-subblock--vazio{% endif %}">
-              <span class="roteiro-list-card__diarias-panel-heading">Valor da di&aacute;ria</span>
-              {% if card.diaria_vazio %}
-                <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">N&atilde;o calculado</p>
-              {% elif card.diaria_moeda %}
-                <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--moeda">{{ card.diaria_moeda }}</p>
-              {% else %}
-                <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">&mdash;</p>
-              {% endif %}
-            </div>
-
-            <div class="roteiro-list-card__diarias-subblock roteiro-list-card__diarias-subblock--composicao">
-              <span class="roteiro-list-card__diarias-panel-heading">Composi&ccedil;&atilde;o</span>
-              {% if card.diaria_composicao_linhas %}
-                <ul class="roteiro-list-card__diarias-composicao-list">
-                  {% for linha in card.diaria_composicao_linhas %}
-                    <li>{{ linha }}</li>
-                  {% endfor %}
-                </ul>
-              {% else %}
-                <p class="roteiro-list-card__diarias-panel-line roteiro-list-card__diarias-panel-line--muted">&mdash;</p>
-              {% endif %}
             </div>
           </div>
         {% endif %}

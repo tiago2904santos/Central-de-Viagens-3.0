@@ -8,6 +8,7 @@ from core.presenters.actions import build_open_action
 from . import roteiro_logic
 from .models import Roteiro
 from .services.diarias import infer_tipo_destino_from_paradas
+from .services.valor_extenso import valor_por_extenso_ptbr
 
 
 def _label_cidade_uf(cidade, estado):
@@ -134,6 +135,8 @@ def apresentar_roteiro_card(roteiro):
     trechos_visiveis, trechos_resumo = _trechos_visiveis(trechos_payload)
     roteiro_card_layout = _roteiro_card_layout(trechos_count)
     diaria_extenso = (roteiro.valor_diarias_extenso or "").strip()
+    if (not diaria_extenso or diaria_extenso == "(preencher manualmente)") and diaria_moeda:
+        diaria_extenso = valor_por_extenso_ptbr(getattr(roteiro, "valor_diarias", None))
 
     return {
         "title": titulo_rota,

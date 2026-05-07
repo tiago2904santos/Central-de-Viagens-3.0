@@ -162,6 +162,7 @@ html[data-theme="light-dark"] .roteiro-list-card {
   gap: var(--space-2);
   grid-column: 1;
   grid-row: 1;
+  height: 100%;
   min-width: 0;
 }
 
@@ -171,6 +172,7 @@ html[data-theme="light-dark"] .roteiro-list-card {
   flex-direction: column;
   grid-column: 2;
   grid-row: 1;
+  height: 100%;
   min-height: 0;
   min-width: 0;
 }
@@ -184,8 +186,9 @@ html[data-theme="light-dark"] .roteiro-list-card {
   flex: 1 1 auto;
   flex-direction: column;
   gap: 10px;
+  height: 100%;
   min-height: 0;
-  padding: 14px 16px 16px;
+  padding: 16px 18px 18px;
 }
 
 html[data-theme="dark-dark"] .roteiro-list-card__diarias-box,
@@ -201,6 +204,7 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-box {
   font-weight: 800;
   letter-spacing: 0;
   line-height: 1.2;
+  margin-bottom: 6px;
   padding: 2px 2px 0;
   text-transform: uppercase;
 }
@@ -209,7 +213,7 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-box {
   align-items: stretch;
   display: grid;
   flex: 1 1 auto;
-  gap: var(--space-2);
+  gap: 10px;
   grid-template-columns: 1fr 1fr;
   min-height: 0;
   min-width: 0;
@@ -223,11 +227,11 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-box {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 4px;
-  min-height: 0;
+  min-height: 96px;
   min-width: 0;
-  padding: 14px 16px;
+  padding: 16px 18px;
   text-align: left;
 }
 
@@ -244,8 +248,8 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
 .roteiro-list-card__diarias-panel-heading {
   color: var(--theme-text-subtle);
   display: block;
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
   letter-spacing: 0;
   margin-bottom: 2px;
   text-transform: uppercase;
@@ -264,7 +268,7 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
 
 .roteiro-list-card__diarias-panel-line--moeda {
   filter: none;
-  font-size: var(--font-size-lg);
+  font-size: clamp(1.12rem, 1.5vw, 1.35rem);
   font-weight: var(--font-weight-bold);
   letter-spacing: 0;
   line-height: 1.25;
@@ -285,7 +289,7 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
   filter: none;
   flex: 0 1 auto;
   flex-direction: row;
-  font-size: var(--font-size-lg);
+  font-size: clamp(1rem, 1.25vw, 1.18rem);
   font-weight: var(--font-weight-bold);
   gap: 2px;
   justify-content: flex-start;
@@ -298,6 +302,20 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
   word-break: break-word;
 }
 
+.roteiro-list-card__diarias-metric-value {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  min-height: 0;
+  text-align: center;
+  width: 100%;
+}
+
+.roteiro-list-card__diarias-metric-value .roteiro-list-card__diarias-composicao-list {
+  justify-content: center;
+}
+
 .roteiro-list-card__diarias-composicao-list li {
   white-space: normal;
 }
@@ -308,8 +326,8 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
 }
 
 .roteiro-list-card--layout-expanded-3 .roteiro-list-card__diarias-box {
-  gap: 12px;
-  padding: 16px 18px 18px;
+  gap: 14px;
+  padding: 18px 20px 20px;
 }
 
 .roteiro-list-card--layout-expanded-3 .roteiro-list-card__diarias-box-title {
@@ -317,28 +335,36 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
 }
 
 .roteiro-list-card--layout-expanded-3 .roteiro-list-card__diarias-subblock {
-  justify-content: space-between;
-  padding: 16px 18px;
+  min-height: 132px;
+  padding: 18px 20px;
 }
 
 .roteiro-list-card--layout-expanded-3 .roteiro-list-card__diarias-panel-heading {
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .roteiro-list-card--layout-expanded-3 .roteiro-list-card__diarias-panel-line--moeda {
-  font-size: clamp(1.25rem, 2vw, 1.55rem);
+  font-size: clamp(1.55rem, 2.4vw, 1.9rem);
 }
 
 .roteiro-list-card--layout-expanded-3 .roteiro-list-card__diarias-composicao-list {
-  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-size: clamp(1.18rem, 1.8vw, 1.45rem);
+}
+
+.roteiro-list-card--layout-diarias-dashboard .roteiro-list-card__diarias-box-title {
+  font-size: 12px;
+}
+
+.roteiro-list-card--layout-diarias-dashboard .roteiro-list-card__diarias-panel-heading {
+  font-size: 11px;
 }
 
 .roteiro-list-card__diarias-grid {
   align-items: stretch;
   display: grid;
   flex: 1 1 auto;
-  gap: var(--space-2);
-  grid-template-columns: minmax(0, 1.15fr) minmax(150px, 0.85fr);
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   min-height: 0;
 }
 
@@ -349,7 +375,7 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
   border-radius: var(--radius-md);
   box-sizing: border-box;
   min-width: 0;
-  padding: 16px 18px;
+  padding: 20px 22px;
 }
 
 html[data-theme="dark-dark"] .roteiro-list-card__diarias-main,
@@ -363,7 +389,8 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-metric {
 .roteiro-list-card__diarias-main {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  min-height: 100%;
 }
 
 .roteiro-list-card__diarias-main--vazio {
@@ -372,27 +399,38 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-metric {
 
 .roteiro-list-card__diarias-side {
   display: grid;
-  gap: var(--space-2);
+  gap: 12px;
   grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
   min-width: 0;
 }
 
 .roteiro-list-card__diarias-metric {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 74px;
+  justify-content: flex-start;
+  min-height: 96px;
 }
 
 .roteiro-list-card__diarias-panel-line--moeda-large {
-  font-size: clamp(1.45rem, 2.8vw, 2rem);
+  font-size: clamp(1.75rem, 3vw, 2.2rem);
   line-height: 1.1;
 }
 
 .roteiro-list-card__diarias-panel-line--strong {
-  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-size: clamp(1.15rem, 1.6vw, 1.35rem);
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.roteiro-list-card__diarias-main-content {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  text-align: center;
 }
 
 .roteiro-list-card__diarias-extenso-label {
@@ -401,7 +439,7 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-metric {
 
 .roteiro-list-card__diarias-extenso {
   color: var(--theme-text-heading);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: 700;
   line-height: 1.4;
   margin: 0;
