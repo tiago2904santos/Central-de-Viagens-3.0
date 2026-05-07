@@ -1,6 +1,6 @@
-<article class="roteiro-steps__item" role="listitem">
-  <span class="roteiro-steps__order">{{ trecho.ordem }}</span>
-  <div class="roteiro-steps__content">
+<article class="roteiro-sequencia__item" role="listitem">
+  <span class="roteiro-sequencia__order">{{ trecho.ordem }}</span>
+  <div class="roteiro-sequencia__content">
     <h3>{{ trecho.get_tipo_display }} — {{ trecho.origem_cidade|default:trecho.origem_estado }} → {{ trecho.destino_cidade|default:trecho.destino_estado }}</h3>
     <p>
       Saída: {{ trecho.saida_dt|date:"d/m/Y H:i"|default:"—" }}

@@ -31,10 +31,10 @@ class RoteiroForm(forms.ModelForm):
             ),
             "observacoes": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
             "rota_distancia_manual_km": forms.NumberInput(
-                attrs={"class": "form-control", "step": "0.01", "min": "0"}
+                attrs={"class": "form-control", "min": "0"}
             ),
             "rota_duracao_manual_min": forms.NumberInput(
-                attrs={"class": "form-control", "step": "1", "min": "0"}
+                attrs={"class": "form-control", "min": "0"}
             ),
             "rota_ajuste_justificativa": forms.Textarea(
                 attrs={"class": "form-control", "rows": 2}

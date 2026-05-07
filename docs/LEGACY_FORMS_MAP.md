@@ -66,7 +66,7 @@
 | `TipoDemandaEventoForm` | `TipoDemandaEvento` | CRUD administração de tipos. **eventos/views.py**. ADAPTAR. |
 | `CoordenadorOperacionalForm` | `CoordenadorOperacional` | Campos extras estado/cidade/cargo/lotação (FK) → persistidos como texto em `cargo`, `unidade`, `cidade` (“Nome/UF”). Validação nome único. **eventos/views.py**. ADAPTAR. |
 
-**Participantes / Etapa 3:** `EventoEtapa3Form` (veículo, motorista, participantes finalizados, observações) existe em **forms.py** mas o fluxo atual da Etapa 3 foi trocado por hub de ofícios — form **não é usado** na view de etapa 3 (ver `RELATORIO_ETAPA3_OFICIOS_LEGADO.md`). Status: **REVER** (manter regra para possível wizard de ofício ou remover).
+**Participantes / Fase 3:** `EventoEtapa3Form` (veículo, motorista, participantes finalizados, observações) existe em **forms.py** mas o fluxo atual da Fase 3 foi trocado por hub de ofícios — form **não é usado** na view de fase 3 (ver `RELATORIO_ETAPA3_OFICIOS_LEGADO.md`). Status: **REVER** (manter regra para possível wizard de ofício ou remover).
 
 ---
 
@@ -88,12 +88,12 @@
 
 | Classe | Tipo | Função |
 |--------|------|--------|
-| `ModeloMotivoViagemForm` | ModelForm | CRUD textos motivo (apoio Step 1). **eventos/views.py**. |
-| `OficioStep1Form` | Form | Protocolo (máscara, `normalize_protocolo`, 9 dígitos), data criação, modelo+motivo, custeio (`CUSTEIO_CHOICES`), instituição se custeio externo, viajantes hidden (≥1). **eventos/views.py** wizard. |
-| `OficioStep2Form` | Form | Transporte atual: placa (`normalize_placa`), modelo, combustível, tipo viatura, porte armas; motorista via hidden + payload JS (`motorista_choices_payload`); carona → número/ano/protocolo obrigatórios; integração `buscar_veiculo_finalizado_por_placa`, `mapear_tipo_viatura_para_oficio`. **Principal.** ADAPTAR / REESCREVER (fat UI vs validação). |
-| `LegacyOficioStep2Form` | Form | Variante antiga com `motorista_carona` boolean explícito; **não usado pela view ativa** (docs internos). **DESCARTAR** ou REVER. |
+| `ModeloMotivoViagemForm` | ModelForm | CRUD textos motivo (apoio Fase 1). **eventos/views.py**. |
+| `OficioFase1Form` | Form | Protocolo (máscara, `normalize_protocolo`, 9 dígitos), data criação, modelo+motivo, custeio (`CUSTEIO_CHOICES`), instituição se custeio externo, viajantes hidden (≥1). **eventos/views.py** wizard. |
+| `OficioFase2Form` | Form | Transporte atual: placa (`normalize_placa`), modelo, combustível, tipo viatura, porte armas; motorista via hidden + payload JS (`motorista_choices_payload`); carona → número/ano/protocolo obrigatórios; integração `buscar_veiculo_finalizado_por_placa`, `mapear_tipo_viatura_para_oficio`. **Principal.** ADAPTAR / REESCREVER (fat UI vs validação). |
+| `LegacyOficioFase2Form` | Form | Variante antiga com `motorista_carona` boolean explícito; **não usado pela view ativa** (docs internos). **DESCARTAR** ou REVER. |
 
-**Passos 3–4 wizard:** não há classes `OficioStep3Form`/`Step4Form` — trechos, retorno e documentos são **views + POST manual + templates** (`eventos/views.py`). Mapear nas views (`LEGACY_VIEWS_MAP.md`).
+**Passos 3–4 wizard:** não há classes `OficioFaseRoteiroForm`/`Fase4Form` — trechos, retorno e documentos são **views + POST manual + templates** (`eventos/views.py`). Mapear nas views (`LEGACY_VIEWS_MAP.md`).
 
 **Justificativa do ofício:** ver seção Justificativas (`OficioJustificativaForm`).
 
@@ -129,8 +129,8 @@ Status: **ADAPTAR** (schema JSON pode mudar armazenamento).
 | `SolicitantePlanoTrabalhoForm` | CRUD gerenciador | `save`: único `is_padrao`. Views **eventos/views.py**. |
 | `HorarioAtendimentoPlanoTrabalhoForm` | CRUD | Regex horário `HH:MM até HH:MM`; único padrão. |
 | `AtividadePlanoTrabalhoForm` | CRUD catálogo PT | Código `[A-Z0-9_]`; meta e recurso obrigatórios. |
-| `PlanoTrabalhoForm` | **Form único principal** (tela global PT) | Campos hidden `destinos_payload`, `roteiro_json`, `coordenadores_ids`; M2M `oficios_relacionados`; integra **`reconcile_plano_step2_state`**, **`calculate_periodized_diarias`**, **`get_atividades_catalogo`**, **`build_metas_formatada`**, parsing JSON destinos, validação evento/ofício/roteiro coerentes, número automático. **views_global.py**. Status: **REESCREVER** em fatias (form + services já previstos). |
-| `PlanoTrabalhoStep1Form` … `Step4Form` | ModelForm mínimos | Apenas `Meta.fields` — **sem uso em views** localizado (só **tests**). Status: **REVER/DESCARTAR** como API pública. |
+| `PlanoTrabalhoForm` | **Form único principal** (tela global PT) | Campos hidden `destinos_payload`, `roteiro_json`, `coordenadores_ids`; M2M `oficios_relacionados`; integra **`reconcile_plano_fase2_state`**, **`calculate_periodized_diarias`**, **`get_atividades_catalogo`**, **`build_metas_formatada`**, parsing JSON destinos, validação evento/ofício/roteiro coerentes, número automático. **views_global.py**. Status: **REESCREVER** em fatias (form + services já previstos). |
+| `PlanoTrabalhoFase1Form` … `Fase4Form` | ModelForm mínimos | Apenas `Meta.fields` — **sem uso em views** localizado (só **tests**). Status: **REVER/DESCARTAR** como API pública. |
 
 **FormSet:** `PlanoTrabalhoEfetivoFormSet` definido em **views_global.py** (`inlineformset_factory` para `EfetivoPlanoTrabalhoDocumento`), não em `forms.py`.
 
@@ -194,7 +194,7 @@ Sem formulários Django dedicados no legacy analisado.
 |---------|---------|
 | **LEGACY_MODELS_MAP.md** | Forms acoplados a `Oficio`, `PlanoTrabalho`, `RoteiroEvento`, `TermoAutorizacao`, `PrestacaoConta`, etc. — migração de model deve preceder ou alinhar choices/querysets. |
 | **LEGACY_VIEWS_MAP.md** | Views grandes (`eventos/views.py`, `views_global.py`) instanciam os forms críticos; trechos do ofício sem Form dedicado. |
-| **LEGACY_SERVICES_MAP.md** | `PlanoTrabalhoForm.clean` chama `diarias.calculate_periodized_diarias`, `plano_trabalho_step2.reconcile_*`, `plano_trabalho_domain.*`; `OficioJustificativaForm` chama services de justificativa/schema; RT chama renderer; termos chamam `contexto_evento` / `ensure_termo_generico_evento`. **Form valida + service executa** já é o padrão nos pontos críticos. |
+| **LEGACY_SERVICES_MAP.md** | `PlanoTrabalhoForm.clean` chama `diarias.calculate_periodized_diarias`, `plano_trabalho_fase2.reconcile_*`, `plano_trabalho_domain.*`; `OficioJustificativaForm` chama services de justificativa/schema; RT chama renderer; termos chamam `contexto_evento` / `ensure_termo_generico_evento`. **Form valida + service executa** já é o padrão nos pontos críticos. |
 
 **Forms que devem existir antes do fluxo:** cadastro operacional (`Viajante`, `Veiculo`, `ConfiguracaoSistema`) → depois wizard ofício e PT/OS globais.
 
@@ -218,8 +218,8 @@ Sem formulários Django dedicados no legacy analisado.
 | SolicitantePlanoTrabalhoForm | eventos/forms.py | SolicitantePlanoTrabalho | views.py | planos_trabalho | idem | ADAPTAR | |
 | HorarioAtendimentoPlanoTrabalhoForm | eventos/forms.py | HorarioAtendimentoPlanoTrabalho | views.py | planos_trabalho | idem | ADAPTAR | Regex horário |
 | AtividadePlanoTrabalhoForm | eventos/forms.py | AtividadePlanoTrabalho | views.py | planos_trabalho / catálogo | idem | ADAPTAR | |
-| PlanoTrabalhoForm | eventos/forms.py | PlanoTrabalho | views_global.py | planos_trabalho | PT + steps/services | REESCREVER | Diárias + step2 + destinos JSON |
-| PlanoTrabalhoStep1–4Form | eventos/forms.py | PlanoTrabalho | tests apenas | — | — | REVER | Shell vazio |
+| PlanoTrabalhoForm | eventos/forms.py | PlanoTrabalho | views_global.py | planos_trabalho | PT + fases/services | REESCREVER | Diárias + fase2 + destinos JSON |
+| PlanoTrabalhoFase1–4Form | eventos/forms.py | PlanoTrabalho | tests apenas | — | — | REVER | Shell vazio |
 | OrdemServicoForm | eventos/forms.py | OrdemServico | views_global.py | ordens_servico | idem | ADAPTAR | destinos_json |
 | TermoAutorizacaoForm | eventos/forms.py | TermoAutorizacao | views_global.py | termos | idem | ADAPTAR | save_terms complexo |
 | TermoAutorizacaoEdicaoForm | eventos/forms.py | TermoAutorizacao | views_global.py | termos | idem | ADAPTAR | |
@@ -229,9 +229,9 @@ Sem formulários Django dedicados no legacy analisado.
 | JustificativaForm | eventos/forms.py | Justificativa | views_global.py | justificativas | idem | ADAPTAR | |
 | RoteiroEventoForm | eventos/forms.py | RoteiroEvento | views.py | roteiros | idem | ADAPTAR | Evento + avulso |
 | EventoEtapa3Form | eventos/forms.py | — | — | eventos | — | REVER | Substituído por hub ofícios |
-| OficioStep1Form | eventos/forms.py | — | views.py | oficios | OficioStep1Form | ADAPTAR | Protocolo/custeio |
-| LegacyOficioStep2Form | eventos/forms.py | — | — | — | — | DESCARTAR | Legado |
-| OficioStep2Form | eventos/forms.py | — | views.py | oficios | OficioStep2Form | ADAPTAR | Motorista/carona |
+| OficioFase1Form | eventos/forms.py | — | views.py | oficios | OficioFase1Form | ADAPTAR | Protocolo/custeio |
+| LegacyOficioFase2Form | eventos/forms.py | — | — | — | — | DESCARTAR | Legado |
+| OficioFase2Form | eventos/forms.py | — | views.py | oficios | OficioFase2Form | ADAPTAR | Motorista/carona |
 | PrestacaoContaCreateForm | prestacao_contas/forms.py | PrestacaoConta | views.py | prestacoes_contas | idem | ADAPTAR | |
 | PrestacaoInformacoesForm | prestacao_contas/forms.py | PrestacaoConta | views.py | prestacoes_contas | idem | ADAPTAR | PDF despacho |
 | PrestacaoComprovanteForm | prestacao_contas/forms.py | PrestacaoConta | — | — | — | REVER | Import morto? |
@@ -262,4 +262,4 @@ Sem formulários Django dedicados no legacy analisado.
 
 ## Próximo passo recomendado
 
-Priorizar especificação dos forms **OficioStep1/2**, **PlanoTrabalhoForm** (decomposição) e **OrdemServicoForm** em paralelo aos models de `Oficio` / `PlanoTrabalho` / `OrdemServico`; limpar forms/views órfãos (`PrestacaoComprovanteForm`/`PrestacaoDBForm`, `PlanoTrabalhoStep*`, `EventoEtapa3Form`) com decisão explícita de remoção ou reuso.
+Priorizar especificação dos forms **OficioFase1/2**, **PlanoTrabalhoForm** (decomposição) e **OrdemServicoForm** em paralelo aos models de `Oficio` / `PlanoTrabalho` / `OrdemServico`; limpar forms/views órfãos (`PrestacaoComprovanteForm`/`PrestacaoDBForm`, `PlanoTrabalhoFase*`, `EventoEtapa3Form`) com decisão explícita de remoção ou reuso.

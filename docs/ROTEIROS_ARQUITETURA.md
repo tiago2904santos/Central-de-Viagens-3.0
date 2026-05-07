@@ -31,7 +31,7 @@ Outras observacoes de validacao:
 
 ### 3. O que ainda e especifico demais de Roteiros
 
-- Nomes de campos, `step3`, rotas `roteiros:*` e textos do wizard sao do modulo Roteiros.
+- Nomes de campos, `fase_roteiro`, rotas `roteiros:*` e textos do wizard sao do modulo Roteiros.
 - `roteiros.css` permanece grande porque o visual do editor avulso e denso; `domain.css` traz tokens e aliases semanticos para blocos reutilizaveis.
 
 ### 4. O que ainda esta duplicado
@@ -59,7 +59,7 @@ Outras observacoes de validacao:
 
 ## Auditoria antes da refatoracao
 
-- View com regra funcional acoplada ao fluxo de step3 (validacao e persistencia).
+- View com regra funcional acoplada ao fluxo de fase_roteiro (validacao e persistencia).
 - Consulta direta de cidades em endpoint de API fora de selector.
 - Template de formulario com composicao misturada entre blocos de dominio e parciais de pagina.
 - CSS extenso e especifico de Roteiros sem camada de dominio reutilizavel explicita.
@@ -80,16 +80,16 @@ Outras observacoes de validacao:
 | `obter_initial_roteiro` | Le singleton de configuracao para sede padrao (somente dados iniciais). |
 | `preparar_querysets_formulario_roteiro` | Preenche querysets do form (sem template). |
 | `carregar_opcoes_rotas_avulsas_salvas` | Opcoes de duplicacao + mapa de estado (delega `roteiro_logic`). |
-| `preparar_estado_editor_roteiro_para_get` | Destinos/trechos/step3 para GET. |
+| `preparar_estado_editor_roteiro_para_get` | Destinos/trechos/fase_roteiro para GET. |
 | `normalizar_destinos_e_trechos_apos_erro_post` | Reexibe form apos POST invalido. |
-| `validar_submissao_editor_roteiro` | Parse step3 + validacao + diarias (sem HTTP). |
+| `validar_submissao_editor_roteiro` | Parse fase_roteiro + validacao + diarias (sem HTTP). |
 | `calcular_diarias_roteiro_request` | Façade para cálculo de diárias mantendo contrato do endpoint. |
 | `montar_contexto_editor_roteiro` | Entrada oficial para contexto do editor sem regra em presenter/view. |
 | `criar_roteiro` / `atualizar_roteiro` / `excluir_roteiro` | Transacao e persistencia. |
 
 ## Serviços internos do editor
 
-- `roteiros/services/editor_parser.py`: parse de `step3`/POST/state (inteiros, datas/horas, decimal, destinos, trechos).
+- `roteiros/services/editor_parser.py`: parse de `fase_roteiro`/POST/state (inteiros, datas/horas, decimal, destinos, trechos).
 - `roteiros/services/editor_context.py`: helpers puros de localidade e equivalência (`cidade/UF`) usados no wizard.
 - `roteiros/services/editor_state.py`: estado de bate-volta e dedupe de retorno final sem dependência de view.
 - `roteiros/services/map_defaults.py`: defaults de mapa e resolução de UF por CEP para bootstrap do editor.

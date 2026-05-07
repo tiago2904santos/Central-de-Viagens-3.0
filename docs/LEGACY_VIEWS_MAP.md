@@ -28,7 +28,7 @@ Guia para migração funcional **sem inventar comportamento**: toda regra descri
 | **Não existem** `views_oficio.py` nem `views_documentos.py` **dentro de eventos** — ofício está em `eventos/views.py`; documentos genéricos estão no app `documentos`. |
 | `documentos/views.py` | Gestão de assinaturas genéricas (`AssinaturaDocumento`), validação por token/upload, export CSV. |
 | `prestacao_contas/views.py` | Wizard prestação, RT, DB, comprovantes, PDF final (arquivo grande). |
-| `diario_bordo/views.py` | Lista, novo (genérico/ofício/prestação), wizard steps, PDF/XLSX, exclusão. |
+| `diario_bordo/views.py` | Lista, novo (genérico/ofício/prestação), wizard fases, PDF/XLSX, exclusão. |
 | `integracoes/views.py` | OAuth Google Drive (connect/callback/disconnect/root folder). |
 | `core/views.py` (via `core/urls.py`) | Login, logout, redirect dashboard → hub documentos. |
 
@@ -43,7 +43,7 @@ Guia para migração funcional **sem inventar comportamento**: toda regra descri
 | `cadastros` | `cadastros/views/*` — espelha CRUD e APIs; **Estado/Cidade** não têm CRUD público no novo (base interna). |
 | `roteiros` | `eventos/views.py` (`roteiro_avulso_*`, `guiado_etapa_2_*`, `trecho_*`, `estimar_*`), `views_global.roteiro_global_lista`. Model legacy: `RoteiroEvento`. |
 | `eventos` | `eventos/views.py` (lista, detalhe, guiado etapas, tipos demanda, export drive). |
-| `oficios` | `eventos/views.py` (`oficio_*`, steps, justificativa, documentos download), `views_assinatura.py`, listagem `oficio_global_lista`. |
+| `oficios` | `eventos/views.py` (`oficio_*`, fases, justificativa, documentos download), `views_assinatura.py`, listagem `oficio_global_lista`. |
 | `justificativas` | `views_global` (lista global, nova, detalhe, editar, excluir) + `modelos_justificativa_*` em `views.py` + `oficio_justificativa`. |
 | `termos` | `views_global` (`termo_autorizacao_*`, `termos_global`) + guiado etapa 5 downloads em `views.py`. |
 | `planos_trabalho` | `views_global` (lista, novo, editar, detalhe, excluir, download, autosave, API diárias/coordenadores) + CRUD catálogos em `views.py`. |
@@ -141,12 +141,12 @@ Guia para migração funcional **sem inventar comportamento**: toda regra descri
 
 | View | URL | Template |
 |------|-----|----------|
-| `guiado_etapa_2_lista` | `<evento_id>/guiado/etapa-2/` | Lista roteiros do evento + wizard steps V2 |
+| `guiado_etapa_2_lista` | `<evento_id>/guiado/etapa-2/` | Lista roteiros do evento + wizard fases V2 |
 | `guiado_etapa_2_cadastrar` | `.../cadastrar/` | `eventos/guiado/roteiro_form.html` |
 | `guiado_etapa_2_editar` | `.../<pk>/editar/` | idem |
 | `guiado_etapa_2_excluir` | `.../<pk>/excluir/` | POST + redirect |
 
-**Lógica:** `_build_roteiro_form_context`, `_salvar_roteiro_com_destinos_e_trechos`, mesma base que Step3 ofício — destinos múltiplos + trechos com km/tempo/diárias.
+**Lógica:** `_build_roteiro_form_context`, `_salvar_roteiro_com_destinos_e_trechos`, mesma base que FaseRoteiro ofício — destinos múltiplos + trechos com km/tempo/diárias.
 
 **Classificação:**
 
@@ -166,7 +166,7 @@ Guia para migração funcional **sem inventar comportamento**: toda regra descri
 | `roteiro_avulso_excluir` | `.../excluir/` | confirmação |
 | `roteiro_avulso_calcular_diarias` | POST API | JSON diárias |
 
-Reutiliza `_validate_step3_state` com `SimpleNamespace` fake ofício — espelha **oficio_step3**.
+Reutiliza `_validate_fase_roteiro_state` com `SimpleNamespace` fake ofício — espelha **oficio_fase_roteiro**.
 
 ### APIs trecho / estimativa
 
@@ -191,17 +191,17 @@ Reutiliza `_validate_step3_state` com `SimpleNamespace` fake ofício — espelha
 
 | View | URL name | Template |
 |------|----------|----------|
-| `oficio_novo` | `oficio-novo` | redirect cria rascunho → step1 |
-| `oficio_editar` | `oficio-editar` | redirect step1 |
-| `oficio_step1` | `oficio-step1` | `eventos/oficio/wizard_step1.html` |
-| APIs step1/2 | `oficio-step1-viajantes-api`, motoristas, veículos | JSON |
-| `oficio_step2` | `oficio-step2` | `wizard_step2.html` |
-| `oficio_step3` | `oficio-step3` | `wizard_step3.html` + autosave JSON |
-| `oficio_step3_calcular_diarias` | POST | retorno cálculo |
+| `oficio_novo` | `oficio-novo` | redirect cria rascunho → fase1 |
+| `oficio_editar` | `oficio-editar` | redirect fase1 |
+| `oficio_fase1` | `oficio-fase1` | `eventos/oficio/wizard_fase1.html` |
+| APIs fase1/2 | `oficio-fase1-viajantes-api`, motoristas, veículos | JSON |
+| `oficio_fase2` | `oficio-fase2` | `wizard_fase2.html` |
+| `oficio_fase_roteiro` | `oficio-fase_roteiro` | `wizard_fase_roteiro.html` + autosave JSON |
+| `oficio_fase_roteiro_calcular_diarias` | POST | retorno cálculo |
 | `oficio_justificativa` | `oficio-justificativa` | `justificativa.html` |
 | `oficio_documentos` | `oficio-documentos` | lista DOCX/PDF + termo |
 | `oficio_documento_download` | download | render PDF/DOCX via services |
-| `oficio_step4` | `oficio-step4` | `wizard_step4.html` resumo |
+| `oficio_fase4` | `oficio-fase4` | `wizard_fase4.html` resumo |
 | `oficio_excluir` | — | `excluir_confirm.html` |
 
 **Serviços legacy:** `eventos/services/documentos/*`, renderers. **Assinatura:** `views_assinatura` (gestão interna + fluxo público token).
@@ -297,15 +297,15 @@ Catálogos em `views.py`: atividades, coordenadores, solicitantes, horários —
 
 ### Prestação (`prestacao_contas/views.py`)
 
-URLs em `prestacao_contas/urls.py`: lista, nova, wizard steps 1–4, resumo, excluir, RT (form, autosave, docx, pdf), DB (autosave, reimportar, xlsx, pdf, assinado), comprovantes, pdf final, textos padrão CRUD.
+URLs em `prestacao_contas/urls.py`: lista, nova, wizard fases 1–4, resumo, excluir, RT (form, autosave, docx, pdf), DB (autosave, reimportar, xlsx, pdf, assinado), comprovantes, pdf final, textos padrão CRUD.
 
-**Templates:** `prestacao_contas/lista.html`, `nova.html`, `wizard_step*.html`, `wizard_resumo.html`, `textos_padrao_*`, etc.
+**Templates:** `prestacao_contas/lista.html`, `nova.html`, `wizard_fase*.html`, `wizard_resumo.html`, `textos_padrao_*`, etc.
 
 **Destino:** `prestacoes_contas/` — **ADAPTAR**.
 
 ### Diário de bordo (`diario_bordo/views.py`)
 
-Lista, novo (genérico / por ofício / por prestação), wizard steps, PDF/XLSX, excluir.
+Lista, novo (genérico / por ofício / por prestação), wizard fases, PDF/XLSX, excluir.
 
 **Destino:** `diario_bordo/` — **ADAPTAR**.
 
@@ -341,7 +341,7 @@ Lista, novo (genérico / por ofício / por prestação), wizard steps, PDF/XLSX,
 | `guiado_etapa_2_*` | views.py | `/eventos/<id>/guiado/etapa-2/...` | eventos + roteiros | etapa roteiro evento | ADAPTAR | |
 | `trecho_calcular_km` / `estimar_km_por_cidades` | views.py | `/eventos/trechos/...` | roteiros (services) | API estimativa | REVER | Futuro |
 | `oficio_global_lista` | views_global.py | `/eventos/oficios/` | oficios | `oficio_list` | ADAPTAR | Lista rica |
-| `oficio_novo` … `oficio_step4` | views.py | `/eventos/oficio/...` | oficios | wizard steps | COPIAR / ADAPTAR | Núcleo grande |
+| `oficio_novo` … `oficio_fase4` | views.py | `/eventos/oficio/...` | oficios | wizard fases | COPIAR / ADAPTAR | Núcleo grande |
 | `oficio_justificativa` | views.py | `.../justificativa/` | oficios + justificativas | `oficio_justificativa` | ADAPTAR | |
 | `oficio_documento_download` | views.py | `.../documentos/.../download` | oficios | download service | COPIAR | |
 | `oficio_assinatura_*` | views_assinatura.py | `/eventos/oficio/<pk>/assinatura/...` + públicas `/assinatura/oficio/<token>/...` | assinaturas / oficios | fluxo assinatura | ADAPTAR | |

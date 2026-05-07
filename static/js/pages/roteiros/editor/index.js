@@ -18,14 +18,14 @@ export function initRoteirosEditor() {
 
   (function () {
   'use strict';
-  var form = document.getElementById('oficio-roteiro-form');
+  var form = document.getElementById('roteiro-editor-form');
   if (!form || form.dataset.ready === '1') return;
   form.dataset.ready = '1';
   function $(id) { return document.getElementById(id); }
-  var initialState = JSON.parse($('roteiro-state-data').textContent || '{}');
-  var routes = JSON.parse($('roteiro-routes-data').textContent || '[]');
-  var rawInitialDiarias = JSON.parse($('roteiro-diarias-data').textContent || 'null');
-  var initialDiarias = rawInitialDiarias && typeof rawInitialDiarias === 'object' ? rawInitialDiarias : null;
+  var initialRoteiroState = JSON.parse($('roteiro-editor-state-data').textContent || '{}');
+  var routes = JSON.parse($('roteiro-editor-routes-data').textContent || '[]');
+  var rawInitialRoteiroDiarias = JSON.parse($('roteiro-editor-diarias-data').textContent || 'null');
+  var initialRoteiroDiarias = rawInitialRoteiroDiarias && typeof rawInitialRoteiroDiarias === 'object' ? rawInitialRoteiroDiarias : null;
   var routeMap = {};
   routes.forEach(function(item) { routeMap[String(item.id)] = item; });
   var apiCidades = form.dataset.apiCidadesUrl || '';
@@ -39,8 +39,8 @@ export function initRoteirosEditor() {
   window.AppAutosaveValidators = window.AppAutosaveValidators || {};
   window.AppAutosaveSnapshots.roteiro = function() {
     return {
-      roteiro_state: captureCurrentState(),
-      mapa: {
+      roteiro_editor_state: captureCurrentState(),
+      roteiro_mapa: {
         geometry_json: (($('id_map_route_geometry_json') || {}).value || ''),
         points_json: (($('id_map_route_points_json') || {}).value || ''),
         distance_km: (($('id_map_route_distance_km') || {}).value || ''),
@@ -48,7 +48,7 @@ export function initRoteirosEditor() {
         provider: (($('id_map_route_provider') || {}).value || ''),
         calculated_at: (($('id_map_route_calculated_at') || {}).value || '')
       },
-      diarias: {
+      roteiro_diarias: {
         quantidade_diarias: (($('id_quantidade_diarias') || {}).value || ''),
         valor_diarias: (($('id_valor_diarias') || {}).value || ''),
         valor_diarias_extenso: (($('id_valor_diarias_extenso') || {}).value || '')
@@ -58,7 +58,7 @@ export function initRoteirosEditor() {
   window.AppAutosaveValidators.roteiro = function(payload) {
     if (payload.object_id) return true;
     var fields = payload.fields || {};
-    var state = ((payload.snapshots || {}).roteiro_state) || {};
+    var state = ((payload.snapshots || {}).roteiro_editor_state) || {};
     var destinos = state.destinos_atuais || [];
     var trechos = state.trechos || [];
     return !!(
@@ -108,9 +108,9 @@ export function initRoteirosEditor() {
   }
   function scheduleAutosave() {
     if (autosave) {
-      autosave.markSnapshotChanged('roteiro_state');
-      autosave.markSnapshotChanged('mapa');
-      autosave.markSnapshotChanged('diarias');
+      autosave.markSnapshotChanged('roteiro_editor_state');
+      autosave.markSnapshotChanged('roteiro_mapa');
+      autosave.markSnapshotChanged('roteiro_diarias');
       autosave.schedule(1000);
     }
   }
@@ -695,7 +695,7 @@ export function initRoteirosEditor() {
           '</div></div></div>' +
           '<div class="col-12"><div class="roteiro-editor__grid oficio-roteiro-time-calc-grid align-items-end">' +
             '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo de viagem</label><input type="text" class="form-control trecho-tempo-viagem-hhmm" value="'+esc(formatDurationInput(cru))+'" placeholder="00:00" inputmode="numeric" maxlength="5" autocomplete="off"><input type="hidden" name="trecho_'+o+'_tempo_cru_estimado_min" value="'+esc(cru)+'" ></div>' +
-            '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo adicional</label><input type="number" min="0" step="15" class="form-control" name="trecho_'+o+'_tempo_adicional_min" value="'+esc(add)+'" ></div>' +
+            '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo adicional</label><input type="number" min="0" class="form-control" name="trecho_'+o+'_tempo_adicional_min" value="'+esc(add)+'" ></div>' +
             '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo total</label><input type="text" class="form-control trecho-tempo-total" value="" readonly></div>' +
           '</div></div>' +
         '</div>' +
@@ -1233,9 +1233,9 @@ export function initRoteirosEditor() {
   setModeUi();
   toggleBateVoltaPanel();
   syncBateVoltaDurationInputs();
-  applyState(initialState).then(function() {
-    if (initialDiarias) {
-      applyDiarias(initialDiarias);
+  applyState(initialRoteiroState).then(function() {
+    if (initialRoteiroDiarias) {
+      applyDiarias(initialRoteiroDiarias);
       setDiariasStatus('updated', 'Cálculo carregado (1 servidor).');
     } else {
       scheduleRealtimeDiarias();

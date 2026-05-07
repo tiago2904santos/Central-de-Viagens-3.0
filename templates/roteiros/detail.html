@@ -31,14 +31,14 @@
 
       <section class="app-page__form-card roteiro-detail">
         <div class="form-section">
-          {% include "components/forms/form_section.html" with title="Sede e resumo" description="Dados persistidos conforme o fluxo legacy (sedes, trechos e diárias)." only %}
+          {% include "components/forms/form_section.html" with title="Sede e resumo" description="Dados persistidos conforme o fluxo anterior (sedes, trechos e diárias)." only %}
           {% include "components/domain/resumo_rota.html" with roteiro=roteiro trechos=trechos %}
         </div>
 
         <div class="form-section">
           {% include "components/forms/form_section.html" with title="Destinos (ordem)" only %}
           {% if destinos_detalhe %}
-            <ol class="roteiro-steps">
+            <ol class="roteiro-sequencia">
               {% for d in destinos_detalhe %}
                 <li>{{ d.ordem }}. {{ d.label }}</li>
               {% endfor %}
@@ -51,7 +51,7 @@
         <div class="form-section">
           {% include "components/forms/form_section.html" with title="Trechos" only %}
           {% if trechos %}
-            <div class="roteiro-steps" role="list">
+            <div class="roteiro-sequencia" role="list">
               {% for trecho in trechos %}
                 {% include "components/domain/trecho_card.html" with trecho=trecho %}
               {% endfor %}

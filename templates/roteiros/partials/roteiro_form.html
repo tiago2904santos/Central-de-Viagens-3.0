@@ -11,7 +11,7 @@
     <div class="card roteiro-editor__main oficio-stage-panel">
       <div class="card-body">
         <section class="card-section">
-          <form method="post" id="oficio-roteiro-form" novalidate class="oficio-stage-form"
+          <form method="post" id="roteiro-editor-form" novalidate class="oficio-stage-form"
                 data-autosave="true"
                 data-autosave-model="roteiro"
                 data-autosave-url="{% if object %}{% url 'roteiros:roteiro-autosave' object.pk %}{% endif %}"
@@ -62,9 +62,6 @@
   </div>
 </div>
 
-{{ roteiro_state_json|default:'{}'|json_script:"roteiro-state-data" }}
-{{ roteiros_evento_json|default_if_none:''|json_script:"roteiro-routes-data" }}
-{{ roteiro_diarias_resultado|default_if_none:''|json_script:"roteiro-diarias-data" }}
-{{ roteiro_state_json|default:'{}'|json_script:"step3-state-data" }}
-{{ roteiros_evento_json|default_if_none:''|json_script:"step3-routes-data" }}
-{{ roteiro_diarias_resultado|default_if_none:''|json_script:"step3-diarias-data" }}
+{{ roteiro_editor_state_json|default:'{}'|json_script:"roteiro-editor-state-data" }}
+{{ roteiro_routes_json|default_if_none:''|json_script:"roteiro-editor-routes-data" }}
+{{ roteiro_diarias_resultado|default_if_none:''|json_script:"roteiro-editor-diarias-data" }}

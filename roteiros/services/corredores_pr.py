@@ -505,13 +505,13 @@ def inferir_atributos_rota(
 
     urban_distance_km = 0.0
     if route_result:
-        for step in getattr(route_result, "steps", []) or []:
-            step_refs = _normalize_refs(step.get("road_refs") or [step.get("ref"), step.get("name")])
-            if step_refs:
+        for trecho_rota in getattr(route_result, "trechos_rota", []) or []:
+            trecho_refs = _normalize_refs(trecho_rota.get("road_refs") or [trecho_rota.get("ref"), trecho_rota.get("name")])
+            if trecho_refs:
                 continue
-            name_norm = _normalize_text(step.get("name"))
+            name_norm = _normalize_text(trecho_rota.get("name"))
             if any(token in name_norm for token in _URBAN_NAME_HINTS):
-                urban_distance_km += float(step.get("distance") or 0) / 1000.0
+                urban_distance_km += float(trecho_rota.get("distance") or 0) / 1000.0
     if corredor_fino in _FINE_URBANO or urban_distance_km >= 8.0 or (route_result and float(getattr(route_result, "distance_km", 0) or 0) <= 70.0):
         out["travessia_urbana_presente"] = True
 

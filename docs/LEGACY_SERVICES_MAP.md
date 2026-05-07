@@ -104,7 +104,7 @@
 | Onde | Conteúdo |
 |------|----------|
 | `eventos/services/plano_trabalho_domain.py` | Catálogo de atividades (`get_atividades_catalogo`), formatação de atividades/metas/recursos, flags unidade móvel. |
-| `eventos/services/plano_trabalho_step2.py` | Seleção de roteiro mais caro, defaults do passo 2, reconciliação de estado (`reconcile_plano_step2_state`). |
+| `eventos/services/plano_trabalho_fase2.py` | Seleção de roteiro mais caro, defaults do passo 2, reconciliação de estado (`reconcile_plano_fase2_state`). |
 | `eventos/services/documentos/context.py` + `plano_trabalho.py` | Contexto numérico/textual (número próximo, coordenação, diárias agregadas), render DOCX. |
 | `eventos/services/documento_snapshots.py` | `snapshot_plano` e comparação de períodos (dirty/consistência). |
 
@@ -189,7 +189,7 @@
 ## Views grandes — acoplamento (para migração)
 
 - **`eventos/views.py`:** importa estimativa, diárias, justificativa, schema, vínculos, pacote de documentos, resgate, contextos, `documentos.*`, renderer, termos, assinatura, exportação Google Drive, sincronização de prestações, máscaras. Centraliza orquestração HTTP + muita regra; na migração, extrair para services conforme domínio.
-- **`eventos/views_global.py`:** telas globais de PT/OS/termo — diárias, documentos, `plano_trabalho_domain`, `plano_trabalho_step2`, selectors/presenters, status assinatura, `valor_extenso`.
+- **`eventos/views_global.py`:** telas globais de PT/OS/termo — diárias, documentos, `plano_trabalho_domain`, `plano_trabalho_fase2`, selectors/presenters, status assinatura, `valor_extenso`.
 - **`eventos/views_assinatura.py`:** delega a `oficio_assinatura` e `pdf_signature`.
 - **`prestacao_contas/views.py`:** RT, dossiê, diário de bordo (geração/inicialização de trechos).
 
@@ -210,7 +210,7 @@
 | Diárias | `diarias.py` | `context.py`, `views_global.py` | `roteiros` / `planos_trabalho` | COPIAR / ADAPTAR | Regra de negócio central. |
 | Justificativa (regra) | `justificativa.py`, `oficio_schema.py` | `forms.py`, `views.py` | `justificativas` | ADAPTAR | Schema JSON pode mudar de armazenamento. |
 | Termos (DOCX + contexto) | `documentos/termo_autorizacao.py`, `termos.py`, `contexto_evento.py` | `views.py`, `views_global.py` | `termos` | ADAPTAR | Unificar `termos.py` vs `contexto_evento`. |
-| Plano trabalho domínio + step2 | `plano_trabalho_domain.py`, `plano_trabalho_step2.py` | `views_global.py`, `prestacao` forms/views | `planos_trabalho` | COPIAR / ADAPTAR | |
+| Plano trabalho domínio + fase2 | `plano_trabalho_domain.py`, `plano_trabalho_fase2.py` | `views_global.py`, `prestacao` forms/views | `planos_trabalho` | COPIAR / ADAPTAR | |
 | Ordem de serviço DOCX | `documentos/ordem_servico.py` | `views_global.py` | `ordens_servico` | ADAPTAR | |
 | Vínculos documentais | `documento_vinculos.py`, `documento_presenters.py`, `documento_selectors.py` | `views_global.py`, testes | vários `selectors`/`presenters` | ADAPTAR | |
 | Snapshots | `documento_snapshots.py` | Resgate, consistência | `documentos` ou `eventos` | ADAPTAR | |

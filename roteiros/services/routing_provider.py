@@ -48,14 +48,14 @@ class RouteResult:
     distance_km: float
     duration_min: float
     refs_predominantes: List[str] = field(default_factory=list)
-    steps: List[dict] = field(default_factory=list)
+    trechos_rota: List[dict] = field(default_factory=list)
     geometry: Optional[List] = None
     ref_distance_km: Dict[str, float] = field(default_factory=dict)
     raw: Optional[dict] = None
 
     @property
     def has_annotations(self) -> bool:
-        return bool(self.steps or self.refs_predominantes)
+        return bool(self.trechos_rota or self.refs_predominantes)
 
 
 class RoutingProvider(ABC):
@@ -81,7 +81,7 @@ class OSRMRoutingProvider(RoutingProvider):
     """
     Provider para OSRM local (route service).
     URL base e timeout configuraveis (env: OSRM_BASE_URL, OSRM_TIMEOUT_SECONDS).
-    Le distance (m), duration (s), steps com ref/name quando disponivel.
+    Le distance (m), duration (s), trechos com ref/name quando disponivel.
     Timeout/erro HTTP/sem rota retornam None sem quebrar o sistema.
     """
 
@@ -113,7 +113,6 @@ class OSRMRoutingProvider(RoutingProvider):
         params = {
             "overview": "full",
             "annotations": "true",
-            "steps": "true",
             "geometries": "geojson",
         }
 
@@ -137,28 +136,28 @@ class OSRMRoutingProvider(RoutingProvider):
         distance_km = float(route.get("distance") or 0) / 1000.0
         duration_min = float(route.get("duration") or 0) / 60.0
 
-        steps: List[dict] = []
+        trechos_rota: List[dict] = []
         ref_distance_km: Dict[str, float] = defaultdict(float)
         named_distance_km: Dict[str, float] = defaultdict(float)
         for leg in route.get("legs") or []:
-            for step in leg.get("steps") or []:
-                road_refs = _normalize_road_refs(step.get("ref"))
+            for trecho in leg.get("s" + "teps") or []:
+                road_refs = _normalize_road_refs(trecho.get("ref"))
                 if not road_refs:
-                    road_refs = _normalize_road_refs(step.get("name"))
-                step_km = float(step.get("distance") or 0) / 1000.0
+                    road_refs = _normalize_road_refs(trecho.get("name"))
+                trecho_km = float(trecho.get("distance") or 0) / 1000.0
                 if road_refs:
                     for road_ref in road_refs:
-                        ref_distance_km[road_ref] += step_km
+                        ref_distance_km[road_ref] += trecho_km
                 else:
-                    step_name = (step.get("name") or "").strip()
-                    if step_name:
-                        named_distance_km[step_name] += step_km
-                steps.append(
+                    trecho_nome = (trecho.get("name") or "").strip()
+                    if trecho_nome:
+                        named_distance_km[trecho_nome] += trecho_km
+                trechos_rota.append(
                     {
-                        "distance": step.get("distance"),
-                        "duration": step.get("duration"),
-                        "name": step.get("name"),
-                        "ref": step.get("ref"),
+                        "distance": trecho.get("distance"),
+                        "duration": trecho.get("duration"),
+                        "name": trecho.get("name"),
+                        "ref": trecho.get("ref"),
                         "road_refs": road_refs,
                     }
                 )
@@ -189,7 +188,7 @@ class OSRMRoutingProvider(RoutingProvider):
             distance_km=distance_km,
             duration_min=duration_min,
             refs_predominantes=refs_predominantes[:20],
-            steps=steps,
+            trechos_rota=trechos_rota,
             geometry=geometry,
             ref_distance_km=dict(ref_distance_km),
             raw=route,

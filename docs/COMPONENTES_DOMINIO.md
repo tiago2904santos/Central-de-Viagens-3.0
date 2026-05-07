@@ -36,7 +36,7 @@ CSS: `static/css/domain.css` + estilos do form em `roteiros.css` quando o partia
 
 **Quando usar:** Formularios que replicam o passo "sede + destinos" do legacy.
 
-**Parametros:** Herdados do contexto do formulario (`form`, `destinos_atuais`, `estados`, `step3_state`, `destino_estado_fixo_*`, etc.) via `roteiros/partials/roteiro/sede_destinos.html`.
+**Parametros:** Herdados do contexto do formulario (`form`, `destinos_atuais`, `estados`, `fase_roteiro_state`, `destino_estado_fixo_*`, etc.) via `roteiros/partials/roteiro/sede_destinos.html`.
 
 **Exemplo:**
 
@@ -48,7 +48,7 @@ CSS: `static/css/domain.css` + estilos do form em `roteiros.css` quando o partia
 
 **Paginas agora:** Wizard avulso em `roteiros/partials/roteiro_form.html`.
 
-**Paginas futuras:** Oficios (step roteiro), Planos com deslocamento, OS com trechos.
+**Paginas futuras:** Oficios (fase roteiro), Planos com deslocamento, OS com trechos.
 
 ---
 
@@ -92,7 +92,7 @@ CSS: `static/css/domain.css` + estilos do form em `roteiros.css` quando o partia
 
 **Paginas agora:** `roteiro_form.html`.
 
-**Paginas futuras:** Oficios step 3, documentos com trechos persistidos.
+**Paginas futuras:** Oficios fase 3, documentos com trechos persistidos.
 
 ---
 
@@ -148,7 +148,7 @@ CSS: `static/css/domain.css` + estilos do form em `roteiros.css` quando o partia
 
 **Quando usar:** Apos trechos/retorno no wizard, quando o POST expoe campos de diarias.
 
-**Parametros:** `step3_diarias_resultado`, IDs e campos hidden ja definidos no form pai.
+**Parametros:** `fase_roteiro_diarias_resultado`, IDs e campos hidden ja definidos no form pai.
 
 **Exemplo:**
 

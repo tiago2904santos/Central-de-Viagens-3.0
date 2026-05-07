@@ -23,7 +23,7 @@ def has_minimum_roteiro_content(fields, snapshots):
     observacoes = str((fields or {}).get("observacoes") or "").strip()
     origem_cidade = str((fields or {}).get("origem_cidade") or "").strip()
     origem_estado = str((fields or {}).get("origem_estado") or "").strip()
-    state = (snapshots or {}).get("roteiro_state") or {}
+    state = (snapshots or {}).get("roteiro_editor_state") or {}
     destinos = (state.get("destinos_atuais") or []) if isinstance(state, dict) else []
     trechos = (state.get("trechos") or []) if isinstance(state, dict) else []
     return bool(observacoes or origem_cidade or origem_estado or destinos or trechos)
@@ -52,7 +52,7 @@ def _persist_simple_fields(roteiro, clean_fields):
 
 
 def _apply_map_snapshot(roteiro, snapshots):
-    mapa = (snapshots or {}).get("mapa") or {}
+    mapa = (snapshots or {}).get("roteiro_mapa") or {}
     if not isinstance(mapa, dict):
         return
     payload = {
@@ -67,7 +67,7 @@ def _apply_map_snapshot(roteiro, snapshots):
 
 
 def _apply_diarias_snapshot(roteiro, snapshots):
-    diarias = (snapshots or {}).get("diarias") or {}
+    diarias = (snapshots or {}).get("roteiro_diarias") or {}
     if not isinstance(diarias, dict):
         return
     qtd = str(diarias.get("quantidade_diarias") or "").strip()
@@ -86,7 +86,7 @@ def _apply_diarias_snapshot(roteiro, snapshots):
 
 
 def _apply_roteiro_snapshot(roteiro, snapshots):
-    state = (snapshots or {}).get("roteiro_state")
+    state = (snapshots or {}).get("roteiro_editor_state")
     if not isinstance(state, dict):
         return
     state = dedupe_roteiro_loop_retorno_final(state)

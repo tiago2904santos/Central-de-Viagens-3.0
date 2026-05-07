@@ -1353,7 +1353,7 @@ def _build_roteiro_avulso_route_options():
 
 
 def _build_avulso_roteiro_state_from_post(request, route_state_map=None):
-    """Reuses Step 3 parser with avulso field aliases (origem_* -> sede_*)."""
+    """Reutiliza o parser do editor com aliases avulsos (origem_* -> sede_*)."""
     from types import SimpleNamespace
 
     post_data = request.POST.copy()
@@ -1447,7 +1447,7 @@ def _build_roteiro_diarias_fallback(roteiro):
 
 
 def _salvar_roteiro_avulso_from_roteiro_state(roteiro, roteiro_state, validated, diarias_resultado=None):
-    """Persiste o step 3 preservando trechos existentes por id e retorno em bloco proprio."""
+    """Persiste o editor preservando trechos existentes por id e retorno em bloco proprio."""
     destinos_post = []
     for item in (roteiro_state.get('destinos_atuais') or []):
         estado_id = _parse_int(item.get('estado_id'))
@@ -1641,7 +1641,7 @@ def _build_roteiro_form_context(*, evento, form, obj, destinos_atuais, trechos_l
         'trechos': trechos_list,
         'trechos_json': trechos_json,
         'initial_trechos_data': initial_trechos_data,
-        'roteiro_state_json': serialized_roteiro_state,
+        'roteiro_editor_state_json': serialized_roteiro_state,
         'roteiro_diarias_resultado': diarias_resultado,
         'roteiro_seed_source_label': roteiro_state.get('seed_source_label', ''),
         'api_calcular_diarias_url': reverse('roteiros:calcular_diarias'),
@@ -1652,7 +1652,7 @@ def _build_roteiro_form_context(*, evento, form, obj, destinos_atuais, trechos_l
         'roteiro_id': roteiro_state.get('roteiro_evento_id'),
         'roteiro_evento_id': roteiro_state.get('roteiro_evento_id'),
         'roteiros_evento': route_options or [],
-        'roteiros_evento_json': route_options_json,
+        'roteiro_routes_json': route_options_json,
         'has_event_routes': bool(route_options),
         'is_avulso': is_avulso,
         'retorno_state': roteiro_state.get('retorno', {}),

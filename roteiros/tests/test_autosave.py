@@ -21,7 +21,7 @@ class RoteiroAutosaveTests(TestCase):
     def _payload(self, **kwargs):
         base = {
             "object_id": "",
-            "form_id": "oficio-roteiro-form",
+            "form_id": "roteiro-editor-form",
             "model": "roteiro",
             "dirty_fields": [],
             "fields": {},
@@ -109,7 +109,7 @@ class RoteiroAutosaveTests(TestCase):
     def test_salva_geometry_sem_ors_e_nao_apaga_quando_ausente(self):
         roteiro = Roteiro.objects.create(tipo=Roteiro.TIPO_AVULSO)
         mapa_snapshot = {
-            "mapa": {
+            "roteiro_mapa": {
                 "geometry_json": json.dumps({"type": "LineString", "coordinates": [[-49.2, -25.4], [-48.5, -27.6]]}),
                 "points_json": "[]",
                 "distance_km": "100.10",
@@ -153,7 +153,7 @@ class RoteiroAutosaveTests(TestCase):
             destino_estado=self.estado, destino_cidade=self.cidade_sede, tempo_adicional_min=0
         )
         state = {
-            "roteiro_state": {
+            "roteiro_editor_state": {
                 "roteiro_modo": "ROTEIRO_PROPRIO",
                 "sede_estado_id": self.estado.pk,
                 "sede_cidade_id": self.cidade_sede.pk,

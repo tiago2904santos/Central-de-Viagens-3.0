@@ -23,6 +23,6 @@ Preparar o app `oficios` para sair do placeholder e receber implementação por 
 
 1. Fechar schema e estados de Ofício.
 2. Implementar selectors e services transacionais.
-3. Implementar formulários por etapa (step1/step2 + integração com roteiro).
+3. Implementar formulários por etapa (fase1/fase2 + integração com roteiro).
 4. Implementar listagem/detalhe com presenters.
 5. Conectar geração documental e assinatura.

@@ -63,7 +63,7 @@
   }
 
   function getEditorForm() {
-    return document.getElementById('oficio-roteiro-form') || document.getElementById('oficio-step3-form');
+    return document.getElementById('roteiro-editor-form');
   }
 
   function persistRouteInForm(route, points) {
