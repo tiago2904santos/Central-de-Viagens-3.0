@@ -1551,7 +1551,6 @@
 /* Alertas do formulário */
 .roteiro-editor .alert {
   border-radius: var(--radius-md);
-  margin: var(--space-4) ;
 }
 
 .roteiro-editor .alert-danger:empty {
@@ -2820,4 +2819,13 @@ html[data-theme="dark"] .roteiro-editor__trecho-card .card-header,
 html[data-theme="dark"] .roteiro-editor--avulso .oficio-step3-trecho-card .card-header {
   color: var(--theme-text-heading);
   font-weight: 900;
+}
+
+html[data-theme="light"] .roteiro-editor--avulso .roteiro-editor__reference-block--source .roteiro-editor__choice-card:has(input:checked),
+html[data-theme="light-light"] .roteiro-editor--avulso .roteiro-editor__reference-block--source .roteiro-editor__choice-card:has(input:checked),
+html[data-theme="dark-light"] .roteiro-editor--avulso .roteiro-editor__reference-block--source .roteiro-editor__choice-card:has(input:checked) {
+  border-color: var(--route-status-draft-border);
+  box-shadow:
+    0 0 0 1px var(--route-status-draft-border),
+    0 10px 22px rgba(216, 162, 27, 0.14);
 }
