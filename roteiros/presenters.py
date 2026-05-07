@@ -7,6 +7,7 @@ from core.presenters.actions import build_edit_action
 from core.presenters.actions import build_open_action
 from . import roteiro_logic
 from .models import Roteiro
+from .services.diarias import infer_tipo_destino_from_paradas
 
 
 def _label_cidade_uf(cidade, estado):
@@ -50,6 +51,39 @@ def _composicao_diarias_linhas(texto):
     return linhas
 
 
+def _roteiro_card_layout(trechos_count):
+    if trechos_count >= 4:
+        return "diarias-dashboard"
+    if trechos_count == 3:
+        return "expanded-3"
+    return "compact"
+
+
+def _trechos_visiveis(trechos_payload):
+    if len(trechos_payload) <= 4:
+        return trechos_payload, None
+
+    restantes = trechos_payload[3:]
+    destinos_restantes = [t["destino"] for t in restantes if t.get("destino")]
+    return trechos_payload[:3], {
+        "count": len(restantes),
+        "destinos": destinos_restantes,
+        "texto": ", ".join(destinos_restantes),
+    }
+
+
+def _inferir_tipo_destino(destinos):
+    paradas = []
+    for destino in destinos:
+        cidade = getattr(destino, "cidade", None)
+        estado = getattr(destino, "estado", None)
+        cidade_nome = getattr(cidade, "nome", None)
+        uf = getattr(estado, "sigla", None) or getattr(cidade, "uf", None)
+        if cidade_nome or uf:
+            paradas.append((cidade_nome, uf))
+    return infer_tipo_destino_from_paradas(paradas) if paradas else ""
+
+
 def apresentar_roteiro_card(roteiro):
     origem_txt = _label_cidade_uf(roteiro.origem_cidade, roteiro.origem_estado)
     destinos_todos = list(roteiro.destinos.all()) if roteiro.pk else []
@@ -86,6 +120,7 @@ def apresentar_roteiro_card(roteiro):
         trechos_payload.append(
             {
                 "rota": f"{orig_t} → {dest_t}",
+                "destino": dest_t,
                 "saida": _format_trecho_dt(trecho.saida_dt),
                 "chegada": _format_trecho_dt(trecho.chegada_dt),
             }
@@ -96,6 +131,9 @@ def apresentar_roteiro_card(roteiro):
     diaria_composicao_linhas = _composicao_diarias_linhas(diaria_resumo)
     diaria_vazio = not diaria_moeda and not diaria_composicao_linhas
     trechos_count = len(trechos_payload)
+    trechos_visiveis, trechos_resumo = _trechos_visiveis(trechos_payload)
+    roteiro_card_layout = _roteiro_card_layout(trechos_count)
+    diaria_extenso = (roteiro.valor_diarias_extenso or "").strip()
 
     return {
         "title": titulo_rota,
@@ -106,10 +144,14 @@ def apresentar_roteiro_card(roteiro):
         "status_variant": status_variant,
         "diaria_moeda": diaria_moeda,
         "diaria_resumo": diaria_resumo,
+        "diaria_extenso": diaria_extenso,
         "diaria_composicao_linhas": diaria_composicao_linhas,
+        "diaria_tipo_destino": _inferir_tipo_destino(destinos_todos),
         "diaria_vazio": diaria_vazio,
-        "trechos": trechos_payload,
+        "trechos": trechos_visiveis,
         "trechos_count": trechos_count,
+        "trechos_resumo": trechos_resumo,
+        "roteiro_card_layout": roteiro_card_layout,
         "actions": [build_open_action(detail_url), build_edit_action(edit_url), build_delete_action(delete_url)],
     }
 
