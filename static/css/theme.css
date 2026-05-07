@@ -157,6 +157,12 @@
   --theme-badge-accent-bg: var(--color-accent-soft);
   --theme-badge-accent-border: #d8a21b;
   --theme-badge-accent-text: var(--color-accent-hover);
+  --color-accent-border-soft: rgba(216, 162, 27, 0.35);
+  --color-accent-border-strong: rgba(216, 162, 27, 0.45);
+  --color-danger-border-soft: rgba(180, 35, 24, 0.24);
+  --color-danger-border-strong: rgba(180, 35, 24, 0.38);
+  --color-info-border-strong: rgba(21, 91, 154, 0.48);
+  --sidebar-theme-active-bg: #2a3b50;
 
   --route-card-bg: #ffffff;
   --route-card-border: #dbe7f2;
@@ -516,7 +522,14 @@ html[data-theme="light-light"] {
 }
 
 .app-theme-grid__btn[aria-pressed="true"] {
-  background: #2a3b50;
+  background: var(--sidebar-theme-active-bg);
+  border-color: rgba(216, 162, 27, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: var(--color-white);
+}
+
+.app-theme-grid__btn[aria-checked="true"] {
+  background: var(--sidebar-theme-active-bg);
   border-color: rgba(216, 162, 27, 0.4);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   color: var(--color-white);

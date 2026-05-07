@@ -2,35 +2,49 @@
 
 ## Objetivo
 
-Padronizar o sistema com apenas dois temas oficiais (`dark` e `light`), com superfícies sólidas e sem transparência estrutural.
+Padronizar o sistema com quatro modos oficiais (`dark-dark`, `light-dark`, `dark-light`, `light-light`), com superfícies sólidas e sem transparência estrutural.
 
 ## Contrato técnico
 
-- Preferência do usuário: `dark` e `light` (UI e `localStorage`).
-- Atributo `data-theme` no `html` usa apenas `dark` ou `light`.
+- Preferência do usuário: `dark-dark`, `light-dark`, `dark-light` e `light-light` (UI e `localStorage`).
+- Atributo `data-theme` no `html` usa os 4 modos oficiais.
 - Aliases legados continuam aceitos no CSS e no processo de normalização para migração.
 - Persistência: `localStorage` na chave `cv-theme`.
 - Inicialização antecipada: `static/js/core/theme-init.js` no `head` do `base.html`.
 - Interação do usuário: `static/js/theme-toggle.js`.
+- Fonte única de verdade no front-end: `static/js/core/theme-shared.js`.
+- Troca de tema entre abas sincroniza por `window.storage`.
 
 ## Compatibilidade legada
 
-O sistema normaliza automaticamente temas antigos:
+O sistema normaliza automaticamente valores antigos:
 
-- `dark-dark` -> `dark`
-- `dark-light` -> `dark`
-- `light-dark` -> `dark`
-- `light-light` -> `light`
+- `dark` -> `dark-dark`
+- `light` -> `light-light`
+- `variant-a` -> `dark-dark`
+- `variant-b` -> `light-light`
 
-Após normalização, o valor salvo no `localStorage` e aplicado no DOM passa a ser somente `dark` ou `light`.
+Após normalização, o valor salvo no `localStorage` e aplicado no DOM passa a ser um dos 4 modos oficiais.
 
 ## Responsabilidades por arquivo
 
 - `templates/base.html`: carrega `theme-init.js` antes do CSS e `theme-toggle.js` com `defer`.
-- `static/js/core/theme-init.js`: resolve tema inicial e normaliza valor legado.
-- `static/js/theme-toggle.js`: aplica tema selecionado e persiste em `localStorage`.
+- `static/js/core/theme-shared.js`: expõe `STORAGE_KEY`, `VALID_THEMES`, `normalizeTheme()` e helpers de leitura/escrita.
+- `static/js/core/theme-init.js`: resolve tema inicial usando `theme-shared`.
+- `static/js/theme-toggle.js`: aplica tema selecionado, atualiza ARIA do radiogroup, persiste e escuta `storage`.
 - `static/css/theme.css`: define tokens por tema (escuro/claro) e aliases legados.
-- `templates/components/layout/sidebar.html`: expõe apenas 2 opções de tema na UI.
+- `templates/components/layout/sidebar.html`: expõe os 4 modos oficiais em `radiogroup`.
+
+## Consumo de tokens por component
+
+- Componentes globais (`forms.css`, `cards.css`, `lists.css`, `utilities.css`) devem consumir tokens semânticos e evitar hex direto para borda/cor de estado.
+- `domain.css` deve priorizar tokens de rota (`--route-*`) com fallback para tokens globais.
+- Novos estados de tema precisam primeiro virar token em `tokens.css`/`theme.css`; só depois podem ser usados nos componentes.
+
+## Exceções autorizadas (curtas)
+
+- `static/css/theme.css`: valores-base de tema e gradientes institucionais.
+- `static/css/roteiros.css`: hardcodes necessários para preservar contrato visual aprovado de `roteiros/novo/`.
 
 ## Regras visuais obrigatórias
 

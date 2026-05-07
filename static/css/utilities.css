@@ -154,6 +154,7 @@
   color: var(--color-warning);
 }
 
+html[data-theme="dark"] .status-chip--muted,
 html[data-theme="dark-dark"] .status-chip--muted,
 html[data-theme="light-dark"] .status-chip--muted {
   background: var(--color-info-bg);

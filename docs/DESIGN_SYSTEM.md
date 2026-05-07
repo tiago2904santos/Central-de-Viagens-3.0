@@ -11,11 +11,14 @@
 - Proibido `href="#"` para acao visual.
 - Navegacao deve omitir link quando a URL nao resolver; renderizar item neutro/desabilitado sem `href` invalido.
 - Inicializacao de tema deve ocorrer por `static/js/core/theme-init.js` (sem `<script>` inline no `base.html`).
+- Configuracao de tema (chave, temas validos e normalizacao) deve ficar centralizada em `static/js/core/theme-shared.js`.
+- Seletor de tema deve manter os 4 modos oficiais (`dark-dark`, `light-dark`, `dark-light`, `light-light`) sem script inline.
 - A **tela de login** usa layout proprio (sem sidebar): classes em `static/css/auth.css` (prefixo `auth-`), importado tambem em `style.css`; ver `docs/AUTENTICACAO.md`.
 - Se um valor CSS aparece em mais de um ponto relevante, ele deve virar token semantico (`--color-*`, `--radius-*`, `--space-*`, `--shadow-*`, `--control-*`, `--font-*`).
 - Evitar valor bruto em componente (`999px`, `#ffffff`, sombras repetidas); usar token semantico equivalente.
 - `border-radius: 999px` e proibido em componente; usar sempre `var(--radius-pill)`.
 - Hardcode restante so e aceito com justificativa especifica (seletor + motivo tecnico), nunca justificativa generica.
+- Seletor de tema deve respeitar semantica de `radiogroup` (`role="radio"` com `aria-checked` coerente).
 
 ## Tokenizacao semantica (refactor)
 

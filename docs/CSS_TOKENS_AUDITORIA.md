@@ -47,6 +47,13 @@
 - Sombra repetida deve virar token (`--shadow-*`).
 - Transição repetida deve virar token (`--transition-*`).
 - CSS deve ser organizado por seções com comentários de intenção.
+- Theme JS deve centralizar contrato em `static/js/core/theme-shared.js` para evitar divergência de chave, temas válidos e normalização.
+
+## Hardening theme/tokens (fase 07)
+
+- `theme-init.js` e `theme-toggle.js` passaram a consumir o mesmo contrato (`theme-shared.js`).
+- Persistência em múltiplas abas sincroniza via `storage event` mantendo `cv-theme`.
+- Borda e estados recorrentes em componentes globais migraram para tokens (`--color-*-border-*`), reduzindo hardcode repetido.
 
 ## Ajuste visual de temas escuros (fase de refino)
 

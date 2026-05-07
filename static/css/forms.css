@@ -151,7 +151,7 @@
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(253, 236, 236, 0.82)),
     var(--color-danger-soft);
-  border: 1px solid rgba(180, 35, 24, 0.24);
+  border: 1px solid var(--color-danger-border-soft);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-xs);
   cursor: pointer;
@@ -186,9 +186,9 @@
 .app-card-toggle__icon {
   align-items: center;
   background: rgba(180, 35, 24, 0.1);
-  border: 1px solid rgba(180, 35, 24, 0.18);
+  border: 1px solid var(--color-danger-border-soft);
   border-radius: var(--radius-control);
-  color: #9b2c22;
+  color: var(--color-danger);
   display: inline-flex;
   font-size: var(--font-size-sm);
   font-weight: 900;
@@ -222,7 +222,7 @@
 .app-card-toggle__state {
   align-items: center;
   background: rgba(180, 35, 24, 0.11);
-  border: 1px solid rgba(180, 35, 24, 0.24);
+  border: 1px solid var(--color-danger-border-soft);
   border-radius: var(--radius-pill);
   color: var(--color-danger-text);
   display: inline-flex;
@@ -237,7 +237,7 @@
 }
 
 .app-card-toggle:hover {
-  border-color: rgba(180, 35, 24, 0.38);
+  border-color: var(--color-danger-border-strong);
   box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
 }
@@ -246,7 +246,7 @@
   background:
     linear-gradient(135deg, rgba(227, 240, 251, 0.98), rgba(255, 243, 207, 0.82)),
     var(--color-info-soft);
-  border-color: rgba(21, 91, 154, 0.48);
+  border-color: var(--color-info-border-strong);
   box-shadow: var(--shadow-soft);
 }
 
@@ -348,10 +348,13 @@ textarea[readonly] {
   font-weight: 700;
 }
 
+html[data-theme="dark"] .form-check-input,
 html[data-theme="dark-dark"] .form-check-input,
 html[data-theme="light-dark"] .form-check-input,
+html[data-theme="dark"] input[type="radio"],
 html[data-theme="dark-dark"] input[type="radio"],
 html[data-theme="light-dark"] input[type="radio"],
+html[data-theme="dark"] input[type="checkbox"],
 html[data-theme="dark-dark"] input[type="checkbox"],
 html[data-theme="light-dark"] input[type="checkbox"] {
   accent-color: var(--color-accent);
