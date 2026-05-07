@@ -304,7 +304,7 @@ html[data-theme="dark-dark"] {
   --color-surface-soft: #223348;
   --color-surface-muted: #172638;
   --color-surface-strong: #111e2f;
-  --color-card: #1b2a3d;
+  --color-card: #141f2e;
   --color-card-soft: #24384e;
   --color-card-muted: #213246;
   --color-panel: #162435;
@@ -408,7 +408,7 @@ html[data-theme="dark-dark"] {
 
   --route-card-bg: #111a28;
   --route-card-border: #2d4158;
-  --route-card-inner-bg: #172638;
+  --route-card-inner-bg: #121e2b;
   --route-card-inner-border: #344960;
   --route-form-shell-bg: var(--route-card-bg);
   --route-section-bg: var(--route-card-bg);
@@ -427,7 +427,7 @@ html[data-theme="dark-dark"] {
   --route-button-primary-text: #ffffff;
   --route-button-primary-hover-bg: linear-gradient(180deg, #2474ae 0%, #0d4678 100%);
   --route-button-primary-hover-border: #3c83b8;
-  --route-button-secondary-bg: #22364b;
+  --route-button-secondary-bg: #141f2e;
   --route-button-secondary-border: #53708c;
   --route-button-secondary-text: #f0f6ff;
   --route-button-secondary-hover-bg: #2a4058;
@@ -674,7 +674,7 @@ html[data-theme="light-dark"] {
   --route-button-primary-text: #ffffff;
   --route-button-primary-hover-bg: linear-gradient(180deg, #2474ae 0%, #0d4678 100%);
   --route-button-primary-hover-border: #3c83b8;
-  --route-button-secondary-bg: #22364b;
+  --route-button-secondary-bg: #141f2e;
   --route-button-secondary-border: #53708c;
   --route-button-secondary-text: #f0f6ff;
   --route-button-secondary-hover-bg: #2a4058;
