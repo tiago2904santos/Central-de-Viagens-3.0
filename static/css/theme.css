@@ -156,20 +156,20 @@
   --theme-badge-accent-border: rgba(216, 162, 27, 0.35);
   --theme-badge-accent-text: var(--color-accent-hover);
 
-  --route-card-bg: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
+  --route-card-bg: #ffffff;
   --route-card-border: #dbe7f2;
   --route-card-inner-bg: #ffffff;
   --route-card-inner-border: #d8e4ef;
-  --route-form-shell-bg: #ffffff;
-  --route-section-bg: #ffffff;
-  --route-section-soft-bg: #f7fbff;
+  --route-form-shell-bg: var(--route-card-bg);
+  --route-section-bg: var(--route-card-bg);
+  --route-section-soft-bg: var(--route-card-bg);
   --route-section-border: #dbe7f2;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
-  --route-field-bg: #ffffff;
+  --route-field-bg: var(--route-card-bg);
   --route-field-border: #bfd2e4;
   --route-field-text: #132238;
   --route-field-placeholder: #71839a;
-  --route-field-disabled-bg: #edf3f9;
+  --route-field-disabled-bg: var(--route-card-bg);
   --route-field-disabled-text: #63788f;
   --route-button-primary-bg: linear-gradient(180deg, #0e5088 0%, #0b3a66 100%);
   --route-button-primary-border: #0b3a66;
@@ -284,13 +284,13 @@ html[data-theme="dark-light"] {
   --theme-badge-accent-border: rgba(216, 162, 27, 0.35);
   --theme-badge-accent-text: var(--color-accent-hover);
 
-  --route-card-bg: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
+  --route-card-bg: #ffffff;
   --route-card-border: #dbe7f2;
   --route-card-inner-bg: #ffffff;
   --route-card-inner-border: #d8e4ef;
-  --route-form-shell-bg: #ffffff;
-  --route-section-bg: #ffffff;
-  --route-section-soft-bg: #f7fbff;
+  --route-form-shell-bg: var(--route-card-bg);
+  --route-section-bg: var(--route-card-bg);
+  --route-section-soft-bg: var(--route-card-bg);
   --route-section-border: #dbe7f2;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
 }
@@ -407,18 +407,18 @@ html[data-theme="dark-dark"] {
 
   --route-card-bg: linear-gradient(165deg, #162030 0%, #121a28 100%);
   --route-card-border: #31455c;
-  --route-card-inner-bg: #202d40;
+  --route-card-inner-bg: #202d40ab;
   --route-card-inner-border: #33475f;
-  --route-form-shell-bg: #162030;
-  --route-section-bg: #1b2a3d;
-  --route-section-soft-bg: #24384e;
+  --route-form-shell-bg: var(--route-card-bg);
+  --route-section-bg: var(--route-card-bg);
+  --route-section-soft-bg: var(--route-card-bg);
   --route-section-border: #344960;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
-  --route-field-bg: #22364b;
+  --route-field-bg: var(--route-card-bg);
   --route-field-border: #405872;
   --route-field-text: #f2f7ff;
   --route-field-placeholder: #b7c7dc;
-  --route-field-disabled-bg: #172638;
+  --route-field-disabled-bg: var(--route-card-bg);
   --route-field-disabled-text: #9fb1c8;
   --route-button-primary-bg: linear-gradient(180deg, #1a659d 0%, #0b3a66 100%);
   --route-button-primary-border: #2b6d9d;
@@ -531,13 +531,13 @@ html[data-theme="light-light"] {
   --theme-badge-accent-border: rgba(216, 162, 27, 0.35);
   --theme-badge-accent-text: var(--color-accent-hover);
 
-  --route-card-bg: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
+  --route-card-bg: #ffffff;
   --route-card-border: #dbe7f2;
   --route-card-inner-bg: #ffffff;
   --route-card-inner-border: #d8e4ef;
-  --route-form-shell-bg: #ffffff;
-  --route-section-bg: #ffffff;
-  --route-section-soft-bg: #f7fbff;
+  --route-form-shell-bg: var(--route-card-bg);
+  --route-section-bg: var(--route-card-bg);
+  --route-section-soft-bg: var(--route-card-bg);
   --route-section-border: #dbe7f2;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
 }
@@ -654,16 +654,16 @@ html[data-theme="light-dark"] {
   --route-card-border: #31455c;
   --route-card-inner-bg: #202d40;
   --route-card-inner-border: #33475f;
-  --route-form-shell-bg: #162030;
-  --route-section-bg: #1b2a3d;
-  --route-section-soft-bg: #24384e;
+  --route-form-shell-bg: var(--route-card-bg);
+  --route-section-bg: var(--route-card-bg);
+  --route-section-soft-bg: var(--route-card-bg);
   --route-section-border: #344960;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
-  --route-field-bg: #22364b;
+  --route-field-bg: var(--route-card-bg);
   --route-field-border: #405872;
   --route-field-text: #f2f7ff;
   --route-field-placeholder: #b7c7dc;
-  --route-field-disabled-bg: #172638;
+  --route-field-disabled-bg: var(--route-card-bg);
   --route-field-disabled-text: #9fb1c8;
   --route-button-primary-bg: linear-gradient(180deg, #1a659d 0%, #0b3a66 100%);
   --route-button-primary-border: #2b6d9d;
