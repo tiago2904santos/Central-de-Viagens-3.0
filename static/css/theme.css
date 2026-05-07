@@ -206,13 +206,13 @@ html[data-theme="dark"],
 html[data-theme="dark-dark"],
 html[data-theme="dark-light"],
 html[data-theme="light-dark"] {
-  --color-bg: #081421;
-  --color-shell: #0f1927;
+  --color-bg: #07111d;
+  --color-shell: #081827;
   --color-surface: #1a2638;
   --color-surface-soft: #223348;
   --color-surface-muted: #172638;
   --color-surface-strong: #111e2f;
-  --color-card: #101b2b;
+  --color-card: #0f1928;
   --color-card-soft: #24384e;
   --color-card-muted: #213246;
   --color-panel: #162435;
@@ -272,7 +272,7 @@ html[data-theme="light-dark"] {
   --theme-surface-card-soft: var(--color-card-soft);
   --theme-border-card: var(--color-border-soft);
   --theme-text-heading: #f6fbff;
-  --theme-text-body: #e8f1fb;
+  --theme-text-body: #e7f0fb;
   --theme-text-muted: #b8c8dc;
   --theme-text-subtle: #8a9bb0;
   --theme-text-muted-strong: #d3dfef;
@@ -314,17 +314,17 @@ html[data-theme="light-dark"] {
   --theme-badge-accent-border: #d8a21b;
   --theme-badge-accent-text: #ffe9a8;
 
-  --route-card-bg: #0f1927;
-  --route-card-border: #2d4056;
-  --route-card-inner-bg: #142235;
-  --route-card-inner-border: #25384e;
+  --route-card-bg: #101927;
+  --route-card-border: #2a3d52;
+  --route-card-inner-bg: #162234;
+  --route-card-inner-border: #33475e;
   --route-form-shell-bg: var(--route-card-bg);
   --route-section-bg: var(--route-card-bg);
   --route-section-soft-bg: var(--route-card-bg);
-  --route-section-border: #344960;
+  --route-section-border: #2f4359;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
   --route-field-bg: var(--color-card);
-  --route-field-border: #4e6680;
+  --route-field-border: #425a72;
   --route-field-text: #f2f7ff;
   --route-field-placeholder: #9fb3ca;
   --route-card-text: #e8f1fb;
