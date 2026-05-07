@@ -306,14 +306,14 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-subblock {
   align-items: center;
   display: flex;
   flex: 1 1 auto;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 0;
   text-align: center;
   width: 100%;
 }
 
 .roteiro-list-card__diarias-metric-value .roteiro-list-card__diarias-composicao-list {
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .roteiro-list-card__diarias-composicao-list li {
@@ -424,13 +424,13 @@ html[data-theme="light-dark"] .roteiro-list-card__diarias-metric {
 }
 
 .roteiro-list-card__diarias-main-content {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   justify-content: center;
   min-height: 0;
-  text-align: center;
+  text-align: flex-start;
 }
 
 .roteiro-list-card__diarias-extenso-label {
