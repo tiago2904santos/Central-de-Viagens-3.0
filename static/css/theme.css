@@ -407,7 +407,7 @@ html[data-theme="dark-dark"] {
 
   --route-card-bg: linear-gradient(165deg, #162030 0%, #121a28 100%);
   --route-card-border: #31455c;
-  --route-card-inner-bg: #202d40ab;
+  --route-card-inner-bg: #202d408a;
   --route-card-inner-border: #33475f;
   --route-form-shell-bg: var(--route-card-bg);
   --route-section-bg: var(--route-card-bg);
