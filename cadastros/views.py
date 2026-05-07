@@ -1,6 +1,5 @@
 ﻿import csv
 from urllib.parse import urlencode
-import requests
 
 from django.contrib import messages
 from django.http import HttpResponse
@@ -64,6 +63,9 @@ from .services import definir_cargo_padrao
 from .services import definir_combustivel_padrao
 from .services import excluir_viatura
 from .services import salvar_configuracao_sistema
+from .services import consultar_cep
+from .services_via_cep import ViaCEPNotFoundError
+from .services_via_cep import ViaCEPServiceError
 
 
 def _render_listagem(request, template_name, context):
@@ -789,27 +791,13 @@ def api_consulta_cep(request, cep):
         return JsonResponse({"erro": "CEP deve ter 8 dígitos."}, status=400)
 
     try:
-        response = requests.get(f"https://viacep.com.br/ws/{cep_limpo}/json/", timeout=5)
-        response.raise_for_status()
-    except requests.RequestException:
+        payload = consultar_cep(cep_limpo)
+    except ViaCEPServiceError:
         return JsonResponse({"erro": "Erro ao consultar serviço externo de CEP."}, status=502)
-
-    try:
-        data = response.json()
-    except ValueError:
-        return JsonResponse({"erro": "Erro ao consultar serviço externo de CEP."}, status=502)
-    if data.get("erro"):
+    except ViaCEPNotFoundError:
         return JsonResponse({"erro": "CEP não encontrado."}, status=404)
 
-    return JsonResponse(
-        {
-            "cep": data.get("cep") or f"{cep_limpo[:5]}-{cep_limpo[5:]}",
-            "logradouro": data.get("logradouro") or "",
-            "bairro": data.get("bairro") or "",
-            "cidade": data.get("localidade") or "",
-            "uf": data.get("uf") or "",
-        },
-    )
+    return JsonResponse(payload)
 
 
 def viatura_delete(request, pk):

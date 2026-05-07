@@ -15,6 +15,7 @@ O app `roteiros` possui CRUD publico em `/roteiros/` (listagem, novo, editar, de
 - `services.py` ou `services/`: criacao, atualizacao e exclusao fisica (ex.: `roteiros/services/roteiro_editor.py`).
 - `presenters.py`: dados dos cards sem HTML.
 - `views.py`: fluxo request/form/service/messages/redirect.
+- integrações HTTP externas devem ser delegadas para service/infra (sem `requests` direto em view).
 - `urls.py`: rotas nomeadas padronizadas.
 - `templates/`: composicao com components globais.
 
@@ -54,3 +55,8 @@ Não foi possível excluir este cadastro porque ele está vinculado a outros reg
 - Header oficial do CRUD: `components/layout/page_header.html`.
 - Confirmacao de exclusao via component global `components/feedback/confirm_delete_block.html`.
 - Estados vazios e alertas devem usar os components de feedback reutilizaveis.
+
+## Integracao externa (exemplo canônico)
+
+- Consulta de CEP segue o padrão: `views.py` valida entrada e monta `JsonResponse`; service/infra executa chamada ao ViaCEP.
+- O contrato de resposta HTTP permanece na borda (view), e a integração fica isolada para manutenção e teste.

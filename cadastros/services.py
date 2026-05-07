@@ -9,6 +9,7 @@ from .models import Cargo
 from .models import Cidade
 from .models import Combustivel
 from .models import Estado
+from .services_via_cep import consultar_cep as consultar_cep_externo
 
 
 class CadastroVinculadoError(Exception):
@@ -193,3 +194,7 @@ def atualizar_viatura(instance, form):
 
 def excluir_viatura(instance):
     _traduz_delecao_protegida(instance)
+
+
+def consultar_cep(cep_limpo):
+    return consultar_cep_externo(cep_limpo)

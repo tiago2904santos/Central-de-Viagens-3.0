@@ -11,6 +11,8 @@ PY_RULES = [
     ("html_em_presenter", ("presenters.py", "<")),
     ("protectederror_fora_service", (".py", "ProtectedError")),
     ("atomic_em_view", ("views.py", "transaction.atomic")),
+    ("http_direto_em_view", ("views.py", "requests.get(")),
+    ("http_direto_em_view", ("views.py", "requests.post(")),
 ]
 
 HTML_RULES = [
@@ -27,7 +29,7 @@ HTML_RULES = [
 
 ALLOWLIST = {
     "core/deletion.py": {"protectederror_fora_service"},
-    "scripts/audit_django_architecture.py": {"protectederror_fora_service"},
+    "scripts/audit_django_architecture.py": {"protectederror_fora_service", "http_direto_em_view"},
 }
 
 

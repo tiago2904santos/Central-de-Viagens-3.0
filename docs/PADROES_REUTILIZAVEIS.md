@@ -36,6 +36,11 @@ Centralizar contratos reutilizaveis para evitar duplicacao entre modulos.
 - Fonte de verdade em `cadastros`.
 - Reuso por `get_configuracao_sistema` e `build_configuracao_context` (selectors/services).
 
+### 4) Integracoes HTTP externas
+- Chamadas para APIs externas devem ser encapsuladas em service/infra (ex.: `cadastros/services_via_cep.py`).
+- `views.py` nao deve importar ou chamar `requests` diretamente.
+- Exemplo canonico: endpoint de CEP valida o input na view e delega a consulta ao ViaCEP para service, preservando codigos HTTP na borda.
+
 ## Frontend
 
 ### 1) Components globais

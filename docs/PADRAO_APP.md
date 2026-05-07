@@ -6,6 +6,7 @@
 - `forms.py`: validação e normalização de entrada.
 - `selectors.py`: consultas reutilizáveis e otimização (`select_related`/`prefetch_related`).
 - `services.py` ou `services/`: regra funcional, transação e persistência.
+- integrações HTTP externas (ex.: ViaCEP) devem ficar em service/infra dedicado, nunca em `views.py`.
 - `presenters.py`: dados de tela sem HTML.
 - `views.py`: orquestra `request + form + selector + service + presenter`.
 - `urls.py`: nomes previsíveis (`*_index`, `*_create`, `*_update`, `*_delete`).
@@ -27,3 +28,4 @@
 - Não colocar query relevante em template.
 - Não retornar HTML em service/presenter.
 - Não usar `href="#"`, CSS inline ou JS inline.
+- Não chamar `requests.get`/`requests.post` direto em `views.py`; a view apenas valida entrada, chama service e monta resposta HTTP.
