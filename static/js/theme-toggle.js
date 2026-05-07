@@ -2,25 +2,20 @@
   "use strict";
 
   var STORAGE_KEY = "cv-theme";
-  var VALID_THEMES = ["dark-light", "dark-dark", "light-light", "light-dark"];
+  var VALID_THEMES = ["dark", "light"];
+  var THEME_ALIASES = {
+    "dark-dark": "dark",
+    "light-dark": "dark",
+    "dark-light": "dark",
+    "light-light": "light",
+    dark: "dark",
+    light: "light",
+    "variant-a": "dark",
+    "variant-b": "light",
+  };
 
   function normalizeTheme(raw) {
-    if (VALID_THEMES.indexOf(raw) >= 0) {
-      return raw;
-    }
-    if (raw === "variant-a") {
-      return "dark-light";
-    }
-    if (raw === "variant-b") {
-      return "light-light";
-    }
-    if (raw === "dark") {
-      return "dark-light";
-    }
-    if (raw === "light") {
-      return "light-light";
-    }
-    return null;
+    return THEME_ALIASES[raw] || null;
   }
 
   function getStoredTheme() {
@@ -31,14 +26,18 @@
         return n;
       }
     } catch (e) {}
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark-light" : "light-light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+
+  function toDomTheme(theme) {
+    return theme === "light" ? "light-light" : "dark-dark";
   }
 
   function applyTheme(theme) {
     if (VALID_THEMES.indexOf(theme) < 0) {
-      theme = "light-light";
+      theme = "dark";
     }
-    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.setAttribute("data-theme", toDomTheme(theme));
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch (e) {}

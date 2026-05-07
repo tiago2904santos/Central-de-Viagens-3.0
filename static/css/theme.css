@@ -4,7 +4,8 @@
  * (2) superfície principal / hero / cards estruturais em páginas featured
  * (3) contraste de texto quando a superfície for escura
  *
- * IDs: dark-light | dark-dark | light-light | light-dark
+ * IDs oficiais: dark | light
+ * Aliases legados aceitos: dark-dark, light-light, dark-light, light-dark
  * Sidebar (--sidebar-*): fixa em :root — não rotacionar por tema.
  * Variáveis --theme-*: usar em dashboard, app-page.css, app-ui (hero).
  * --app-hero-stage-start / --app-hero-stage-end: fixos em :root (faixa azul do hero).
@@ -199,8 +200,8 @@
   --route-focus-ring: rgba(21, 91, 154, 0.18);
 }
 
-/* ========== 1 dark-light — fundo escuro + div clara ========== */
-html[data-theme="dark-light"] {
+/* ========== 1 legado (desativado): dark-light ========== */
+html[data-theme="__deprecated-dark-light"] {
   --color-bg: #0f1a29;
   --color-surface: var(--color-white);
   --color-surface-strong: #f8fafd;
@@ -296,8 +297,11 @@ html[data-theme="dark-light"] {
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
 }
 
-/* ========== 2 dark-dark — fundo escuro + div escura ========== */
-html[data-theme="dark-dark"] {
+/* ========== 2 tema escuro oficial (inclui aliases legados escuros) ========== */
+html[data-theme="dark"],
+html[data-theme="dark-dark"],
+html[data-theme="dark-light"],
+html[data-theme="light-dark"] {
   --color-bg: #091321;
   --color-shell: #0e1928;
   --color-surface: #1a2638;
@@ -449,7 +453,8 @@ html[data-theme="dark-dark"] {
   --route-focus-ring: rgba(116, 170, 224, 0.24);
 }
 
-/* ========== 3 light-light — fundo claro + div clara ========== */
+/* ========== 3 tema claro oficial (inclui alias legado claro) ========== */
+html[data-theme="light"],
 html[data-theme="light-light"] {
   --color-bg: #f2f6fb;
   --color-surface: var(--color-white);
@@ -544,8 +549,8 @@ html[data-theme="light-light"] {
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
 }
 
-/* ========== 4 light-dark — fundo claro + div escura ========== */
-html[data-theme="light-dark"] {
+/* ========== 4 legado (desativado): light-dark ========== */
+html[data-theme="__deprecated-light-dark"] {
   --color-bg: #f2f6fb;
   --color-shell: #eef3fb;
   --color-surface: #1e2d3f;
