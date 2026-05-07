@@ -6,9 +6,9 @@
  *
  * IDs oficiais: dark | light
  * Aliases legados aceitos apenas para migração: dark-dark, light-light, dark-light, light-dark
- * Sidebar (--sidebar-*): fixa em :root — não rotacionar por tema.
+ * Sidebar (--sidebar-*): ajustada por tema oficial.
  * Variáveis --theme-*: usar em dashboard, app-page.css, app-ui (hero).
- * --app-hero-stage-start / --app-hero-stage-end: fixos em :root (faixa azul do hero).
+ * --app-hero-stage-start / --app-hero-stage-end / --app-hero-stage-bg: definidos por tema.
  */
 
 :root {
@@ -63,7 +63,7 @@
   --theme-surface-card: var(--color-card);
   --theme-border-card: var(--color-border);
 
-  /* Sidebar institucional — idêntica nos 4 temas */
+  /* Sidebar institucional (fallback) */
   --sidebar-surface: linear-gradient(180deg, #062847 0%, #031c33 100%);
   --sidebar-fg: #d8e3f2;
   --sidebar-fg-soft: #c8d8ea;
@@ -97,9 +97,10 @@
     radial-gradient(ellipse 90% 60% at 100% 0%, rgba(21, 91, 154, 0.1), transparent 50%),
     linear-gradient(165deg, #eef3fb 0%, #e0eaf6 45%, #d2e0f0 100%);
 
-  /* Faixa superior do hero (.app-page-hero__stage): igual em todos os temas */
+  /* Faixa superior do hero (.app-page-hero__stage) */
   --app-hero-stage-start: #0a1f35;
   --app-hero-stage-end: #1a4d7a;
+  --app-hero-stage-bg: linear-gradient(315deg, var(--app-hero-stage-start) -25%, var(--app-hero-stage-end) 25%);
   --app-hero-eyebrow: rgba(255, 248, 230, 0.98);
   --app-hero-title: var(--color-white);
   --app-hero-body-bg: linear-gradient(180deg, var(--color-white) 0%, #f8fafd 100%);
@@ -204,7 +205,6 @@
 /* ========== 2 tema escuro oficial (inclui aliases legados escuros) ========== */
 html[data-theme="dark"],
 html[data-theme="dark-dark"],
-html[data-theme="dark-light"],
 html[data-theme="light-dark"] {
   --color-bg: #07111d;
   --color-shell: #081827;
@@ -355,10 +355,17 @@ html[data-theme="light-dark"] {
   --route-status-muted-border: #53708c;
   --route-status-muted-text: #d2deeb;
   --route-focus-ring: rgba(116, 170, 224, 0.24);
+
+  --app-hero-stage-start: #0d1725;
+  --app-hero-stage-end: #17476f;
+  --app-hero-stage-bg: linear-gradient(225deg, var(--app-hero-stage-end) 0%, var(--app-hero-stage-start) 72%);
+
+  --sidebar-surface: var(--color-card);
 }
 
 /* ========== 3 tema claro oficial (inclui alias legado claro) ========== */
 html[data-theme="light"],
+html[data-theme="dark-light"],
 html[data-theme="light-light"] {
   --color-bg: #f2f6fb;
   --color-surface: var(--color-white);
@@ -451,6 +458,12 @@ html[data-theme="light-light"] {
   --route-section-soft-bg: var(--route-card-bg);
   --route-section-border: #dbe7f2;
   --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
+
+  --app-hero-stage-start: #0a2d4d;
+  --app-hero-stage-end: #1d5f93;
+  --app-hero-stage-bg: linear-gradient(315deg, var(--app-hero-stage-start) -25%, var(--app-hero-stage-end) 25%);
+
+  --sidebar-surface: linear-gradient(225deg, var(--app-hero-stage-end) 0%, var(--app-hero-stage-start) 72%);
 }
 
 /* aliases legados acima continuam apontando para dark/light oficiais */
