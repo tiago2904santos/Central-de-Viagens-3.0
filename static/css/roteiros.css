@@ -324,7 +324,7 @@
   border: 1px solid rgba(15, 95, 143, 0.25);
   border-radius: var(--radius-pill);
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
-  color: #073b5c;
+  color: var(--theme-text-heading);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -341,12 +341,12 @@
 
 .roteiro-mapa__city-tooltip--sede {
   border-color: rgba(11, 63, 103, 0.42);
-  color: #0b3f67;
+  color: var(--theme-text-heading);
 }
 
 .roteiro-mapa__city-tooltip--destino {
   border-color: rgba(15, 110, 143, 0.35);
-  color: #0c5672;
+  color: var(--theme-text-heading);
 }
 
 .roteiro-editor--avulso .roteiro-editor__section-title {
@@ -1325,7 +1325,7 @@
 
 .roteiro-editor--avulso .oficio-step3-trecho-card .card-header {
   margin: 0 2px 16px;
-  color: #1f3650;
+  color: var(--theme-text-heading);
   font-size: 14px;
   font-weight: 800;
 }
@@ -1371,7 +1371,7 @@
 }
 
 .roteiro-editor--avulso .oficio-step3-trecho-card .roteiro-editor__subpanel {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border: 1px solid var(--route-section-border);
   border-radius: var(--radius-md);
   box-shadow: none;
@@ -1379,7 +1379,7 @@
 }
 
 .roteiro-editor--avulso .oficio-step3-trecho-card .roteiro-editor__subpanel-title {
-  color: #2c4056;
+  color: var(--theme-text-heading);
   font-size: 14px;
   font-weight: 800;
   margin-bottom: 22px;
@@ -1397,12 +1397,12 @@
 }
 
 .roteiro-editor--avulso .oficio-step3-trecho-card .form-control[readonly] {
-  background: var(--route-card-bg);
-  color: #6d8196;
+  background: var(--color-card);
+  color: var(--theme-text-muted);
 }
 
 .roteiro-editor--avulso .oficio-step3-trecho-card .oficio-step3-time-calc-grid {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border: solid 1px var(--route-section-border);
   border-radius: var(--radius-md);
   gap: calc(var(--space-3) + 2px);
