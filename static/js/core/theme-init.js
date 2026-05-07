@@ -15,25 +15,21 @@
   };
 
   function normalizeTheme(raw) {
-    return THEME_ALIASES[raw] || null;
+    if (raw === "light" || raw === "light-light") return "light";
+    if (raw === "dark" || raw === "dark-dark" || raw === "dark-light" || raw === "light-dark") return "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
 
   function getInitialTheme() {
     try {
       var saved = localStorage.getItem(STORAGE_KEY);
-      var normalized = normalizeTheme(saved);
-      if (normalized) return normalized;
+      return normalizeTheme(saved);
     } catch (e) {}
-
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-
-  function toDomTheme(theme) {
-    return theme === "light" ? "light-light" : "dark-dark";
+    return normalizeTheme(null);
   }
 
   var theme = getInitialTheme();
-  document.documentElement.setAttribute("data-theme", toDomTheme(theme));
+  document.documentElement.setAttribute("data-theme", theme);
   try {
     localStorage.setItem(STORAGE_KEY, theme);
   } catch (e) {}

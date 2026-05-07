@@ -7,9 +7,8 @@ Padronizar o sistema com apenas dois temas oficiais (`dark` e `light`), com supe
 ## Contrato técnico
 
 - Preferência do usuário: `dark` e `light` (UI e `localStorage`).
-- Atributo `data-theme` no `html` usa aliases legados por compatibilidade:
-  - `dark` -> `dark-dark`
-  - `light` -> `light-light`
+- Atributo `data-theme` no `html` usa apenas `dark` ou `light`.
+- Aliases legados continuam aceitos no CSS e no processo de normalização para migração.
 - Persistência: `localStorage` na chave `cv-theme`.
 - Inicialização antecipada: `static/js/core/theme-init.js` no `head` do `base.html`.
 - Interação do usuário: `static/js/theme-toggle.js`.
@@ -23,7 +22,7 @@ O sistema normaliza automaticamente temas antigos:
 - `light-dark` -> `dark`
 - `light-light` -> `light`
 
-Após normalização, o valor salvo no `localStorage` passa a ser somente `dark` ou `light`, enquanto o DOM continua compatível com estilos legados.
+Após normalização, o valor salvo no `localStorage` e aplicado no DOM passa a ser somente `dark` ou `light`.
 
 ## Responsabilidades por arquivo
 

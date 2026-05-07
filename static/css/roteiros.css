@@ -840,7 +840,7 @@
 }
 
 #bate-volta-panel.is-muted {
-  opacity: 0.55;
+  filter: saturate(0.9);
   pointer-events: none;
 }
 
@@ -1205,6 +1205,7 @@
 
 .roteiro-editor__trecho-card .card-header {
   background: var(--route-card-inner-bg);
+  border-bottom: 1px solid var(--route-card-inner-border);
 }
 
 .roteiro-editor__trecho-card .roteiro-editor__trecho-route {
@@ -1213,8 +1214,8 @@
 }
 
 .roteiro-editor__subpanel {
-  background: var(--route-card-bg);
-  border: 1px solid var(--theme-border-card);
+  background: var(--route-card-inner-bg);
+  border: 1px solid var(--route-card-inner-border);
   border-radius: var(--radius-sm);
   height: 100%;
   padding: var(--space-2) var(--space-3);
@@ -1326,8 +1327,9 @@
 .roteiro-editor--avulso .oficio-step3-trecho-card .card-header {
   margin: 0 2px 16px;
   color: var(--theme-text-heading);
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
 .roteiro-editor--avulso .oficio-step3-trecho-card .card-body > .row.g-3 {
@@ -1492,8 +1494,8 @@
 }
 
 .roteiro-editor__summary-item {
-  background: var(--route-card-bg);
-  border: 1px solid var(--route-section-border);
+  background: var(--route-card-inner-bg);
+  border: 1px solid var(--route-card-inner-border);
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
@@ -2337,7 +2339,7 @@ html[data-theme="light-dark"] .roteiro-editor input[type="checkbox"] {
 .roteiro-mapa__title {
   font-size: 1.02rem;
   font-weight: 900;
-  color: #17324c;
+  color: var(--theme-text-heading);
   line-height: 1.25;
   margin: 0;
 }
@@ -2346,7 +2348,7 @@ html[data-theme="light-dark"] .roteiro-editor input[type="checkbox"] {
   margin: 4px 0 0;
   font-size: 12px;
   line-height: 1.45;
-  color: #617b95;
+  color: var(--theme-text-muted);
   font-weight: 600;
 }
 
