@@ -155,6 +155,16 @@
   --theme-badge-accent-bg: var(--color-accent-soft);
   --theme-badge-accent-border: rgba(216, 162, 27, 0.35);
   --theme-badge-accent-text: var(--color-accent-hover);
+
+  --route-card-bg: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
+  --route-card-border: #dbe7f2;
+  --route-card-inner-bg: #f1f6fb;
+  --route-card-inner-border: #d8e4ef;
+  --route-form-shell-bg: #ffffff;
+  --route-section-bg: #ffffff;
+  --route-section-soft-bg: #f7fbff;
+  --route-section-border: #dbe7f2;
+  --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
 }
 
 /* ========== 1 dark-light — fundo escuro + div clara ========== */
@@ -242,6 +252,16 @@ html[data-theme="dark-light"] {
   --theme-badge-accent-bg: var(--color-accent-soft);
   --theme-badge-accent-border: rgba(216, 162, 27, 0.35);
   --theme-badge-accent-text: var(--color-accent-hover);
+
+  --route-card-bg: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
+  --route-card-border: #dbe7f2;
+  --route-card-inner-bg: #f1f6fb;
+  --route-card-inner-border: #d8e4ef;
+  --route-form-shell-bg: #ffffff;
+  --route-section-bg: #ffffff;
+  --route-section-soft-bg: #f7fbff;
+  --route-section-border: #dbe7f2;
+  --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
 }
 
 /* ========== 2 dark-dark — fundo escuro + div escura ========== */
@@ -353,6 +373,16 @@ html[data-theme="dark-dark"] {
   --theme-badge-accent-bg: rgba(216, 162, 27, 0.18);
   --theme-badge-accent-border: rgba(216, 162, 27, 0.45);
   --theme-badge-accent-text: #ffe9a8;
+
+  --route-card-bg: linear-gradient(165deg, #162030 0%, #121a28 100%);
+  --route-card-border: #31455c;
+  --route-card-inner-bg: #202d40;
+  --route-card-inner-border: #33475f;
+  --route-form-shell-bg: #162030;
+  --route-section-bg: #1b2a3d;
+  --route-section-soft-bg: #24384e;
+  --route-section-border: #344960;
+  --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
 }
 
 /* ========== 3 light-light — fundo claro + div clara ========== */
@@ -438,6 +468,16 @@ html[data-theme="light-light"] {
   --theme-badge-accent-bg: var(--color-accent-soft);
   --theme-badge-accent-border: rgba(216, 162, 27, 0.35);
   --theme-badge-accent-text: var(--color-accent-hover);
+
+  --route-card-bg: linear-gradient(165deg, #ffffff 0%, #f7fbff 100%);
+  --route-card-border: #dbe7f2;
+  --route-card-inner-bg: #f1f6fb;
+  --route-card-inner-border: #d8e4ef;
+  --route-form-shell-bg: #ffffff;
+  --route-section-bg: #ffffff;
+  --route-section-soft-bg: #f7fbff;
+  --route-section-border: #dbe7f2;
+  --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
 }
 
 /* ========== 4 light-dark — fundo claro + div escura ========== */
@@ -547,6 +587,16 @@ html[data-theme="light-dark"] {
   --theme-badge-accent-bg: rgba(216, 162, 27, 0.18);
   --theme-badge-accent-border: rgba(216, 162, 27, 0.45);
   --theme-badge-accent-text: #ffe9a8;
+
+  --route-card-bg: linear-gradient(165deg, #162030 0%, #121a28 100%);
+  --route-card-border: #31455c;
+  --route-card-inner-bg: #202d40;
+  --route-card-inner-border: #33475f;
+  --route-form-shell-bg: #162030;
+  --route-section-bg: #1b2a3d;
+  --route-section-soft-bg: #24384e;
+  --route-section-border: #344960;
+  --route-reference-top-bg: linear-gradient(180deg, #124872 0%, #0c3558 100%);
 }
 
 /* Seletor 4 temas — visual fixo sidebar (cores só --sidebar-*) */
