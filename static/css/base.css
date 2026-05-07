@@ -4,8 +4,7 @@
 
 body {
   margin: 0;
-  background:
-    linear-gradient(180deg, #f8fbff 0%, #f2f6fb 45%, #eaf1f8 100%);
+  background: var(--app-body-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--font-size-md);
@@ -60,9 +59,16 @@ textarea {
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-inner);
   color: var(--color-text);
-  min-height: 44px;
+  min-height: var(--control-height-md);
   padding: 0 var(--space-3);
-  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+input::placeholder,
+select::placeholder,
+textarea::placeholder {
+  color: var(--color-input-placeholder, var(--color-subtle));
+  opacity: 1;
 }
 
 input:focus,
@@ -71,4 +77,16 @@ textarea:focus {
   border-color: rgba(37, 99, 168, 0.55);
   box-shadow: 0 0 0 4px rgba(37, 99, 168, 0.12);
   outline: none;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled,
+input[readonly],
+select[readonly],
+textarea[readonly] {
+  background: var(--color-input-bg-disabled, var(--color-input-disabled-bg, var(--color-surface-muted)));
+  border-color: var(--color-border);
+  color: var(--color-input-disabled-text, var(--color-text-muted, var(--color-muted)));
+  opacity: 1;
 }

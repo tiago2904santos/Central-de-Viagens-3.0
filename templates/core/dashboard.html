@@ -3,10 +3,124 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-  {% include "components/layout/page_header.html" with title=page_title description=page_description eyebrow="Base institucional" only %}
-  <div class="list-grid">
-    {% include "components/cards/module_card.html" with title="Documentos" description="Componentes preparados para Oficios, Termos, Planos e Prestacoes." href="/oficios/" action_label="Abrir" only %}
-    {% include "components/cards/module_card.html" with title="Cadastros" description="Base futura para dados reutilizaveis do sistema." href="/cadastros/" action_label="Abrir" only %}
-    {% include "components/cards/module_card.html" with title="Roteiros" description="Estrutura futura para trechos, destinos e calculos." href="/roteiros/" action_label="Abrir" only %}
+  <div class="dashboard-login-inspired">
+    <div class="dashboard-login-inspired__shell">
+      <header class="dashboard-login-inspired__hero" aria-labelledby="dashboard-title">
+        <div class="dashboard-login-inspired__brand">
+          <div class="dashboard-login-inspired__brand-mark" aria-hidden="true">CV</div>
+          <div class="dashboard-login-inspired__brand-copy">
+            <span class="dashboard-login-inspired__eyebrow">Base institucional</span>
+            <h1 class="dashboard-login-inspired__title" id="dashboard-title">Central de Viagens 3</h1>
+            <p class="dashboard-login-inspired__subtitle">
+              Painel institucional de documentos e viagens oficiais.
+            </p>
+            <p class="dashboard-login-inspired__subtitle dashboard-login-inspired__subtitle--secondary">
+              Acesse rapidamente documentos, roteiros, prestações e fluxos administrativos.
+            </p>
+          </div>
+        </div>
+        <div class="dashboard-login-inspired__accent-line" aria-hidden="true"></div>
+      </header>
+
+      <section class="dashboard-login-inspired__main-grid" aria-label="Painel inicial e indicadores">
+        <div class="dashboard-login-inspired__welcome">
+          <span class="dashboard-login-inspired__eyebrow">Painel inicial</span>
+          <h2 class="dashboard-login-inspired__welcome-title">Bem-vindo ao sistema</h2>
+          <p class="dashboard-login-inspired__welcome-text">
+            Gerencie documentos oficiais de viagem com organização, padronização e rastreabilidade.
+          </p>
+        </div>
+
+        <div class="dashboard-login-inspired__stats" role="list" aria-label="Indicadores">
+          <article class="dashboard-login-inspired__stat-card" role="listitem">
+            <span class="dashboard-login-inspired__stat-label">Total de ofícios</span>
+            <strong class="dashboard-login-inspired__stat-value">—</strong>
+            <p class="dashboard-login-inspired__stat-note">Aguardando dados</p>
+          </article>
+          <article class="dashboard-login-inspired__stat-card" role="listitem">
+            <span class="dashboard-login-inspired__stat-label">Rascunhos</span>
+            <strong class="dashboard-login-inspired__stat-value">—</strong>
+            <p class="dashboard-login-inspired__stat-note">Aguardando dados</p>
+          </article>
+          <article class="dashboard-login-inspired__stat-card" role="listitem">
+            <span class="dashboard-login-inspired__stat-label">Documentos recentes</span>
+            <strong class="dashboard-login-inspired__stat-value">—</strong>
+            <p class="dashboard-login-inspired__stat-note">Nenhuma consulta adicional nesta tela</p>
+          </article>
+          <article class="dashboard-login-inspired__stat-card" role="listitem">
+            <span class="dashboard-login-inspired__stat-label">Pendências</span>
+            <strong class="dashboard-login-inspired__stat-value">—</strong>
+            <p class="dashboard-login-inspired__stat-note">Nenhuma consulta adicional nesta tela</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="dashboard-login-inspired__quick-grid" aria-label="Acessos rápidos">
+        <article class="dashboard-login-inspired__quick-card">
+          <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">OF</span>
+          <h3 class="dashboard-login-inspired__quick-title">Ofícios</h3>
+          <p class="dashboard-login-inspired__quick-desc">
+            Emissão e acompanhamento dos documentos oficiais de viagem.
+          </p>
+          <a class="dashboard-login-inspired__button" href="{% url 'oficios:index' %}">Abrir</a>
+        </article>
+        <article class="dashboard-login-inspired__quick-card">
+          <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">TA</span>
+          <h3 class="dashboard-login-inspired__quick-title">Termos de Autorização</h3>
+          <p class="dashboard-login-inspired__quick-desc">
+            Geração e controle dos termos vinculados aos deslocamentos.
+          </p>
+          <a class="dashboard-login-inspired__button" href="{% url 'termos:index' %}">Abrir</a>
+        </article>
+        <article class="dashboard-login-inspired__quick-card">
+          <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">JT</span>
+          <h3 class="dashboard-login-inspired__quick-title">Justificativas</h3>
+          <p class="dashboard-login-inspired__quick-desc">
+            Registro das justificativas formais vinculadas aos documentos.
+          </p>
+          <a class="dashboard-login-inspired__button" href="{% url 'justificativas:index' %}">Abrir</a>
+        </article>
+        <article class="dashboard-login-inspired__quick-card">
+          <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">PT</span>
+          <h3 class="dashboard-login-inspired__quick-title">Planos de Trabalho</h3>
+          <p class="dashboard-login-inspired__quick-desc">
+            Planejamento de atividades, destinos, datas e diárias.
+          </p>
+          <a class="dashboard-login-inspired__button" href="{% url 'planos_trabalho:index' %}">Abrir</a>
+        </article>
+        <article class="dashboard-login-inspired__quick-card">
+          <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">OS</span>
+          <h3 class="dashboard-login-inspired__quick-title">Ordens de Serviço</h3>
+          <p class="dashboard-login-inspired__quick-desc">
+            Organização das equipes e deslocamentos operacionais.
+          </p>
+          <a class="dashboard-login-inspired__button" href="{% url 'ordens_servico:index' %}">Abrir</a>
+        </article>
+        <article class="dashboard-login-inspired__quick-card">
+          <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">RT</span>
+          <h3 class="dashboard-login-inspired__quick-title">Roteiros</h3>
+          <p class="dashboard-login-inspired__quick-desc">
+            Cadastro e reaproveitamento de trajetos oficiais.
+          </p>
+          <a class="dashboard-login-inspired__button" href="{% url 'roteiros:index' %}">Abrir</a>
+        </article>
+        <article class="dashboard-login-inspired__quick-card">
+          <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">PC</span>
+          <h3 class="dashboard-login-inspired__quick-title">Prestações de Contas</h3>
+          <p class="dashboard-login-inspired__quick-desc">
+            Controle das etapas de prestação e documentos anexos.
+          </p>
+          <a class="dashboard-login-inspired__button" href="{% url 'prestacoes_contas:index' %}">Abrir</a>
+        </article>
+        <article class="dashboard-login-inspired__quick-card">
+          <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">DB</span>
+          <h3 class="dashboard-login-inspired__quick-title">Diário de Bordo</h3>
+          <p class="dashboard-login-inspired__quick-desc">
+            Registro operacional de deslocamentos e informações de viagem.
+          </p>
+          <a class="dashboard-login-inspired__button" href="{% url 'diario_bordo:index' %}">Abrir</a>
+        </article>
+      </section>
+    </div>
   </div>
 {% endblock %}

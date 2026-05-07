@@ -1,12 +1,19 @@
+/* ==========================================================================
+   CARDS
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Base de superficie
+   -------------------------------------------------------------------------- */
 .card,
 .module-card,
 .document-card,
 .summary-card,
 .page-card {
-  background: #ffffff;
+  background: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: 16px;
-  box-shadow: 0 10px 26px rgba(7, 26, 51, 0.1);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
@@ -15,7 +22,7 @@
 .document-card,
 .summary-card {
   padding: var(--space-4);
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
 }
 
 .card:hover,
@@ -23,7 +30,7 @@
 .document-card:hover,
 .summary-card:hover {
   border-color: rgba(216, 162, 27, 0.4);
-  box-shadow: 0 18px 40px rgba(7, 26, 51, 0.16);
+  box-shadow: var(--shadow-panel);
   transform: translateY(-2px);
 }
 
@@ -39,9 +46,11 @@
 .card p,
 .module-card p {
   color: var(--color-muted);
-  margin-bottom: var(--space-4);
 }
 
+/* --------------------------------------------------------------------------
+   2. Variantes de card
+   -------------------------------------------------------------------------- */
 .module-card {
   border-top: 3px solid rgba(216, 162, 27, 0.45);
   display: grid;
@@ -68,9 +77,9 @@
 }
 
 .document-meta > div {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 253, 0.92));
-  border: 1px solid rgba(175, 192, 211, 0.45);
-  border-radius: 12px;
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
   padding: 8px 10px;
 }
 
@@ -120,6 +129,9 @@
   margin-bottom: 0;
 }
 
+/* --------------------------------------------------------------------------
+   3. Page card
+   -------------------------------------------------------------------------- */
 .page-card {
   box-sizing: border-box;
   margin-inline: 0;
@@ -129,7 +141,7 @@
 }
 
 .page-card h2 {
-  font-size: 22px;
+  font-size: calc(var(--font-size-lg) + 2px);
   line-height: 1.25;
   margin-bottom: var(--space-2);
 }

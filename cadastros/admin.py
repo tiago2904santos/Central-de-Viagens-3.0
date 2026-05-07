@@ -13,46 +13,52 @@ from .models import Viatura
 
 @admin.register(ConfiguracaoSistema)
 class ConfiguracaoSistemaAdmin(admin.ModelAdmin):
-    list_display = ("id", "nome_orgao", "sigla_orgao", "updated_at")
+    list_display = ("id", "divisao", "unidade", "cidade_endereco", "updated_at")
+
+    def has_add_permission(self, request):
+        if ConfiguracaoSistema.objects.exists():
+            return False
+        return super().has_add_permission(request)
 
 
 @admin.register(AssinaturaConfiguracao)
 class AssinaturaConfiguracaoAdmin(admin.ModelAdmin):
-    list_display = ("configuracao", "tipo", "ordem", "servidor", "updated_at")
-    list_filter = ("tipo",)
+    list_display = ("configuracao", "tipo", "ordem", "servidor", "ativo", "updated_at")
+    list_filter = ("tipo", "ativo")
+    ordering = ("tipo", "ordem")
 
 
 @admin.register(Cargo)
 class CargoAdmin(admin.ModelAdmin):
-    list_display = ("nome", "is_padrao", "updated_at")
+    list_display = ("nome", "is_padrao")
     search_fields = ("nome",)
     ordering = ("nome",)
 
 
 @admin.register(Combustivel)
 class CombustivelAdmin(admin.ModelAdmin):
-    list_display = ("nome", "is_padrao", "updated_at")
+    list_display = ("nome", "is_padrao")
     search_fields = ("nome",)
     ordering = ("nome",)
 
 
 @admin.register(Estado)
 class EstadoAdmin(admin.ModelAdmin):
-    list_display = ("nome", "sigla", "codigo_ibge", "updated_at")
+    list_display = ("nome", "sigla", "codigo_ibge")
     search_fields = ("nome", "sigla")
     ordering = ("nome",)
 
 
 @admin.register(Unidade)
 class UnidadeAdmin(admin.ModelAdmin):
-    list_display = ("nome", "sigla", "updated_at")
+    list_display = ("nome", "sigla")
     search_fields = ("nome", "sigla")
     ordering = ("nome",)
 
 
 @admin.register(Cidade)
 class CidadeAdmin(admin.ModelAdmin):
-    list_display = ("nome", "estado", "uf", "capital", "codigo_ibge", "updated_at")
+    list_display = ("nome", "estado", "uf", "capital", "codigo_ibge")
     search_fields = ("nome", "uf", "estado__nome", "estado__sigla")
     list_filter = ("capital", "uf")
     ordering = ("uf", "nome")
@@ -60,7 +66,7 @@ class CidadeAdmin(admin.ModelAdmin):
 
 @admin.register(Servidor)
 class ServidorAdmin(admin.ModelAdmin):
-    list_display = ("nome", "cargo", "cpf", "sem_rg", "telefone", "unidade", "updated_at")
+    list_display = ("nome", "cargo", "cpf", "sem_rg", "telefone", "unidade")
     search_fields = ("nome", "cpf", "rg", "telefone", "cargo__nome", "unidade__nome")
     list_filter = ("cargo", "unidade")
     ordering = ("nome",)
@@ -68,7 +74,7 @@ class ServidorAdmin(admin.ModelAdmin):
 
 @admin.register(Viatura)
 class ViaturaAdmin(admin.ModelAdmin):
-    list_display = ("placa", "modelo", "combustivel", "tipo", "updated_at")
+    list_display = ("placa", "modelo", "combustivel", "tipo")
     search_fields = ("placa", "modelo", "combustivel__nome", "tipo")
     list_filter = ("combustivel", "tipo")
     ordering = ("placa",)

@@ -2,6 +2,7 @@
 from django.shortcuts import get_object_or_404
 
 from .models import Cargo
+from .models import ConfiguracaoSistema
 from .models import Cidade
 from .models import Combustivel
 from .models import Estado
@@ -113,3 +114,50 @@ def get_viatura_by_id(pk):
         Viatura.objects.select_related("combustivel").prefetch_related("motoristas"),
         pk=pk,
     )
+
+
+def get_configuracao_sistema():
+    return ConfiguracaoSistema.get_singleton()
+
+
+def build_configuracao_context():
+    configuracao = get_configuracao_sistema()
+    assinaturas = {}
+    for assinatura in configuracao.assinaturas.select_related("servidor").order_by("tipo", "ordem"):
+        if not assinatura.ativo or not assinatura.servidor_id:
+            continue
+        assinaturas.setdefault(assinatura.tipo, []).append(
+            {
+                "ordem": assinatura.ordem,
+                "servidor": assinatura.servidor,
+                "nome": assinatura.servidor.nome,
+            },
+        )
+
+    cidade_doc = configuracao.cidade_endereco or ""
+    return {
+        "nome_orgao": configuracao.nome_orgao,
+        "sigla_orgao": configuracao.sigla_orgao,
+        "divisao": configuracao.divisao,
+        "unidade": configuracao.unidade,
+        # Compatibilidade: placeholders antigos "sede" passam a refletir cidade_endereco.
+        "sede": cidade_doc,
+        "nome_chefia": configuracao.nome_chefia,
+        "cargo_chefia": configuracao.cargo_chefia,
+        "cep": configuracao.cep,
+        "cep_formatado": configuracao.cep_formatado,
+        "logradouro": configuracao.logradouro,
+        "numero": configuracao.numero,
+        "bairro": configuracao.bairro,
+        "cidade_endereco": cidade_doc,
+        "uf": configuracao.uf,
+        "telefone": configuracao.telefone,
+        "telefone_formatado": configuracao.telefone_formatado,
+        "email": configuracao.email,
+        "cidade_sede_padrao": configuracao.cidade_sede_padrao,
+        "coordenador_adm_plano_trabalho": configuracao.coordenador_adm_plano_trabalho,
+        "prazo_justificativa_dias": configuracao.prazo_justificativa_dias,
+        "pt_ultimo_numero": configuracao.pt_ultimo_numero,
+        "pt_ano": configuracao.pt_ano,
+        "assinaturas": assinaturas,
+    }

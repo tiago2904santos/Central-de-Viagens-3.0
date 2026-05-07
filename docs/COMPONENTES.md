@@ -22,8 +22,9 @@ O app `cadastros` usa listagens globais (`list_page` ou `list_page_simple`), `do
 
 ## Listagem simples vs cards
 
-- **Lista simples**: `list_page_simple.html`, `simple_list.html`, `simple_list_row.html`, estilos em `lists.css`. Para cadastros enxutos: Cargo, Combustivel, Unidade, Cidade.
+- **Lista simples**: `list_page_simple.html`, `simple_list.html`, `simple_list_row.html`, estilos em `lists.css`. Para cadastros enxutos: Cargo, Combustivel, Unidade, Cidade. Na inclusao da lista, **nao use** `only` no `{% include %}` da pagina para `list_page_simple` (nem na cadeia ate `simple_list_row`) quando houver formularios POST na linha — caso contrario `csrf_token` some do contexto e `{% csrf_token %}` renderiza vazio.
 - **Cards**: `list_page.html` + `document_card` para Servidor, Viatura e listagens ricas futuras.
+- Listagens nao exibem data de atualizacao por padrao. Datas so devem aparecer quando forem informacao de negocio, como data de viagem, data do documento, periodo do roteiro, prazo ou data de criacao relevante.
 
 ## Sidebar
 
@@ -31,6 +32,7 @@ O app `cadastros` usa listagens globais (`list_page` ou `list_page_simple`), `do
 - Dados: `core/navigation.py`, preparados por `core/context_processors.py`.
 - CSS principal: `static/css/sidebar.css`.
 - JS principal: `static/js/components/sidebar.js`.
+- Rodape: texto institucional e, para usuario autenticado, formulario **Sair** (POST para `core:logout`, classe `sidebar-logout-btn`).
 - Largura da coluna: token `--sidebar-width` (15%); area principal ~85% via grid em `layout.css`; `--page-max-width: 100%` no shell.
 - Somente o grupo **Cadastros** usa botao de expandir/recolher; dentro dele, lista plana com indentacao visual para `Cargos` (sob Servidores) e `Combustiveis` (sob Viaturas), sem segundo toggle por nivel.
 - Links principais usam `data-sidebar-root-link`; grupo expansivel usa `data-sidebar-item`, `data-sidebar-group`, `data-sidebar-expandable`; filhos do painel usam `data-sidebar-panel-link`.
@@ -67,9 +69,11 @@ Mascaras globais sao ativadas por atributo:
 - `data-mask="telefone"`
 - `data-mask="placa"`
 
-### Toggle (`toggle_field.html`)
+### Card-toggle (`card_toggle.html`)
 
-Checkboxes booleanos devem preferir `templates/components/forms/toggle_field.html` com widget `CheckboxInput` usando classes `app-toggle__input` + `sr-only`. Inspiracao conceitual: botao **Data unica** do Plano de Trabalho no legacy.
+Checkboxes booleanos visiveis devem usar `templates/components/forms/card_toggle.html` com widget `CheckboxInput` usando classes `app-card-toggle__input` + `sr-only`. Inspiracao conceitual: botao **Data unica** do Plano de Trabalho no legacy.
+
+O componente renderiza um card clicavel com icone, titulo, descricao e badge `LIGADA` / `DESLIGADA`. Checkbox cru do navegador nao deve aparecer na interface final. BooleanFields futuros renderizados manualmente devem seguir este componente.
 
 ### Campo com acao (`input_with_action.html`)
 
@@ -88,6 +92,18 @@ Para select ao lado de link **Gerenciar** (ex.: Cargo, Unidade, Combustivel em c
 A listagem de `roteiros` usa `components/lists/list_page.html`, `components/lists/list_toolbar.html`, `components/lists/list_grid.html`, `components/cards/document_card.html` e empty state global.
 
 O presenter `apresentar_roteiro_card` entrega `title`, `subtitle`, `meta` e `actions` sem HTML. A view apenas le `q`, chama selector, aplica presenter e renderiza o template.
+
+### Componentes de dominio
+
+Blocos reutilizaveis de dominio ficam em `templates/components/domain/`, estilos compartilhados em `static/css/domain.css`, e devem ser usados por Roteiros (**referencia**) e futuros modulos. Contrato, parametros e limites: `docs/COMPONENTES_DOMINIO.md`.
+
+- `sede_destinos.html`
+- `destinos.html`
+- `trechos.html`
+- `trecho_card.html`
+- `retorno.html`
+- `calculadora_rota.html`
+- `resumo_rota.html`
 
 ## Alerts e feedback
 

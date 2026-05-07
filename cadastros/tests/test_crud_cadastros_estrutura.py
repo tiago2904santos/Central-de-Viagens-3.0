@@ -1,4 +1,8 @@
-﻿from django.test import TestCase
+﻿import re
+
+from django.contrib.auth import get_user_model
+from django.test import Client
+from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 
@@ -11,6 +15,11 @@ from cadastros.models import Viatura
 
 @override_settings(ALLOWED_HOSTS=["testserver", "localhost"])
 class CargoCrudTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.user = user_model.objects.create_user(username="teste-cargo", password="senha-teste")
+        self.client.force_login(self.user)
+
     def test_crud_cargo_e_normalizacao(self):
         self.assertEqual(self.client.get(reverse("cadastros:cargos_index")).status_code, 200)
         self.assertEqual(self.client.get(reverse("cadastros:cargo_create")).status_code, 200)
@@ -34,6 +43,11 @@ class CargoCrudTests(TestCase):
 
 @override_settings(ALLOWED_HOSTS=["testserver", "localhost"])
 class CombustivelCrudTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.user = user_model.objects.create_user(username="teste-combustivel", password="senha-teste")
+        self.client.force_login(self.user)
+
     def test_crud_combustivel_e_normalizacao(self):
         self.assertEqual(self.client.get(reverse("cadastros:combustiveis_index")).status_code, 200)
         self.assertEqual(self.client.get(reverse("cadastros:combustivel_create")).status_code, 200)
@@ -59,8 +73,36 @@ class CombustivelCrudTests(TestCase):
 
 
 @override_settings(ALLOWED_HOSTS=["testserver", "localhost"])
+class SimpleListCsrfTests(TestCase):
+    def test_acao_inline_de_cargo_renderiza_csrf_e_aceita_post(self):
+        Cargo.objects.create(nome="ANALISTA", is_padrao=True)
+        cargo = Cargo.objects.create(nome="GERENTE")
+        user_model = get_user_model()
+        user = user_model.objects.create_user(username="teste-csrf", password="senha-teste")
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(user)
+
+        response = client.get(reverse("cadastros:cargos_index"))
+        self.assertEqual(response.status_code, 200)
+
+        html = response.content.decode()
+        self.assertIn('name="csrfmiddlewaretoken"', html)
+        match = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', html)
+        self.assertIsNotNone(match)
+
+        response = client.post(
+            reverse("cadastros:cargo_set_default", args=[cargo.pk]),
+            {"csrfmiddlewaretoken": match.group(1)},
+        )
+        self.assertRedirects(response, reverse("cadastros:cargos_index"))
+
+
+@override_settings(ALLOWED_HOSTS=["testserver", "localhost"])
 class ServidorCrudTests(TestCase):
     def setUp(self):
+        user_model = get_user_model()
+        self.user = user_model.objects.create_user(username="teste-servidor", password="senha-teste")
+        self.client.force_login(self.user)
         self.unidade = Unidade.objects.create(nome="Secretaria", sigla="SEC")
         self.cargo = Cargo.objects.create(nome="ANALISTA")
 
@@ -120,6 +162,9 @@ class ServidorCrudTests(TestCase):
 @override_settings(ALLOWED_HOSTS=["testserver", "localhost"])
 class ViaturaCrudTests(TestCase):
     def setUp(self):
+        user_model = get_user_model()
+        self.user = user_model.objects.create_user(username="teste-viatura", password="senha-teste")
+        self.client.force_login(self.user)
         self.combustivel = Combustivel.objects.create(nome="GASOLINA")
 
     def test_viatura_fluxo_busca_e_validacoes(self):
@@ -198,3 +243,12 @@ class MotoristaRemovidoTests(TestCase):
     def test_rota_motoristas_nao_existe(self):
         response = self.client.get("/cadastros/motoristas/")
         self.assertEqual(response.status_code, 404)
+
+
+@override_settings(ALLOWED_HOSTS=["testserver", "localhost"])
+class AutenticacaoCadastrosTests(TestCase):
+    def test_cadastros_exige_login_para_usuario_anonimo(self):
+        response = self.client.get(reverse("cadastros:index"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login/", response["Location"])
+        self.assertIn("next=/cadastros/", response["Location"])

@@ -52,11 +52,16 @@ Fontes de verdade usadas: `docs/LEGACY_*_MAP.md` e arquivos em `legacy/.../cadas
 
 - **Implementado**: modelo `ConfiguracaoSistema` (singleton `get_singleton()`), campos institucionais (orgao, endereco, chefia, prazo justificativa, cidade sede padrao, numeracao PT auxiliar quando aplicavel).
 - **Local**: `cadastros/models.py` (coerente com demais cadastros e FKs para `Cidade` / `Servidor`).
-- Mascaras CEP/telefone alinhadas ao legacy conceitualmente.
+- A tela foi refinada como central institucional: identificacao, sede/chefia, endereco dos documentos, contato, prazos/numeracao e assinaturas documentais.
+- CEP e telefone sao normalizados no backend e mascarados via `static/js/components/masks.js`.
+- A consulta de CEP usa a API interna autenticada `/cadastros/api/cep/<cep>/`, que chama ViaCEP com timeout curto.
+- `cidade_sede_padrao` e resolvida automaticamente por UF + cidade do endereco, com comparacao tolerante a acentos.
+- Detalhes em `docs/CONFIGURACOES_SISTEMA.md`.
 
 ## AssinaturaConfiguracao
 
-- **Implementado** como base de configuracao: por tipo de documento (oficio, justificativa, plano de trabalho, ordem de servico, termo), referencia `Servidor`, ordem fixa 1.
+- **Implementado** como base de configuracao: por tipo de documento (oficio, justificativa, plano de trabalho, ordem de servico, termo), referencia `Servidor`, ordem por tipo e `ativo` tecnico.
+- A UI permite Ofício com assinatura 1 e 2; os demais tipos usam ordem 1.
 - **Nao** e assinatura digital; apenas preparacao para geracao de documentos futura.
 
 ## Forms, services, views
@@ -64,12 +69,13 @@ Fontes de verdade usadas: `docs/LEGACY_*_MAP.md` e arquivos em `legacy/.../cadas
 - Forms atualizados: `CargoForm`, `CombustivelForm`, `ServidorForm`, `ViaturaForm`, `UnidadeForm`, `ConfiguracaoSistemaForm`.
 - Padrao mantido: views orquestram; selectors consultam; services persistem; presenters formatam listagens.
 
-## UI e toggles (alinhamento ao legacy)
+## UI e card-toggles (alinhamento ao legacy)
 
-- Checkboxes booleanos em Cadastros usam o componente global **toggle** (`templates/components/forms/toggle_field.html`, `static/css/forms.css`, `static/js/components/toggles.js`), inspirado no botao **Data unica** do Plano de Trabalho / OS no legacy (`visually-hidden` + controle visual + estado claro), sem copiar CSS legado.
+- Checkboxes booleanos em Cadastros usam o componente global **card-toggle** (`templates/components/forms/card_toggle.html`, `static/css/forms.css`, `static/js/components/card-toggle.js`), inspirado no botao **Data unica** do Plano de Trabalho no legacy (`visually-hidden` + card clicavel + estado `LIGADA` / `DESLIGADA`), sem copiar CSS legado.
+- Checkbox cru do navegador nao deve aparecer na interface final; BooleanFields futuros renderizados manualmente devem usar o card-toggle.
 - **Servidor**: ao lado de Cargo e Unidade ha botoes para listas de gerenciamento (`input_with_action`); **Nao possui RG** trava o campo RG (JS centralizado); telefone com mascara via `data-mask="telefone"`.
 - **Cargo / Combustivel**: acoes POST **Definir como padrao** na lista (`cadastros:cargo_set_default`, `cadastros:combustivel_set_default`); badge **Padrao** quando `is_padrao`; services `definir_cargo_padrao` / `definir_combustivel_padrao`.
-- **Viatura**: titulo de lista `MODELO — PLACA`; meta com combustivel, tipo, motoristas e atualizado em; relacionamento **motoristas** e M2M com `Servidor` (sem cadastro Motorista).
+- **Viatura**: titulo de lista `MODELO — PLACA`; meta com combustivel, tipo e motoristas; relacionamento **motoristas** e M2M com `Servidor` (sem cadastro Motorista).
 
 ## Menu e hub
 

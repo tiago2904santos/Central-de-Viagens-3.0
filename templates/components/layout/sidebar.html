@@ -56,6 +56,33 @@
     {% endfor %}
   </nav>
   <div class="sidebar-footer">
-    <span>Sistema institucional</span>
+    <div class="sidebar-theme" role="group" aria-label="Tema visual da area principal">
+      <span class="sidebar-theme__label" id="sidebar-theme-label">Tema</span>
+      <div class="app-theme-grid" role="radiogroup" aria-labelledby="sidebar-theme-label">
+        <button type="button" class="app-theme-grid__btn" data-theme-mode="dark-light" aria-pressed="false">
+          Escuro + Claro
+          <small>Fundo escuro, painéis claros</small>
+        </button>
+        <button type="button" class="app-theme-grid__btn" data-theme-mode="dark-dark" aria-pressed="false">
+          Escuro + Escuro
+          <small>Fundo e painéis escuros</small>
+        </button>
+        <button type="button" class="app-theme-grid__btn" data-theme-mode="light-light" aria-pressed="false">
+          Claro + Claro
+          <small>Fundo e painéis claros</small>
+        </button>
+        <button type="button" class="app-theme-grid__btn" data-theme-mode="light-dark" aria-pressed="false">
+          Claro + Escuro
+          <small>Fundo claro, painéis escuros</small>
+        </button>
+      </div>
+    </div>
+    {% if user.is_authenticated %}
+    <form class="sidebar-logout-form" method="post" action="{% url 'core:logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="sidebar-logout-btn">Sair</button>
+    </form>
+    {% endif %}
+    <span class="sidebar-footer-note">Sistema institucional</span>
   </div>
 </aside>

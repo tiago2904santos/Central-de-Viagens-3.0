@@ -6,6 +6,36 @@
 - JS centralizado em `static/js/`.
 - Proibido CSS e JS soltos por pagina.
 - Nao criar estilo especifico por CRUD; corrigir no component global reutilizavel.
+- Proibido `style=""` em templates.
+- Proibido JS inline em templates.
+- Proibido `href="#"` para acao visual.
+- Inicializacao de tema deve ocorrer por `static/js/core/theme-init.js` (sem `<script>` inline no `base.html`).
+- A **tela de login** usa layout proprio (sem sidebar): classes em `static/css/auth.css` (prefixo `auth-`), importado tambem em `style.css`; ver `docs/AUTENTICACAO.md`.
+- Se um valor CSS aparece em mais de um ponto relevante, ele deve virar token semantico (`--color-*`, `--radius-*`, `--space-*`, `--shadow-*`, `--control-*`, `--font-*`).
+- Evitar valor bruto em componente (`999px`, `#ffffff`, sombras repetidas); usar token semantico equivalente.
+- `border-radius: 999px` e proibido em componente; usar sempre `var(--radius-pill)`.
+- Hardcode restante so e aceito com justificativa especifica (seletor + motivo tecnico), nunca justificativa generica.
+
+## Tokenizacao semantica (refactor)
+
+- Tokens globais vivem em `static/css/tokens.css`.
+- Variacao por tema vive em `static/css/theme.css`.
+- Compatibilidade com legado `--theme-*` deve ser mantida via alias quando necessario (sem quebra abrupta).
+- Cada arquivo CSS deve ser organizado por secoes com comentarios de contexto (shell, secoes, mapa, overrides, responsividade).
+
+## Dark mode bem resolvido
+
+- Tema escuro funcional != tema escuro bem desenhado.
+- Funcional: tudo escuro e legivel no minimo.
+- Bem desenhado: hierarquia entre secoes/cards/inputs, contraste de label/help e estados vazios coerentes.
+- Em painel escuro, evitar blocos brancos de estado vazio; preferir `--color-info-*`.
+- Em inputs disabled/read-only, manter `opacity: 1` e reduzir contraste por token, nao por opacidade global.
+- Em componentes que existem em dark mode, e proibido texto em azul escuro hardcoded (`#0b3a66` e similares).
+- Hierarquia de texto recomendada:
+  - titulo interno: `--color-heading` / `--color-section-title`
+  - label: `--color-label` / `--color-label-strong`
+  - ajuda/descricao: `--color-help` / `--color-description`
+- Icones em painel escuro usam `--color-icon-*`; radio/checkbox usam `accent-color` por token.
 
 ## Padrao visual premium
 
@@ -40,9 +70,19 @@ Mascaras padrao:
 
 A normalizacao final ocorre no backend (forms/models).
 
-## Toggle (checkbox)
+## Card-toggle (checkbox)
 
-Booleanos em formularios devem usar o padrao **toggle** (`app-toggle` em `static/css/forms.css`, componente `toggle_field.html`), inspirado funcionalmente no **Data unica** do legacy (checkbox oculto + rotulo clicavel + estado ON/OFF evidente). Estados de foco usam azul institucional e acento amarelo no indicador quando ligado. JS de sincronismo em `static/js/components/toggles.js` (sem JS inline).
+Booleanos visiveis em formularios devem usar o padrao **card-toggle** (`app-card-toggle` em `static/css/forms.css`, componente `card_toggle.html`), inspirado no botao **Data unica** do Plano de Trabalho do legacy.
+
+Regras:
+
+- Checkbox cru do navegador nao deve aparecer na interface final.
+- O input real continua no DOM, oculto com tecnica acessivel de visually-hidden.
+- O card mostra icone, titulo forte, descricao pequena e badge de estado `LIGADA` / `DESLIGADA`.
+- Desligado usa fundo e borda vermelhos suaves, com badge vermelho.
+- Ligado usa azul institucional com acento amarelo/dourado, borda destacada e badge premium.
+- BooleanFields futuros renderizados manualmente devem usar `templates/components/forms/card_toggle.html`.
+- JS de sincronismo em `static/js/components/card-toggle.js` (sem JS inline).
 
 ## Cadastros como referencia
 
@@ -62,6 +102,14 @@ As telas de `Unidade`, `Cidade`, `Cargo`, `Combustivel`, `Servidor` e `Viatura` 
 - Ajustes de cards em `templates/components/cards/*.html` e `static/css/cards.css`.
 - Ajustes de feedback em `templates/components/feedback/*.html` e `static/css/utilities.css`.
 - Nunca copiar CSS bruto do legado em bloco; extrair o conceito e reconstruir no sistema atual.
+
+## CSS de dominio (`domain.css`)
+
+- Arquivo: `static/css/domain.css`.
+- Uso: blocos compartilhados de **roteiros, trechos, destinos, retorno, calculadora e resumo de rota** — classes semanticas como `.domain-block`, `.domain-block__title`, `.route-summary`, `.route-card`.
+- Regra: estilos que servem a **qualquer modulo** com o mesmo tipo de bloco ficam aqui; o que for **exclusivo do wizard avulso** (densidade, hero, grids do `roteiro-editor`) permanece em `static/css/roteiros.css`.
+- Paginas que incluem `templates/components/domain/*` devem importar `domain.css` no `extra_css` (alem de `style.css` via `base.html`).
+- Proibido `style=""` nos templates; proibido variar o mesmo tipo de bloco com classes duplicadas em outro arquivo sem motivo.
 
 ## Layout do shell
 
