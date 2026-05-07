@@ -56,8 +56,9 @@ Auditoria executada sobre:
 - **Ação aplicada:** removido inline; uso de `static/js/core/theme-init.js`.
 
 ### 7) Templates com `href="#"`
-- **Status:** OK
-- Busca global sem ocorrência.
+- **Status:** CORRIGIDO
+- Fallback técnico em navegação (`core/navigation.py`) foi removido para impedir `href="#"` em caso de `reverse` inválido.
+- Itens sem URL resolvida agora são renderizados como elemento neutro (não clicável) na sidebar.
 
 ### 8) Views gordas
 - **Severidade:** MEDIO
@@ -117,16 +118,16 @@ Auditoria executada sobre:
 Resumo de maturidade arquitetural:
 
 - **Maduro (CRUD referência):** `cadastros`, `roteiros`.
-- **Intermediário (núcleo montado, faltam camadas):** `documentos`.
-- **Em evolução por módulo:** `oficios`, `termos`, `justificativas`, `planos_trabalho`, `ordens_servico`, `prestacoes_contas`, `diario_bordo`, `assinaturas`, `usuarios`, `core`.
-- **Placeholder:** `integracoes`.
+- **Base transversal:** `core`, `usuarios`.
+- **Placeholder/preparação de fluxo:** `eventos`, `documentos`, `oficios`, `termos`, `justificativas`, `planos_trabalho`, `ordens_servico`, `prestacoes_contas`, `diario_bordo`, `assinaturas`.
+- **Placeholder técnico inicial:** `integracoes`.
 
 ## Resultado da varredura de anti-padrões
 
 - `style="` em templates: **não encontrado**
 - `<script>` inline em templates: **encontrado apenas em `base.html` e corrigido**
 - `onclick=`/`oninput=`/`onchange=` em templates: **não encontrado**
-- `href="#"`/`javascript:void` em templates: **não encontrado**
+- `href="#"`/`javascript:void` em templates: **fallback removido da navegação; sem link falso ativo**
 - `Atualizado em`/`updated_at` em templates: **não encontrado**
 
 ## Checklist de qualidade 10/10
@@ -151,6 +152,6 @@ Resumo de maturidade arquitetural:
 
 ## Pendências controladas
 
-1. Evoluir arquitetura interna dos apps documentais para o mesmo nível de `cadastros`/`roteiros`.
+1. Evoluir arquitetura interna dos apps em preparação documental para o mesmo nível de `cadastros`/`roteiros`.
 2. Completar cobertura de `tests/` por app sem alterar regra de negócio.
 3. Continuar substituição de hardcodes CSS por tokens em módulos não críticos.

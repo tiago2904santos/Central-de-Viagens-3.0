@@ -26,16 +26,16 @@ O risco principal de continuar refatorando sem ordem e **quebrar convergencia ar
 | `usuarios` | ciclo de vida de usuarios/perfil do dominio | estrutura minima | Sim | Nao | Nao | Nao | Nao | Sim | Sim | Sim | Nao | Placeholder |
 | `cadastros` | dados-base (unidade, cargo, combustivel, servidor, viatura, configuracao) | consolidado e referencia | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Maduro |
 | `roteiros` | roteiros avulsos/reutilizaveis, trechos, mapa, calculos | consolidado e referencia | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Maduro |
-| `eventos` | agrupador opcional de documentos e fluxos por evento | base existente, ainda sem convergencia completa | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Sim | Parcial |
-| `documentos` | nucleo de renderizacao/geracao documental | intermediario com services relevantes | Sim | Nao | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Parcial |
-| `oficios` | dominio principal de documento de viagem | estrutura pronta, mas incompleta frente ao alvo funcional legacy | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Nao | Parcial |
-| `termos` | termos de autorizacao e variacoes por fluxo | estrutura parcial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Parcial |
-| `justificativas` | regras de justificativa e modelos | estrutura parcial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Parcial |
-| `planos_trabalho` | planejamento operacional e derivacoes documentais | estrutura parcial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Parcial |
-| `ordens_servico` | ordens vinculadas a oficios/eventos | estrutura parcial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Parcial |
-| `prestacoes_contas` | prestacao, RT, comprovacoes e dossie | estrutura parcial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Parcial |
-| `diario_bordo` | diario operacional e exportacoes | estrutura parcial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Parcial |
-| `assinaturas` | trilha de assinatura e validacao | parcial, sem consolidacao funcional | Sim | Nao | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Parcial |
+| `eventos` | agrupador opcional de documentos e fluxos por evento | app em preparacao, com rotas/telas base | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Sim | Placeholder |
+| `documentos` | nucleo de renderizacao/geracao documental | preparacao de nucleo, sem cadeia fim a fim consolidada | Sim | Nao | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Placeholder |
+| `oficios` | dominio principal de documento de viagem | preparacao de fluxo documental, ainda sem maturidade de referencia | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Sim | Nao | Placeholder |
+| `termos` | termos de autorizacao e variacoes por fluxo | preparacao com estrutura inicial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Placeholder |
+| `justificativas` | regras de justificativa e modelos | preparacao com estrutura inicial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Placeholder |
+| `planos_trabalho` | planejamento operacional e derivacoes documentais | preparacao com estrutura inicial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Placeholder |
+| `ordens_servico` | ordens vinculadas a oficios/eventos | preparacao com estrutura inicial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Placeholder |
+| `prestacoes_contas` | prestacao, RT, comprovacoes e dossie | preparacao com estrutura inicial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Placeholder |
+| `diario_bordo` | diario operacional e exportacoes | preparacao com estrutura inicial | Sim | Sim | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Placeholder |
+| `assinaturas` | trilha de assinatura e validacao | preparacao com base tecnica, sem consolidacao funcional | Sim | Nao | Nao | Sim | Nao | Sim | Sim | Sim | Nao | Placeholder |
 | `integracoes` | conectores externos (ex.: Drive) | namespace/subapp ainda inicial | Parcial | Nao | Nao | Parcial | Nao | Parcial | Parcial | Sim | Nao | Placeholder |
 
 ## 3. Padroes oficiais atuais
@@ -92,7 +92,8 @@ Consolidacao verificada para:
 - Servidor;
 - Viatura;
 - Configuracao do sistema;
-- Estado/Cidade como base interna.
+- Cidade como cadastro operacional visivel.
+- Estado como base interna/administrativa (rota mantida sem destaque em navegacao principal).
 
 Regras confirmadas na documentacao oficial:
 - sem ativo/inativo para os cadastros operacionais;

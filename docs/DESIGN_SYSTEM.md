@@ -9,6 +9,7 @@
 - Proibido `style=""` em templates.
 - Proibido JS inline em templates.
 - Proibido `href="#"` para acao visual.
+- Navegacao deve omitir link quando a URL nao resolver; renderizar item neutro/desabilitado sem `href` invalido.
 - Inicializacao de tema deve ocorrer por `static/js/core/theme-init.js` (sem `<script>` inline no `base.html`).
 - A **tela de login** usa layout proprio (sem sidebar): classes em `static/css/auth.css` (prefixo `auth-`), importado tambem em `style.css`; ver `docs/AUTENTICACAO.md`.
 - Se um valor CSS aparece em mais de um ponto relevante, ele deve virar token semantico (`--color-*`, `--radius-*`, `--space-*`, `--shadow-*`, `--control-*`, `--font-*`).
@@ -127,6 +128,7 @@ A sidebar e a unica navegacao lateral. O menu **Cadastros** e o unico bloco com 
 A hierarquia e declarada em `core/navigation.py` (filhos de Cadastros com `sidebar_indent`), renderizada em `templates/components/layout/sidebar.html`, estilizada em `static/css/sidebar.css` e o grupo Cadastros e aberto via `static/js/components/sidebar.js` (incluindo `localStorage`).
 
 Ordem sob Cadastros: Servidores, Cargos (subordinado visual), Viaturas, Combustiveis (subordinado visual), Unidades, Cidades. `Motoristas` nao aparece.
+`Estados` permanece como rota administrativa interna e nao integra a lista principal da sidebar.
 
 ### Comportamento do grupo expansivel (Cadastros)
 

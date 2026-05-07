@@ -85,15 +85,40 @@ def index(request):
             "page_title": "Cadastros",
             "page_description": "Dados-base e cadastros auxiliares dos fluxos.",
             "modules": [
-                {"title": "Servidores", "description": "Pessoas vinculadas aos fluxos.", "href": "servidores/"},
-                {"title": "Cargos", "description": "Cargos utilizados em servidores.", "href": "cargos/"},
-                {"title": "Viaturas", "description": "Veículos operacionais.", "href": "viaturas/"},
-                {"title": "Combustíveis", "description": "Tipos de combustível.", "href": "combustiveis/"},
-                {"title": "Unidades", "description": "Unidades administrativas.", "href": "unidades/"},
+                {
+                    "title": "Servidores",
+                    "description": "Pessoas vinculadas aos fluxos.",
+                    "href": reverse("cadastros:servidores_index"),
+                },
+                {
+                    "title": "Cargos",
+                    "description": "Cargos utilizados em servidores.",
+                    "href": reverse("cadastros:cargos_index"),
+                },
+                {
+                    "title": "Viaturas",
+                    "description": "Veículos operacionais.",
+                    "href": reverse("cadastros:viaturas_index"),
+                },
+                {
+                    "title": "Combustíveis",
+                    "description": "Tipos de combustível.",
+                    "href": reverse("cadastros:combustiveis_index"),
+                },
+                {
+                    "title": "Unidades",
+                    "description": "Unidades administrativas.",
+                    "href": reverse("cadastros:unidades_index"),
+                },
+                {
+                    "title": "Cidades",
+                    "description": "Base geográfica de referência dos fluxos.",
+                    "href": reverse("cadastros:cidades_index"),
+                },
                 {
                     "title": "Configurações do sistema",
                     "description": "Dados institucionais e assinaturas por tipo de documento.",
-                    "href": "configuracao/",
+                    "href": reverse("cadastros:configuracao"),
                 },
             ],
         },

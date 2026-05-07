@@ -47,6 +47,12 @@ NAVIGATION_ITEMS = [
                 "active_when": ["cadastros:unidade_", "cadastros:unidades_index"],
             },
             {
+                "id": "cadastros-cidades",
+                "label": "Cidades",
+                "url_name": "cadastros:cidades_index",
+                "active_when": ["cadastros:cidade_", "cadastros:cidades_index"],
+            },
+            {
                 "id": "cadastros-configuracao",
                 "label": "Configurações",
                 "url_name": "cadastros:configuracao",
@@ -121,11 +127,11 @@ def _build_item(item, current_view_name):
 
 def _resolve_url(url_name):
     if not url_name:
-        return "#"
+        return None
     try:
         return reverse(url_name)
     except NoReverseMatch:
-        return "#"
+        return None
 
 
 def _matches_current_view(item, current_view_name):

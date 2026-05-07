@@ -39,6 +39,7 @@ O app `cadastros` usa listagens globais (`list_page` ou `list_page_simple`), `do
 - Grupo abre ao alternar o toggle; **fecha ao navegar** para outro item principal (nao-Cadastros). Na carga da pagina: aberto se a rota for `/cadastros/`, fechado caso contrario; `localStorage` nao reabre o submenu fora de Cadastros.
 - Ordem: Servidores, Cargos, Viaturas, Combustiveis, Unidades, Cidades.
 - `Motoristas` nao aparece no menu porque nao e cadastro independente.
+- `Estados` permanece fora do menu principal por decisao de produto: base interna/administrativa, com rota mantida em `cadastros:estados_index`.
 
 ## List toolbar
 
