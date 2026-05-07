@@ -1549,13 +1549,11 @@
 }
 
 /* Alertas do formulário */
+
 .roteiro-editor .alert {
   border-radius: var(--radius-md);
 }
 
-.roteiro-editor .alert-danger:empty {
-  display: none !important;
-}
 
 /* --------------------------------------------------------------------------
    9. Acoes do formulario
@@ -1705,6 +1703,7 @@
 
 .roteiro-editor--avulso .roteiro-editor__section--mapa {
   order: 4;
+  padding: var(--space-4);
 }
 
 .roteiro-editor--avulso .roteiro-editor__section--diarias {
@@ -2472,7 +2471,6 @@ html[data-theme="light-dark"] .roteiro-editor input[type="checkbox"] {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 12px 16px;
-  margin: 18px 18px;
   padding: 18px 18px;
   border: 1px solid rgba(191, 211, 229, 0.78);
   border-radius: var(--radius-control-lg);
@@ -2520,8 +2518,8 @@ html[data-theme="light-dark"] .roteiro-editor input[type="checkbox"] {
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.9) inset,
     0 12px 24px rgba(30, 66, 99, 0.1);
+    margin-bottom: var(--space-4);
   padding: var(--space-section-y);
-  margin: 18px 18px;
 }
 
 .roteiro-mapa__frame #map,

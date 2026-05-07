@@ -34,6 +34,11 @@
   margin-bottom: var(--space-5);
 }
 
+#id_step3_seed_source_label:empty {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* --------------------------------------------------------------------------
    2. Alertas semanticos
    -------------------------------------------------------------------------- */
