@@ -1479,7 +1479,7 @@
 }
 
 #diarias-valor {
-  color: var(--theme-stat-value);
+  color: var(--theme-text-heading);
 }
 
 #diarias-extenso {
@@ -1932,7 +1932,7 @@
 
 .roteiro-editor--avulso .roteiro-editor__summary-value--principal {
   color: var(--theme-stat-value);
-  font-size: clamp(1.55rem, 3vw, 2rem);
+  font-size: 3.5rem;
   letter-spacing: -0.02em;
 }
 
