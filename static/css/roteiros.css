@@ -868,8 +868,8 @@
 
 .roteiro-editor__destination-card.destino-row {
   align-items: stretch;
-  background: var(--route-card-bg);
-  border: 1px solid var(--theme-border-card);
+  background: var(--route-card-inner-bg);
+  border: 1px solid var(--route-card-inner-border);
   border-radius: var(--radius-md);
   display: grid;
   gap: 0;
@@ -901,8 +901,8 @@
 
 .roteiro-editor__drag-handle {
   align-items: center;
-  background: var(--route-card-bg);
-  border: 1px solid var(--theme-border-card);
+  background: var(--route-card-inner-bg);
+  border: 1px solid var(--route-card-inner-border);
   border-radius: var(--radius-pill);
   color: var(--theme-text-muted);
   cursor: grab;
@@ -1044,7 +1044,7 @@
 
 .roteiro-editor--avulso .roteiro-editor__destination-card.destino-row {
   align-items: end;
-  background: var(--route-card-bg);
+  background: transparent;
   border: 0;
   border-radius: 0;
   display: grid;
@@ -1061,8 +1061,8 @@
 }
 
 .roteiro-editor--avulso .roteiro-editor__drag-handle {
-  background: var(--route-card-bg);
-  border: 1px solid var(--route-section-border);
+  background: var(--route-card-inner-bg);
+  border: 1px solid var(--route-card-inner-border);
   border-radius: var(--radius-md);
   color: var(--color-heading);
   font-size: 0;
@@ -1842,8 +1842,8 @@
 
 .roteiro-editor--avulso .roteiro-editor__bate-volta-head {
   align-items: flex-start;
-  background: var(--route-card-bg);
-  border-bottom: 1px solid var(--route-section-border);
+  background: transparent;
+  border-bottom: 1px solid var(--route-card-inner-border);
 }
 
 .roteiro-editor--avulso .roteiro-editor__bate-volta-title {
