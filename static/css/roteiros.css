@@ -385,6 +385,7 @@
 
 /* Grid de campos */
 .roteiro-editor__grid {
+  background: var(--route-card-inner-bg);
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -422,6 +423,13 @@
   margin-bottom: var(--space-2);
 }
 
+/* Padroniza labels de campo no cadastro/edicao sem afetar labels-card de escolha */
+.roteiro-editor .form-label,
+.roteiro-editor .form-check-label,
+.roteiro-editor label.roteiro-editor__field-label {
+  color: var(--theme-text-muted-strong);
+}
+
 .roteiro-editor__helper {
   color: var(--theme-text-muted);
   font-size: 12px;
@@ -431,9 +439,14 @@
 
 /* Radios → cards */
 .roteiro-editor__choice-grid {
+  background: var(--route-card-inner-bg);
   display: grid;
   gap: var(--space-3);
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.roteiro-editor__choice-grid.roteiro-editor__choice-grid--source {
+  background: var(--route-card-inner-bg);
 }
 
 .roteiro-editor__choice-card {
@@ -740,7 +753,7 @@
 
 /* Superfícies internas (substitui bg-white) */
 .roteiro-editor__panel-surface {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border: 1px solid var(--route-section-border);
   border-radius: var(--radius-md);
   padding: var(--space-3);
@@ -819,9 +832,14 @@
 
 /* Destinos */
 .roteiro-editor__destinos-stack {
+  background: var(--route-card-inner-bg);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.oficio-step3-destinos-stack {
+  background: var(--route-card-inner-bg);
 }
 
 .roteiro-editor__destinos-list {
@@ -972,7 +990,7 @@
 }
 
 .roteiro-editor--avulso .roteiro-editor__nest-block--destinos .roteiro-editor__destinos-stack {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border: 1px solid var(--route-section-border);
   border-radius: var(--radius-control-lg);
   box-shadow: 0 10px 22px rgba(28, 49, 72, 0.04);
@@ -1152,11 +1170,15 @@
 }
 
 .card.roteiro-editor__trecho-card {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border: 1px solid var(--theme-border-card);
   border-radius: var(--radius-md);
   overflow: hidden;
   transition: none;
+}
+
+.card.roteiro-editor__trecho-card.oficio-step3-trecho-card {
+  background: var(--route-card-inner-bg);
 }
 
 .card.roteiro-editor__trecho-card:hover {
@@ -1715,7 +1737,7 @@
 .roteiro-editor--avulso .roteiro-editor__nest-block--sede > .roteiro-editor__grid,
 .roteiro-editor--avulso .roteiro-editor__section--bate-volta > .roteiro-editor__panel-surface,
 .roteiro-editor--avulso .roteiro-editor__section--diarias > .roteiro-editor__diarias {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border: 1px solid var(--route-section-border);
   border-radius: var(--radius-md);
   box-shadow: 0 8px 20px rgba(28, 49, 72, 0.05);
@@ -1988,7 +2010,7 @@ html[data-theme="dark-dark"] .roteiro-editor--avulso #retorno-card .roteiro-edit
 html[data-theme="light-dark"] .roteiro-editor--avulso #retorno-card .roteiro-editor__subpanel,
 html[data-theme="dark-dark"] .roteiro-editor--avulso .oficio-step3-trecho-card .roteiro-editor__subpanel,
 html[data-theme="light-dark"] .roteiro-editor--avulso .oficio-step3-trecho-card .roteiro-editor__subpanel {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border-color: var(--route-section-border);
   box-shadow: var(--shadow-soft);
 }
@@ -2107,7 +2129,7 @@ html[data-theme="dark-dark"] .roteiro-mapa__canvas-shell,
 html[data-theme="light-dark"] .roteiro-mapa__canvas-shell,
 html[data-theme="dark-dark"] .roteiro-mapa__stats,
 html[data-theme="light-dark"] .roteiro-mapa__stats {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border-color: var(--color-border-soft);
 }
 
@@ -2412,7 +2434,7 @@ html[data-theme="light-dark"] .roteiro-editor input[type="checkbox"] {
   padding: 18px 18px;
   border: 1px solid rgba(191, 211, 229, 0.78);
   border-radius: var(--radius-control-lg);
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   box-shadow: 0 8px 18px rgba(28, 49, 72, 0.05);
 }
 
@@ -2450,7 +2472,7 @@ html[data-theme="light-dark"] .roteiro-editor input[type="checkbox"] {
 }
 
 .roteiro-mapa__canvas-shell {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border: 1px solid var(--route-section-border);
   border-radius: 16px;
   box-shadow:
@@ -2544,7 +2566,7 @@ html[data-theme="dark-dark"] .roteiro-mapa__stats,
 html[data-theme="light-dark"] .roteiro-mapa__stats,
 html[data-theme="dark-dark"] .roteiro-mapa__canvas-shell,
 html[data-theme="light-dark"] .roteiro-mapa__canvas-shell {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border-color: var(--route-section-border);
   box-shadow: var(--shadow-soft);
 }
@@ -2647,7 +2669,7 @@ html[data-theme="dark-dark"] .roteiro-mapa__stats,
 html[data-theme="light-dark"] .roteiro-mapa__stats,
 html[data-theme="dark-dark"] .roteiro-mapa__canvas-shell,
 html[data-theme="light-dark"] .roteiro-mapa__canvas-shell {
-  background: var(--route-card-bg);
+  background: var(--route-card-inner-bg);
   border-color: var(--route-section-border);
 }
 
