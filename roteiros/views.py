@@ -97,18 +97,18 @@ def novo(request):
     route_options, route_state_map = carregar_opcoes_rotas_avulsas_salvas()
 
     if request.method == "POST":
-        step3_state, validated, diarias_resultado = validar_submissao_editor_roteiro(
+        roteiro_state, validated, diarias_resultado = validar_submissao_editor_roteiro(
             request.POST, route_state_map, roteiro=None
         )
         if form.is_valid() and validated["ok"]:
-            roteiro = criar_roteiro(form, step3_state, validated, diarias_resultado)
+            roteiro = criar_roteiro(form, roteiro_state, validated, diarias_resultado)
             messages.success(request, "Roteiro cadastrado com sucesso.")
             return redirect("roteiros:detalhe", pk=roteiro.pk)
         for error in validated.get("errors", []):
             form.add_error(None, error)
-        destinos_atuais, trechos_list = normalizar_destinos_e_trechos_apos_erro_post(step3_state)
+        destinos_atuais, trechos_list = normalizar_destinos_e_trechos_apos_erro_post(roteiro_state)
     else:
-        destinos_atuais, trechos_list, step3_state = preparar_estado_editor_roteiro_para_get(
+        destinos_atuais, trechos_list, roteiro_state = preparar_estado_editor_roteiro_para_get(
             initial=initial
         )
 
@@ -118,7 +118,7 @@ def novo(request):
         obj=None,
         destinos_atuais=destinos_atuais,
         trechos_list=trechos_list,
-        step3_state=step3_state,
+        roteiro_state=roteiro_state,
         route_options=route_options,
     )
     return render(
@@ -153,18 +153,18 @@ def editar(request, pk):
     route_options, route_state_map = carregar_opcoes_rotas_avulsas_salvas()
 
     if request.method == "POST":
-        step3_state, validated, diarias_resultado = validar_submissao_editor_roteiro(
+        roteiro_state, validated, diarias_resultado = validar_submissao_editor_roteiro(
             request.POST, route_state_map, roteiro=roteiro
         )
         if form.is_valid() and validated["ok"]:
-            atualizar_roteiro(roteiro, form, step3_state, validated, diarias_resultado)
+            atualizar_roteiro(roteiro, form, roteiro_state, validated, diarias_resultado)
             messages.success(request, "Roteiro atualizado com sucesso.")
             return redirect("roteiros:detalhe", pk=roteiro.pk)
         for error in validated.get("errors", []):
             form.add_error(None, error)
-        destinos_atuais, trechos_list = normalizar_destinos_e_trechos_apos_erro_post(step3_state)
+        destinos_atuais, trechos_list = normalizar_destinos_e_trechos_apos_erro_post(roteiro_state)
     else:
-        destinos_atuais, trechos_list, step3_state = preparar_estado_editor_roteiro_para_get(
+        destinos_atuais, trechos_list, roteiro_state = preparar_estado_editor_roteiro_para_get(
             roteiro=roteiro
         )
 
@@ -174,7 +174,7 @@ def editar(request, pk):
         obj=roteiro,
         destinos_atuais=destinos_atuais,
         trechos_list=trechos_list,
-        step3_state=step3_state,
+        roteiro_state=roteiro_state,
         route_options=route_options,
     )
     return render(

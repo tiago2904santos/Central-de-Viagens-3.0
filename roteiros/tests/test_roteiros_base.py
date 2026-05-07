@@ -150,7 +150,7 @@ class RoteirosBaseTests(TestCase):
             duracao_estimada_min=135,
         )
 
-        roteiro_logic._salvar_roteiro_avulso_from_step3_state(
+        roteiro_logic._salvar_roteiro_avulso_from_roteiro_state(
             roteiro,
             {
                 "destinos_atuais": [
@@ -244,7 +244,7 @@ class RoteirosBaseTests(TestCase):
             duracao_estimada_min=195,
         )
 
-        roteiro_logic._salvar_roteiro_avulso_from_step3_state(
+        roteiro_logic._salvar_roteiro_avulso_from_roteiro_state(
             roteiro,
             {
                 "destinos_atuais": [
@@ -319,7 +319,7 @@ class RoteirosBaseTests(TestCase):
             duracao_estimada_min=135,
         )
 
-        roteiro_logic._salvar_roteiro_avulso_from_step3_state(
+        roteiro_logic._salvar_roteiro_avulso_from_roteiro_state(
             roteiro,
             {
                 "destinos_atuais": [
@@ -377,8 +377,8 @@ class RoteirosBaseTests(TestCase):
             data=self._loop_diario_post_data(),
         )
 
-        state = roteiro_logic._build_avulso_step3_state_from_post(request)
-        validated = roteiro_logic._validate_step3_state(state)
+        state = roteiro_logic._build_avulso_roteiro_state_from_post(request)
+        validated = roteiro_logic._validate_roteiro_state(state)
 
         self.assertTrue(validated["ok"], validated["errors"])
         self.assertEqual(len(state["trechos"]), 5)
@@ -405,10 +405,10 @@ class RoteirosBaseTests(TestCase):
             reverse("roteiros:novo"),
             data=self._loop_diario_post_data(),
         )
-        state = roteiro_logic._build_avulso_step3_state_from_post(request)
-        validated = roteiro_logic._validate_step3_state(state)
+        state = roteiro_logic._build_avulso_roteiro_state_from_post(request)
+        validated = roteiro_logic._validate_roteiro_state(state)
 
-        roteiro_logic._salvar_roteiro_avulso_from_step3_state(roteiro, state, validated)
+        roteiro_logic._salvar_roteiro_avulso_from_roteiro_state(roteiro, state, validated)
 
         self.assertEqual(roteiro.trechos.filter(tipo=RoteiroTrecho.TIPO_IDA).count(), 5)
         self.assertEqual(roteiro.trechos.filter(tipo=RoteiroTrecho.TIPO_RETORNO).count(), 1)
@@ -441,11 +441,11 @@ class RoteirosBaseTests(TestCase):
             reverse("roteiros:novo"),
             data=self._loop_diario_post_data(),
         )
-        state = roteiro_logic._build_avulso_step3_state_from_post(request)
-        validated = roteiro_logic._validate_step3_state(state)
-        roteiro_logic._salvar_roteiro_avulso_from_step3_state(roteiro, state, validated)
+        state = roteiro_logic._build_avulso_roteiro_state_from_post(request)
+        validated = roteiro_logic._validate_roteiro_state(state)
+        roteiro_logic._salvar_roteiro_avulso_from_roteiro_state(roteiro, state, validated)
 
-        reopened = roteiro_logic._build_step3_state_from_roteiro_evento(roteiro)
+        reopened = roteiro_logic._build_roteiro_state_from_roteiro_evento(roteiro)
 
         self.assertEqual(len(reopened["trechos"]), 5)
         self.assertTrue(reopened["bate_volta_diario"]["ativo"])
@@ -456,10 +456,10 @@ class RoteirosBaseTests(TestCase):
 
     def test_calculo_diarias_ignora_retorno_final_duplicado_no_loop_diario(self):
         base_state = self._loop_diario_state_com_retorno_duplicado()
-        deduped_state = roteiro_logic._dedupe_step3_loop_retorno_final(dict(base_state))
+        deduped_state = roteiro_logic._dedupe_roteiro_loop_retorno_final(dict(base_state))
 
-        markers_com_duplicado, _, chegada_com_duplicado, _, _ = roteiro_logic._collect_step3_markers_payload(base_state)
-        markers_sem_duplicado, _, chegada_sem_duplicado, _, _ = roteiro_logic._collect_step3_markers_payload(deduped_state)
+        markers_com_duplicado, _, chegada_com_duplicado, _, _ = roteiro_logic._collect_roteiro_markers_payload(base_state)
+        markers_sem_duplicado, _, chegada_sem_duplicado, _, _ = roteiro_logic._collect_roteiro_markers_payload(deduped_state)
 
         self.assertEqual(len(markers_com_duplicado), len(markers_sem_duplicado))
         self.assertEqual(len(markers_com_duplicado), 5)

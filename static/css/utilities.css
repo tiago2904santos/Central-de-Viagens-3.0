@@ -34,7 +34,7 @@
   margin-bottom: var(--space-5);
 }
 
-#id_step3_seed_source_label:empty {
+#id_roteiro_seed_source_label:empty {
   margin: 0 !important;
   padding: 0 !important;
 }

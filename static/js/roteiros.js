@@ -1,7 +1,7 @@
 import { initRoteirosEditor } from './pages/roteiros/editor/index.js';
 
 function bootRoteirosEditor() {
-  const form = document.getElementById('oficio-step3-form');
+  const form = document.getElementById('oficio-roteiro-form');
   if (!form) return;
   initRoteirosEditor();
 }

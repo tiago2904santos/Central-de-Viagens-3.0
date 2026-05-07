@@ -166,7 +166,7 @@ def apresentar_contexto_formulario_roteiro_avulso(
     obj,
     destinos_atuais,
     trechos_list,
-    step3_state,
+    roteiro_state,
     route_options,
 ):
     """Contexto do wizard de roteiro avulso (dict para template); sem HTML."""
@@ -177,7 +177,7 @@ def apresentar_contexto_formulario_roteiro_avulso(
         destinos_atuais=destinos_atuais,
         trechos_list=trechos_list,
         is_avulso=True,
-        step3_state=step3_state,
+        roteiro_state=roteiro_state,
         route_options=route_options,
     )
 

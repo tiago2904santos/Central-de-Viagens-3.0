@@ -137,6 +137,18 @@ A tela de configuracao segue o mesmo padrao arquitetural dos cadastros:
 
 O app novo nao importa codigo do legacy em runtime; a tela apenas adapta as regras documentadas e auditadas do legacy.
 
+## App documentos (núcleo base)
+
+`documentos` deixa de ser placeholder puro e passa a expor um **núcleo documental reutilizável** em `documentos/services/`, com contrato para:
+
+- tipos e formatos de documento;
+- registro central de tipos suportados;
+- validações por contrato;
+- nomenclatura de arquivo;
+- renderização via interface base (DOCX/PDF) com wrappers seguros.
+
+Nesta etapa, o núcleo é infra de baixo acoplamento: sem CRUD completo de domínio e sem dependência obrigatória de conversor externo em runtime. Os apps de `oficios`, `termos`, `planos_trabalho` e `ordens_servico` devem consumir esse núcleo quando seus fluxos forem implementados.
+
 ## Navegacao lateral
 
 A navegacao principal e declarada em `core/navigation.py` e suporta hierarquia. O grupo `Cadastros` organiza:

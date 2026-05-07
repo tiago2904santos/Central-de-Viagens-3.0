@@ -1,7 +1,7 @@
 from roteiros.services.diarias import locations_equivalent
 
 
-def step3_local_label(cidade=None, estado=None):
+def roteiro_local_label(cidade=None, estado=None):
     cidade_nome = ""
     estado_sigla = ""
     if cidade:
@@ -14,7 +14,7 @@ def step3_local_label(cidade=None, estado=None):
     return cidade_nome or estado_sigla or ""
 
 
-def step3_get_local_parts(cidade=None, estado=None, nome=""):
+def roteiro_get_local_parts(cidade=None, estado=None, nome=""):
     cidade_nome = ""
     estado_sigla = ""
     if cidade:
@@ -33,15 +33,15 @@ def step3_get_local_parts(cidade=None, estado=None, nome=""):
     return cidade_nome.strip(), estado_sigla.strip().upper()
 
 
-def step3_locations_equivalent(
+def roteiro_locations_equivalent(
     *, cidade_a=None, estado_a=None, nome_a="", cidade_b=None, estado_b=None, nome_b=""
 ):
-    cidade_a_nome, estado_a_sigla = step3_get_local_parts(
+    cidade_a_nome, estado_a_sigla = roteiro_get_local_parts(
         cidade=cidade_a,
         estado=estado_a,
         nome=nome_a,
     )
-    cidade_b_nome, estado_b_sigla = step3_get_local_parts(
+    cidade_b_nome, estado_b_sigla = roteiro_get_local_parts(
         cidade=cidade_b,
         estado=estado_b,
         nome=nome_b,

@@ -21,7 +21,7 @@ class RoteiroAutosaveTests(TestCase):
     def _payload(self, **kwargs):
         base = {
             "object_id": "",
-            "form_id": "oficio-step3-form",
+            "form_id": "oficio-roteiro-form",
             "model": "roteiro",
             "dirty_fields": [],
             "fields": {},

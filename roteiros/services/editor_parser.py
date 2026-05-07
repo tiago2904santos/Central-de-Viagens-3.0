@@ -10,7 +10,7 @@ def parse_int(value):
         return None
 
 
-def parse_step3_date(value):
+def parse_roteiro_date(value):
     raw = str(value or "").strip()
     if not raw:
         return None
@@ -20,7 +20,7 @@ def parse_step3_date(value):
         return None
 
 
-def parse_step3_time(value):
+def parse_roteiro_time(value):
     raw = str(value or "").strip()
     if not raw:
         return None
@@ -30,7 +30,7 @@ def parse_step3_time(value):
         return None
 
 
-def step3_date_input(value):
+def roteiro_date_input(value):
     if not value:
         return ""
     if isinstance(value, str):
@@ -38,7 +38,7 @@ def step3_date_input(value):
     return value.strftime("%Y-%m-%d")
 
 
-def step3_time_input(value):
+def roteiro_time_input(value):
     if not value:
         return ""
     if isinstance(value, str):
@@ -69,7 +69,7 @@ def parse_destinos_post(post):
     return destinos
 
 
-def extract_step3_posted_trechos(post):
+def extract_roteiro_posted_trechos(post):
     pattern = re.compile(r"^trecho_(\d+)_(.+)$")
     indexed = {}
     for key in post:
@@ -82,7 +82,7 @@ def extract_step3_posted_trechos(post):
     return [indexed[idx] for idx in sorted(indexed)]
 
 
-def parse_step3_decimal(value):
+def parse_roteiro_decimal(value):
     raw = str(value or "").strip()
     if not raw:
         return None
@@ -99,8 +99,8 @@ def parse_step3_decimal(value):
         return None
 
 
-def step3_decimal_input(value):
-    decimal_value = parse_step3_decimal(value)
+def roteiro_decimal_input(value):
+    decimal_value = parse_roteiro_decimal(value)
     if decimal_value is None:
         return ""
     return f"{decimal_value.quantize(Decimal('0.01')):.2f}"

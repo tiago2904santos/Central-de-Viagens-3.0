@@ -18,13 +18,13 @@ export function initRoteirosEditor() {
 
   (function () {
   'use strict';
-  var form = document.getElementById('oficio-step3-form');
+  var form = document.getElementById('oficio-roteiro-form');
   if (!form || form.dataset.ready === '1') return;
   form.dataset.ready = '1';
   function $(id) { return document.getElementById(id); }
-  var initialState = JSON.parse($('step3-state-data').textContent || '{}');
-  var routes = JSON.parse($('step3-routes-data').textContent || '[]');
-  var rawInitialDiarias = JSON.parse($('step3-diarias-data').textContent || 'null');
+  var initialState = JSON.parse($('roteiro-state-data').textContent || '{}');
+  var routes = JSON.parse($('roteiro-routes-data').textContent || '[]');
+  var rawInitialDiarias = JSON.parse($('roteiro-diarias-data').textContent || 'null');
   var initialDiarias = rawInitialDiarias && typeof rawInitialDiarias === 'object' ? rawInitialDiarias : null;
   var routeMap = {};
   routes.forEach(function(item) { routeMap[String(item.id)] = item; });
@@ -672,7 +672,7 @@ export function initRoteirosEditor() {
     var add = (value.tempo_adicional_min != null && value.tempo_adicional_min !== '') ? value.tempo_adicional_min : 0;
     var fonte = value.rota_fonte || '';
     var trechoId = value.id || trecho.id || '';
-    return '<div class="card roteiro-editor__trecho-card oficio-step3-trecho-card" data-key="'+esc(trecho.key)+'" data-trecho-id="'+esc(trechoId)+'" data-ordem="'+o+'" data-origem-nome="'+esc(trecho.origem_nome)+'" data-destino-nome="'+esc(trecho.destino_nome)+'" data-origem-estado-id="'+esc(trecho.origem_estado_id)+'" data-origem-cidade-id="'+esc(trecho.origem_cidade_id)+'" data-destino-estado-id="'+esc(trecho.destino_estado_id)+'" data-destino-cidade-id="'+esc(trecho.destino_cidade_id)+'">' +
+    return '<div class="card roteiro-editor__trecho-card oficio-roteiro-trecho-card" data-key="'+esc(trecho.key)+'" data-trecho-id="'+esc(trechoId)+'" data-ordem="'+o+'" data-origem-nome="'+esc(trecho.origem_nome)+'" data-destino-nome="'+esc(trecho.destino_nome)+'" data-origem-estado-id="'+esc(trecho.origem_estado_id)+'" data-origem-cidade-id="'+esc(trecho.origem_cidade_id)+'" data-destino-estado-id="'+esc(trecho.destino_estado_id)+'" data-destino-cidade-id="'+esc(trecho.destino_cidade_id)+'">' +
       '<div class="card-header py-3"><span class="fw-semibold">Trecho '+(o+1)+' \u2014 '+esc(trecho.origem_nome)+' \u2192 '+esc(trecho.destino_nome)+'</span></div>' +
       '<div class="card-body">' +
         '<input type="hidden" name="trecho_'+o+'_origem_nome" value="'+esc(trecho.origem_nome)+'">' +
@@ -693,7 +693,7 @@ export function initRoteirosEditor() {
             '<div class="col-md-6"><label class="roteiro-editor__field-label">Data</label><input type="date" class="form-control" name="trecho_'+o+'_chegada_data" value="'+esc(value.chegada_data||'')+'" ></div>' +
             '<div class="col-md-6"><label class="roteiro-editor__field-label">Hora</label><input type="time" class="form-control" name="trecho_'+o+'_chegada_hora" value="'+esc(value.chegada_hora||'')+'" ></div>' +
           '</div></div></div>' +
-          '<div class="col-12"><div class="roteiro-editor__grid oficio-step3-time-calc-grid align-items-end">' +
+          '<div class="col-12"><div class="roteiro-editor__grid oficio-roteiro-time-calc-grid align-items-end">' +
             '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo de viagem</label><input type="text" class="form-control trecho-tempo-viagem-hhmm" value="'+esc(formatDurationInput(cru))+'" placeholder="00:00" inputmode="numeric" maxlength="5" autocomplete="off"><input type="hidden" name="trecho_'+o+'_tempo_cru_estimado_min" value="'+esc(cru)+'" ></div>' +
             '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo adicional</label><input type="number" min="0" step="15" class="form-control" name="trecho_'+o+'_tempo_adicional_min" value="'+esc(add)+'" ></div>' +
             '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo total</label><input type="text" class="form-control trecho-tempo-total" value="" readonly></div>' +
@@ -1104,10 +1104,10 @@ export function initRoteirosEditor() {
     var target = $('roteiro-lista'); if (!target) return;
     var selId = getSelectedRouteId(); var term = normalizeRouteSearch(filterText);
     var filtered = routes.filter(function(r) { if (!term) return true; return normalizeRouteSearch(routeSearchText(r)).indexOf(term)!==-1; });
-    if (!filtered.length) { target.innerHTML = '<div class="oficio-step3-route-empty">Nenhum roteiro encontrado para a busca.</div>'; return; }
+    if (!filtered.length) { target.innerHTML = '<div class="oficio-roteiro-route-empty">Nenhum roteiro encontrado para a busca.</div>'; return; }
     target.innerHTML = filtered.map(function(r) {
       var rid=String(r.id); var ac=rid===selId?' is-active':'';
-      return '<button type="button" class="oficio-step3-route-item'+ac+'" data-route-id="'+esc(rid)+'">' +
+      return '<button type="button" class="oficio-roteiro-route-item'+ac+'" data-route-id="'+esc(rid)+'">' +
         '<span class="route-title">'+esc(r.label||'Roteiro #'+rid)+'</span>' +
         '<span class="route-destinos">'+esc(routeDestinationsSummary(r))+'</span>' +
         '<span class="route-periodo">'+esc(routePeriodSummary(r))+'</span></button>';
@@ -1252,7 +1252,7 @@ export function initRoteirosEditor() {
       window.history.replaceState({}, '', editPath);
     }
   });
-  window.RoteirosStep3 = {
+  window.RoteirosEditor = {
     canCalculateRoutePreview: canCalculateRoutePreview,
     buildRoutePreviewPayload: buildRoutePreviewPayload,
     applyRoutePreviewResult: applyRoutePreviewResult,

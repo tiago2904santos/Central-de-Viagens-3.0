@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from roteiros import roteiro_logic
 from roteiros.models import Roteiro
-from roteiros.services.editor_state import dedupe_step3_loop_retorno_final
+from roteiros.services.editor_state import dedupe_roteiro_loop_retorno_final
 from roteiros.services.roteiro_editor import _apply_saved_map_route_from_post
 
 
@@ -85,20 +85,20 @@ def _apply_diarias_snapshot(roteiro, snapshots):
     roteiro.save(update_fields=["quantidade_diarias", "valor_diarias", "valor_diarias_extenso", "updated_at"])
 
 
-def _apply_step3_snapshot(roteiro, snapshots):
+def _apply_roteiro_snapshot(roteiro, snapshots):
     state = (snapshots or {}).get("roteiro_state")
     if not isinstance(state, dict):
         return
-    state = dedupe_step3_loop_retorno_final(state)
-    validated = roteiro_logic._validate_step3_state(state)
+    state = dedupe_roteiro_loop_retorno_final(state)
+    validated = roteiro_logic._validate_roteiro_state(state)
     if not validated.get("ok"):
         return
-    roteiro_logic._salvar_roteiro_avulso_from_step3_state(roteiro, state, validated, diarias_resultado=None)
+    roteiro_logic._salvar_roteiro_avulso_from_roteiro_state(roteiro, state, validated, diarias_resultado=None)
 
 
 def apply_roteiro_autosave(roteiro, clean_fields, snapshots):
     _persist_simple_fields(roteiro, clean_fields)
-    _apply_step3_snapshot(roteiro, snapshots)
+    _apply_roteiro_snapshot(roteiro, snapshots)
     _apply_map_snapshot(roteiro, snapshots)
     _apply_diarias_snapshot(roteiro, snapshots)
     roteiro.refresh_from_db()

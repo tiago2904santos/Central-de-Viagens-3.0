@@ -418,21 +418,21 @@
   }
 
   function postCalcular(force) {
-    var form = document.getElementById('oficio-step3-form');
+    var form = document.getElementById('oficio-roteiro-form');
     if (!form) return;
     var urlPersistido = form.getAttribute('data-api-calcular-rota-url');
     var urlPreview = form.getAttribute('data-api-calcular-rota-preview-url');
     var hasSaved = !!rid;
-    var step3 = window.RoteirosStep3;
+    var roteiro = window.RoteirosEditor;
     if (isDailyRoundTripActive()) {
       showError('Desative o modo bate-volta diário para calcular a rota pelo mapa.');
       return;
     }
-    if (!hasSaved && (!step3 || !step3.canCalculateRoutePreview || !step3.canCalculateRoutePreview())) {
+    if (!hasSaved && (!roteiro || !roteiro.canCalculateRoutePreview || !roteiro.canCalculateRoutePreview())) {
       showError('Defina origem e destinos antes de calcular a rota.');
       return;
     }
-    var targetUrl = hasSaved ? urlPersistido : (urlPreview || (step3 && step3.getPreviewEndpointUrl && step3.getPreviewEndpointUrl()));
+    var targetUrl = hasSaved ? urlPersistido : (urlPreview || (roteiro && roteiro.getPreviewEndpointUrl && roteiro.getPreviewEndpointUrl()));
     if (!targetUrl) return;
 
     showError('');
@@ -445,7 +445,7 @@
 
     var payload = hasSaved
       ? { roteiro_id: rid, force_recalculate: !!force }
-      : ((step3 && step3.buildRoutePreviewPayload && step3.buildRoutePreviewPayload()) || null);
+      : ((roteiro && roteiro.buildRoutePreviewPayload && roteiro.buildRoutePreviewPayload()) || null);
     if (!payload) {
       setLoading(false);
       showError('Defina origem e destinos antes de calcular a rota.');
@@ -472,8 +472,8 @@
           return;
         }
         var route = res.body.route;
-        if (!hasSaved && step3 && typeof step3.applyRoutePreviewResult === 'function') {
-          step3.applyRoutePreviewResult(res.body, { overwriteAdditional: !!force });
+        if (!hasSaved && roteiro && typeof roteiro.applyRoutePreviewResult === 'function') {
+          roteiro.applyRoutePreviewResult(res.body, { overwriteAdditional: !!force });
         }
         initial.route = route;
         initial.legs = Array.isArray(res.body.legs) ? res.body.legs : [];
@@ -507,8 +507,8 @@
   }
 
   function refreshRouteReadyState() {
-    var step3 = window.RoteirosStep3;
-    var canPreview = !!(step3 && step3.canCalculateRoutePreview && step3.canCalculateRoutePreview());
+    var roteiro = window.RoteirosEditor;
+    var canPreview = !!(roteiro && roteiro.canCalculateRoutePreview && roteiro.canCalculateRoutePreview());
     var blockedByLoop = isDailyRoundTripActive();
     var canCalculate = !blockedByLoop && (rid || canPreview);
     setCalcularEnabled(canCalculate);
@@ -521,7 +521,7 @@
   }
 
   function init() {
-    var form = document.getElementById('oficio-step3-form');
+    var form = document.getElementById('oficio-roteiro-form');
     var container = $('roteiro-mapa-container');
     if (!form || !container) return;
 
