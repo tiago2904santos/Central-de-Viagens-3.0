@@ -113,6 +113,14 @@ Blocos reutilizaveis de dominio ficam em `templates/components/domain/`, estilos
 - Tags esperadas do Django: `success`, `error`/`danger`, `warning`, `info`.
 - CSS principal: `static/css/utilities.css`.
 
+### Placeholder de modulo (`module_placeholder.html`)
+
+- Component global: `templates/components/feedback/module_placeholder.html`.
+- Uso: telas de modulo ainda nao implementado (placeholder honesto), sem simular listagem com busca.
+- Suporte: `title`, `description`, `status`, dependencias curtas (`dep_1`...`dep_4`) e CTA opcional real (`cta_label` + `cta_url`).
+- Proibido usar `href="#"` ou botoes sem backend para placeholder.
+- CSS principal: `static/css/cards.css` + `static/css/utilities.css`.
+
 ## Empty state
 
 - Components: `templates/components/feedback/empty_state.html` e `templates/components/lists/list_empty.html`.

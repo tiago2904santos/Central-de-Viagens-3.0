@@ -148,6 +148,12 @@
   color: var(--color-description);
 }
 
+.status-chip--warning {
+  background: var(--color-warning-soft);
+  border-color: rgba(183, 121, 31, 0.22);
+  color: var(--color-warning);
+}
+
 html[data-theme="dark-dark"] .status-chip--muted,
 html[data-theme="light-dark"] .status-chip--muted {
   background: var(--color-info-bg);
