@@ -156,11 +156,8 @@
 /* Toolbar / busca */
 .app-page__toolbar .list-toolbar {
   align-items: center;
-  background: linear-gradient(
-    180deg,
-    var(--theme-surface-card) 0%,
-    var(--theme-surface-card-soft) 100%
-  );
+  background: var(--route-card-bg);
+  border: 1px solid var(--route-card-border);
   border: 1px solid var(--theme-border-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--theme-shadow-block);
