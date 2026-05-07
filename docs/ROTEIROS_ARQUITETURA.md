@@ -94,6 +94,20 @@ Outras observacoes de validacao:
 - `roteiros/services/editor_state.py`: estado de bate-volta e dedupe de retorno final sem dependência de view.
 - `roteiros/services/map_defaults.py`: defaults de mapa e resolução de UF por CEP para bootstrap do editor.
 
+## JavaScript do editor (modular)
+
+- Entrypoint: `static/js/roteiros.js` (arquivo enxuto de bootstrap).
+- Núcleo do editor: `static/js/pages/roteiros/editor/index.js`.
+- Módulos por responsabilidade:
+  - `state.js`
+  - `destinos.js`
+  - `trechos.js`
+  - `retorno.js`
+  - `diarias.js`
+  - `mapa.js`
+  - `utils.js`
+- Carregamento em `templates/roteiros/roteiro_form_page.html` com `type="module"`, sem bundler e sem retorno de JS inline para template.
+
 **Nota:** `calcular_diarias` na view continua chamando `roteiro_logic._build_roteiro_diarias_from_request(request)` porque o endpoint exige o objeto request completo do Django; documentado para nao confundir com “view gorda” de regra nova — e o mesmo caminho ja usado antes.
 
 ## View `calcular_diarias` e `request`
