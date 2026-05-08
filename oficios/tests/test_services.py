@@ -5,12 +5,16 @@ from cadastros.models import Cargo
 from cadastros.models import Servidor
 from cadastros.models import Viatura
 from oficios.forms import OficioDadosViajantesForm
+from oficios.forms import ModeloMotivoOficioForm
 from oficios.models import ModeloMotivoOficio
 from oficios.models import Oficio
 from oficios.services import atualizar_oficio_dados_viajantes
+from oficios.services import atualizar_modelo_motivo
 from oficios.services import avaliar_oficio_dados_viajantes
 from oficios.services import build_oficio_document_payload
+from oficios.services import criar_modelo_motivo
 from oficios.services import criar_oficio_dados_viajantes
+from oficios.services import excluir_modelo_motivo
 from oficios.services import get_next_available_numero_oficio
 
 
@@ -103,3 +107,30 @@ class OficioServicesTests(TestCase):
         )
         payload = build_oficio_document_payload(oficio)
         self.assertEqual(payload["protocolo"], "12.345.678-9")
+
+    def test_services_modelo_motivo_mantem_padrao_unico(self):
+        form_1 = ModeloMotivoOficioForm(data={"nome": "Modelo A", "texto": "A", "ativo": True, "ordem": 1, "is_padrao": True})
+        self.assertTrue(form_1.is_valid(), form_1.errors)
+        modelo_1 = criar_modelo_motivo(form_1)
+        self.assertTrue(modelo_1.is_padrao)
+
+        form_2 = ModeloMotivoOficioForm(data={"nome": "Modelo B", "texto": "B", "ativo": True, "ordem": 2, "is_padrao": True})
+        self.assertTrue(form_2.is_valid(), form_2.errors)
+        modelo_2 = criar_modelo_motivo(form_2)
+        self.assertTrue(modelo_2.is_padrao)
+        modelo_1.refresh_from_db()
+        self.assertFalse(modelo_1.is_padrao)
+
+        edit_form = ModeloMotivoOficioForm(
+            data={"nome": "Modelo A", "texto": "A", "ativo": True, "ordem": 1, "is_padrao": True},
+            instance=modelo_1,
+        )
+        self.assertTrue(edit_form.is_valid(), edit_form.errors)
+        atualizar_modelo_motivo(modelo_1, edit_form)
+        modelo_1.refresh_from_db()
+        modelo_2.refresh_from_db()
+        self.assertTrue(modelo_1.is_padrao)
+        self.assertFalse(modelo_2.is_padrao)
+
+        excluir_modelo_motivo(modelo_2)
+        self.assertFalse(ModeloMotivoOficio.objects.filter(pk=modelo_2.pk).exists())

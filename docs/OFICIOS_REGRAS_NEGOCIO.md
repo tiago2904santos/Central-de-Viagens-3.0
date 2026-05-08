@@ -177,3 +177,15 @@
 - Descrição: usuário pode selecionar um modelo ativo para preencher o campo `motivo`, com edição manual livre.
 - Estado no 3.0: implementado com backend obrigatório e JS progressivo opcional.
 
+## REG-OF-021 — Resumo informativo no GET inicial
+- Descrição: no GET de `/oficios/novo/`, a Etapa 1 deve sempre exibir N° do Ofício, Data criação e Status em modo informativo antes de qualquer salvamento.
+- Estado no 3.0: implementado.
+
+## REG-OF-022 — Custeio observação condicional
+- Descrição: `custeio_observacao` só é exibido quando `custeio=Outra instituição`; validação backend continua obrigatória nesse cenário.
+- Estado no 3.0: implementado.
+
+## REG-OF-023 — Gerenciador de modelos de motivo
+- Descrição: a Etapa 1 deve oferecer acesso direto ao CRUD de modelos de motivo com listagem, criação, edição e exclusão.
+- Estado no 3.0: implementado.
+

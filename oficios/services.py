@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from core.utils.masks import format_protocolo
 
+from .models import ModeloMotivoOficio
 from .models import Oficio
 
 
@@ -192,3 +193,27 @@ def build_oficio_document_payload(oficio):
         "motorista": oficio.motorista.nome if oficio.motorista else "",
         "custeio": oficio.custeio,
     }
+
+
+@transaction.atomic
+def criar_modelo_motivo(form):
+    modelo = form.save(commit=False)
+    if modelo.is_padrao:
+        ModeloMotivoOficio.objects.exclude(pk=modelo.pk).update(is_padrao=False)
+    modelo.save()
+    return modelo
+
+
+@transaction.atomic
+def atualizar_modelo_motivo(instance, form):
+    _ = instance
+    modelo = form.save(commit=False)
+    if modelo.is_padrao:
+        ModeloMotivoOficio.objects.exclude(pk=modelo.pk).update(is_padrao=False)
+    modelo.save()
+    return modelo
+
+
+@transaction.atomic
+def excluir_modelo_motivo(instance):
+    instance.delete()

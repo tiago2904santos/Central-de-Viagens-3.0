@@ -6,6 +6,7 @@ from cadastros.models import Unidade
 from cadastros.models import Viatura
 from roteiros.models import Roteiro
 
+from .models import ModeloMotivoOficio
 from .models import Oficio
 
 
@@ -54,3 +55,21 @@ def listar_viaturas_para_oficio():
 
 def listar_unidades_para_oficio():
     return Unidade.objects.order_by("nome")
+
+
+def listar_modelos_motivo(q: str | None = None, incluir_inativos: bool = True):
+    queryset = ModeloMotivoOficio.objects.order_by("ordem", "nome")
+    if not incluir_inativos:
+        queryset = queryset.filter(ativo=True)
+    if q:
+        query = q.strip()
+        queryset = queryset.filter(Q(nome__icontains=query) | Q(texto__icontains=query))
+    return queryset
+
+
+def listar_modelos_motivo_ativos():
+    return ModeloMotivoOficio.objects.filter(ativo=True).order_by("ordem", "nome")
+
+
+def get_modelo_motivo_by_id(pk: int):
+    return get_object_or_404(ModeloMotivoOficio, pk=pk)

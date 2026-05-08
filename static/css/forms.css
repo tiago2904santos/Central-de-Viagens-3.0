@@ -642,3 +642,7 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   margin-top: 0;
   padding: var(--space-4);
 }
+
+.form-field--hidden {
+  display: none;
+}

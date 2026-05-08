@@ -119,3 +119,38 @@ def apresentar_oficio_wizard_steps(oficio=None, etapa_atual="dados_viajantes", d
         step["state_label"] = status_data["label"]
     return steps
 
+
+def apresentar_oficio_wizard_summary(oficio=None):
+    if oficio is None:
+        return {
+            "numero_label": "Gerado automaticamente ao salvar.",
+            "data_criacao_label": "será definida automaticamente ao salvar",
+            "status_label": "Rascunho",
+            "status_state": "rascunho",
+        }
+
+    return {
+        "numero_label": oficio.numero_formatado,
+        "data_criacao_label": oficio.data_criacao.strftime("%d/%m/%Y"),
+        "status_label": oficio.get_status_display(),
+        "status_state": str(oficio.status or "").lower(),
+    }
+
+
+def apresentar_modelo_motivo_card(modelo):
+    status = "Ativo" if modelo.ativo else "Inativo"
+    padrao = "Sim" if modelo.is_padrao else "Não"
+    texto = (modelo.texto or "").strip()
+    if len(texto) > 140:
+        texto = f"{texto[:140]}..."
+    return {
+        "id": modelo.pk,
+        "nome": modelo.nome,
+        "status": status,
+        "padrao": padrao,
+        "ordem": modelo.ordem,
+        "texto_preview": texto or "—",
+        "editar_url": reverse("oficios:modelo_motivo_editar", args=[modelo.pk]),
+        "excluir_url": reverse("oficios:modelo_motivo_excluir", args=[modelo.pk]),
+    }
+

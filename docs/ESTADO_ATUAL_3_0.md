@@ -266,3 +266,6 @@ Resultado prático da fase:
 - `status` passou a ser automático, com base em completude da etapa e ação de salvamento.
 - `ModeloMotivoOficio` foi adicionado para gerenciamento de modelos de motivo ativos/inativos.
 - seleção de viajantes recebeu filtro progressivo em frontend, preservando submissão via `<select multiple>`.
+- no GET de `/oficios/novo/`, os informativos de N° do Ofício, Data criação e Status agora aparecem imediatamente antes de salvar.
+- `custeio_observacao` passou a ter exibição condicional quando `custeio=Outra instituição`, mantendo validação obrigatória no backend.
+- gerenciador de modelos de motivo foi exposto no fluxo da Etapa 1 com botão "Gerenciar modelos" e CRUD dedicado.

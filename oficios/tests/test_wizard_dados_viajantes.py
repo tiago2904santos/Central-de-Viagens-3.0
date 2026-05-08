@@ -61,9 +61,13 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Gerado automaticamente ao salvar")
         self.assertContains(response, "Data criação")
         self.assertContains(response, "será definida automaticamente ao salvar")
+        self.assertContains(response, "Status")
+        self.assertContains(response, "Rascunho")
         self.assertContains(response, "Protocolo")
         self.assertContains(response, "Motivo")
         self.assertContains(response, "Viajantes")
+        self.assertContains(response, "Gerenciar modelos")
+        self.assertContains(response, reverse("oficios:modelos_motivo_index"))
         self.assertNotContains(response, "Assunto e motivo")
         self.assertNotContains(response, "Contexto operacional")
         self.assertNotContains(response, 'name="numero"')
@@ -71,6 +75,7 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertNotContains(response, 'name="data_criacao"')
         self.assertNotContains(response, 'name="status"')
         self.assertNotContains(response, 'href="#"')
+        self.assertNotContains(response, 'style="')
         self.assertNotContains(response, "oficio-wizard__aside")
 
     def test_post_novo_save_draft_cria_e_redireciona_para_etapa(self):
@@ -111,6 +116,8 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Motivo existente")
         self.assertContains(response, "oficio-stepper")
         self.assertContains(response, "01/2026")
+        self.assertContains(response, oficio.data_criacao.strftime("%d/%m/%Y"))
+        self.assertContains(response, oficio.get_status_display())
 
     def test_post_dados_viajantes_atualiza_sem_apagar_transporte(self):
         oficio = Oficio.objects.create(
@@ -214,3 +221,34 @@ class OficioWizardDadosViajantesTests(TestCase):
         response = self.client.post(reverse("oficios:novo"), data=payload)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Informe um protocolo válido com 9 dígitos.")
+
+    def test_custeio_observacao_inicia_oculto_quando_nao_e_outra_instituicao(self):
+        response = self.client.get(reverse("oficios:novo"))
+        self.assertContains(response, 'class="form-field--hidden" data-custeio-observacao-wrapper')
+
+    def test_custeio_observacao_aparece_quando_outra_instituicao(self):
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            motivo="Motivo existente",
+            custeio=Oficio.CUSTEIO_OUTRA_INSTITUICAO,
+        )
+        response = self.client.get(reverse("oficios:dados_viajantes", args=[oficio.pk]))
+        self.assertContains(response, "data-custeio-observacao-wrapper")
+        self.assertNotContains(response, 'class="form-field--hidden" data-custeio-observacao-wrapper')
+
+    def test_post_custeio_outra_instituicao_sem_observacao_retorna_erro(self):
+        payload = self._payload(custeio=Oficio.CUSTEIO_OUTRA_INSTITUICAO, custeio_observacao="")
+        response = self.client.post(reverse("oficios:novo"), data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Informe a observação quando o custeio for de outra instituição.")
+
+    def test_post_custeio_outra_instituicao_com_observacao_valido(self):
+        payload = self._payload(custeio=Oficio.CUSTEIO_OUTRA_INSTITUICAO, custeio_observacao="Convênio externo")
+        response = self.client.post(reverse("oficios:novo"), data=payload)
+        self.assertEqual(response.status_code, 302)
+
+    def test_post_custeio_normal_sem_observacao_valido(self):
+        payload = self._payload(custeio=Oficio.CUSTEIO_UNIDADE_DPC, custeio_observacao="")
+        response = self.client.post(reverse("oficios:novo"), data=payload)
+        self.assertEqual(response.status_code, 302)

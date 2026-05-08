@@ -20,9 +20,32 @@
     });
   }
 
+  function shouldShowCusteioObservacao(value) {
+    return (value || "").toUpperCase() === "OUTRA_INSTITUICAO";
+  }
+
+  function updateCusteioObservacaoVisibility(select, wrapper) {
+    const visible = shouldShowCusteioObservacao(select.value);
+    wrapper.classList.toggle("form-field--hidden", !visible);
+  }
+
+  function initCusteioObservacao() {
+    const select = document.querySelector("select[name='custeio']");
+    const wrapper = document.querySelector("[data-custeio-observacao-wrapper]");
+    if (!select || !wrapper) return;
+    select.addEventListener("change", function () {
+      updateCusteioObservacaoVisibility(select, wrapper);
+    });
+    updateCusteioObservacaoVisibility(select, wrapper);
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initModeloMotivo);
+    document.addEventListener("DOMContentLoaded", function () {
+      initModeloMotivo();
+      initCusteioObservacao();
+    });
   } else {
     initModeloMotivo();
+    initCusteioObservacao();
   }
 })();

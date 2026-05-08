@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="app-page">
+    <div class="app-page__shell">
+      <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact">
+        <div class="app-page-hero__stage">
+          <span class="app-page-hero__eyebrow">Ofícios</span>
+          <h1 class="app-page-hero__title">{{ page_title }}</h1>
+        </div>
+      </header>
+
+      <section class="app-page__form-card">
+        <p>Confirma a exclusão do modelo <strong>{{ object.nome }}</strong>?</p>
+        <form method="post" class="form-shell">
+          {% csrf_token %}
+          <div class="form-actions">
+            {% include "components/buttons/action_button.html" with href=back_url label="Cancelar" variant="secondary" only %}
+            <button class="btn btn-danger" type="submit">Excluir</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+{% endblock %}

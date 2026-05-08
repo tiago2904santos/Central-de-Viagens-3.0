@@ -4,18 +4,26 @@ from django.shortcuts import render
 from django.urls import reverse
 
 from .forms import OficioDadosViajantesForm
+from .forms import ModeloMotivoOficioForm
 from .presenters import apresentar_acoes_oficio
+from .presenters import apresentar_modelo_motivo_card
 from .presenters import apresentar_oficio_card
 from .presenters import apresentar_oficio_wizard_header
+from .presenters import apresentar_oficio_wizard_summary
 from .presenters import apresentar_oficio_wizard_steps
 from .presenters import apresentar_pagina_detalhe_oficio
 from .selectors import get_oficio_by_id
+from .selectors import get_modelo_motivo_by_id
+from .selectors import listar_modelos_motivo
 from .selectors import listar_oficios
 from .selectors import listar_servidores_para_oficio
+from .services import atualizar_modelo_motivo
 from .services import OficioVinculadoError
 from .services import atualizar_oficio_dados_viajantes
 from .services import avaliar_oficio_dados_viajantes
+from .services import criar_modelo_motivo
 from .services import criar_oficio_dados_viajantes
+from .services import excluir_modelo_motivo
 from .services import excluir_oficio
 
 
@@ -26,6 +34,13 @@ def _prepare_dados_viajantes_form(form):
 def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
     avaliacao = avaliacao or avaliar_oficio_dados_viajantes(oficio=oficio, form=form)
     pendencias = avaliacao["pendencias"]
+    summary = apresentar_oficio_wizard_summary(oficio)
+    custeio_value = ""
+    if form.is_bound:
+        custeio_value = form.data.get("custeio", "")
+    else:
+        custeio_value = getattr(form.instance, "custeio", "") if getattr(form, "instance", None) else ""
+    mostrar_custeio_observacao = custeio_value == "OUTRA_INSTITUICAO"
     return {
         "page_title": "Cadastro de ofício",
         "wizard_header": apresentar_oficio_wizard_header("dados_viajantes"),
@@ -35,9 +50,9 @@ def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
             dados_viajantes_status=avaliacao["status"],
         ),
         "pendencias": pendencias,
-        "numero_preview": oficio.numero_formatado if oficio else "Gerado automaticamente ao salvar.",
-        "data_criacao_info": oficio.data_criacao.strftime("%d/%m/%Y") if oficio else "",
-        "status_info": oficio.get_status_display() if oficio else "Rascunho",
+        "wizard_summary": summary,
+        "mostrar_custeio_observacao": mostrar_custeio_observacao,
+        "modelos_motivo_url": reverse("oficios:modelos_motivo_index"),
         "form": form,
         "oficio": oficio,
         "back_url": reverse("oficios:index"),
@@ -163,5 +178,76 @@ def excluir(request, pk):
             "page_description": "A exclusão é física e pode ser bloqueada quando houver vínculos.",
             "object": oficio,
             "back_url": reverse("oficios:index"),
+        },
+    )
+
+
+def modelos_motivo_index(request):
+    q = request.GET.get("q", "").strip()
+    modelos = listar_modelos_motivo(q=q or None, incluir_inativos=True)
+    cards = [apresentar_modelo_motivo_card(modelo) for modelo in modelos]
+    return render(
+        request,
+        "oficios/modelos_motivo/index.html",
+        {
+            "page_title": "Modelos de motivo",
+            "q": q,
+            "cards": cards,
+            "new_url": reverse("oficios:modelo_motivo_novo"),
+            "back_url": reverse("oficios:novo"),
+        },
+    )
+
+
+def modelo_motivo_novo(request):
+    form = ModeloMotivoOficioForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        criar_modelo_motivo(form)
+        messages.success(request, "Modelo de motivo criado com sucesso.")
+        return redirect("oficios:modelos_motivo_index")
+    return render(
+        request,
+        "oficios/modelos_motivo/form.html",
+        {
+            "page_title": "Novo modelo de motivo",
+            "form": form,
+            "back_url": reverse("oficios:modelos_motivo_index"),
+            "submit_label": "Salvar modelo",
+        },
+    )
+
+
+def modelo_motivo_editar(request, pk):
+    modelo = get_modelo_motivo_by_id(pk)
+    form = ModeloMotivoOficioForm(request.POST or None, instance=modelo)
+    if request.method == "POST" and form.is_valid():
+        atualizar_modelo_motivo(modelo, form)
+        messages.success(request, "Modelo de motivo atualizado com sucesso.")
+        return redirect("oficios:modelos_motivo_index")
+    return render(
+        request,
+        "oficios/modelos_motivo/form.html",
+        {
+            "page_title": "Editar modelo de motivo",
+            "form": form,
+            "back_url": reverse("oficios:modelos_motivo_index"),
+            "submit_label": "Salvar alterações",
+        },
+    )
+
+
+def modelo_motivo_excluir(request, pk):
+    modelo = get_modelo_motivo_by_id(pk)
+    if request.method == "POST":
+        excluir_modelo_motivo(modelo)
+        messages.success(request, "Modelo de motivo excluído com sucesso.")
+        return redirect("oficios:modelos_motivo_index")
+    return render(
+        request,
+        "oficios/modelos_motivo/confirm_delete.html",
+        {
+            "page_title": "Excluir modelo de motivo",
+            "object": modelo,
+            "back_url": reverse("oficios:modelos_motivo_index"),
         },
     )

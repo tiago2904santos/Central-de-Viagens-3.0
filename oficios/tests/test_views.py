@@ -7,6 +7,7 @@ from cadastros.models import Cargo
 from cadastros.models import Servidor
 from cadastros.models import Unidade
 from oficios.models import Oficio
+from oficios.selectors import listar_modelos_motivo
 
 
 class OficioViewsTests(TestCase):
@@ -85,3 +86,44 @@ class OficioViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         detail_response = self.client.get(reverse("oficios:detalhe", args=[oficio.pk]))
         self.assertEqual(detail_response.status_code, 404)
+
+    def test_crud_modelo_motivo_views(self):
+        list_response = self.client.get(reverse("oficios:modelos_motivo_index"))
+        self.assertEqual(list_response.status_code, 200)
+
+        new_get = self.client.get(reverse("oficios:modelo_motivo_novo"))
+        self.assertEqual(new_get.status_code, 200)
+
+        new_post = self.client.post(
+            reverse("oficios:modelo_motivo_novo"),
+            data={
+                "nome": "Padrao equipe",
+                "texto": "Texto base",
+                "ativo": "on",
+                "ordem": "10",
+                "is_padrao": "on",
+            },
+        )
+        self.assertEqual(new_post.status_code, 302)
+        modelo = listar_modelos_motivo().first()
+
+        edit_get = self.client.get(reverse("oficios:modelo_motivo_editar", args=[modelo.pk]))
+        self.assertEqual(edit_get.status_code, 200)
+
+        edit_post = self.client.post(
+            reverse("oficios:modelo_motivo_editar", args=[modelo.pk]),
+            data={
+                "nome": "Padrao equipe atualizado",
+                "texto": "Texto atualizado",
+                "ativo": "on",
+                "ordem": "20",
+                "is_padrao": "",
+            },
+        )
+        self.assertEqual(edit_post.status_code, 302)
+        modelo.refresh_from_db()
+        self.assertEqual(modelo.ordem, 20)
+
+        delete_post = self.client.post(reverse("oficios:modelo_motivo_excluir", args=[modelo.pk]))
+        self.assertEqual(delete_post.status_code, 302)
+        self.assertFalse(listar_modelos_motivo().filter(pk=modelo.pk).exists())

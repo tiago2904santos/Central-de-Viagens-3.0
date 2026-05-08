@@ -124,3 +124,16 @@ class OficioDadosViajantesForm(OficioForm):
         if not servidores:
             self.add_error("servidores", "Selecione ao menos um viajante.")
         return cleaned_data
+
+
+class ModeloMotivoOficioForm(forms.ModelForm):
+    class Meta:
+        model = ModeloMotivoOficio
+        fields = ["nome", "texto", "ativo", "ordem", "is_padrao"]
+        widgets = {
+            "nome": forms.TextInput(attrs={"class": "form-control"}),
+            "texto": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
+            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "ordem": forms.NumberInput(attrs={"class": "form-control"}),
+            "is_padrao": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }

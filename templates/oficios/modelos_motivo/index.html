@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="app-page">
+    <div class="app-page__shell">
+      <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact">
+        <div class="app-page-hero__stage">
+          <span class="app-page-hero__eyebrow">Ofícios</span>
+          <h1 class="app-page-hero__title">{{ page_title }}</h1>
+        </div>
+        <div class="app-page__hero-actions">
+          {% include "components/buttons/action_button.html" with href=new_url label="Novo modelo" variant="primary" only %}
+          {% include "components/buttons/action_button.html" with href=back_url label="Voltar ao cadastro de ofício" variant="secondary" only %}
+        </div>
+      </header>
+
+      <section class="app-page__form-card">
+        <div class="list-grid">
+          {% for card in cards %}
+            <article class="list-card">
+              <div class="list-card__header">
+                <h3>{{ card.nome }}</h3>
+                <span class="status-chip {% if card.status == 'Ativo' %}status-chip--success{% else %}status-chip--muted{% endif %}">{{ card.status }}</span>
+              </div>
+              <div class="list-card__meta">
+                <p><strong>Padrão:</strong> {{ card.padrao }}</p>
+                <p><strong>Ordem:</strong> {{ card.ordem }}</p>
+                <p><strong>Prévia:</strong> {{ card.texto_preview }}</p>
+              </div>
+              <div class="form-actions">
+                {% include "components/buttons/action_button.html" with href=card.editar_url label="Editar" variant="secondary" only %}
+                {% include "components/buttons/action_button.html" with href=card.excluir_url label="Excluir" variant="danger" only %}
+              </div>
+            </article>
+          {% empty %}
+            <p>Nenhum modelo de motivo cadastrado.</p>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

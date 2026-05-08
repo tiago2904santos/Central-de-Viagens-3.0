@@ -18,28 +18,29 @@
     <div class="form-grid">
       <div class="oficio-number-preview field-span-12">
         <span class="oficio-number-preview__label">N° do Ofício:</span>
-        <strong class="oficio-number-preview__value">{{ numero_preview }}</strong>
+        <strong class="oficio-number-preview__value">{{ wizard_summary.numero_label }}</strong>
       </div>
       <div class="oficio-number-preview field-span-12">
         <span class="oficio-number-preview__label">Data criação:</span>
-        {% if oficio %}
-          <strong class="oficio-number-preview__value">{{ data_criacao_info }}</strong>
-        {% else %}
-          <strong class="oficio-number-preview__value">será definida automaticamente ao salvar</strong>
-        {% endif %}
+        <strong class="oficio-number-preview__value">{{ wizard_summary.data_criacao_label }}</strong>
       </div>
       <div class="oficio-number-preview field-span-12">
         <span class="oficio-number-preview__label">Status:</span>
-        <span class="status-chip {% if status_info == 'Gerado' %}status-chip--success{% else %}status-chip--warning{% endif %}">{{ status_info }}</span>
+        <span class="status-chip {% if wizard_summary.status_label == 'Gerado' %}status-chip--success{% else %}status-chip--warning{% endif %}">{{ wizard_summary.status_label }}</span>
       </div>
       {% include "components/forms/form_field.html" with field=form.protocolo only %}
       {% include "components/forms/form_field.html" with field=form.custeio only %}
-      {% include "components/forms/form_field.html" with field=form.custeio_observacao only %}
+      <div class="{% if not mostrar_custeio_observacao %}form-field--hidden{% endif %}" data-custeio-observacao-wrapper>
+        {% include "components/forms/form_field.html" with field=form.custeio_observacao only %}
+      </div>
     </div>
   </div>
 
   <div class="form-section">
     {% include "components/forms/form_section.html" with title="Motivo" description="Selecione um modelo opcional e ajuste o texto conforme necessário." only %}
+    <div class="form-actions">
+      {% include "components/buttons/action_button.html" with href=modelos_motivo_url label="Gerenciar modelos" variant="secondary" only %}
+    </div>
     <div class="form-grid">
       <div class="field">
         <label for="{{ form.modelo_motivo.id_for_label }}">{{ form.modelo_motivo.label }}</label>

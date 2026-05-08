@@ -40,6 +40,14 @@ Itens:
   - inclusão de `ModeloMotivoOficio` e seleção de modelo no form;
   - viajantes com filtro progressivo sem quebrar fallback de `<select multiple>`.
 
+### Hotfix 12.3.1 (concluído)
+- renderização inicial do wizard em `/oficios/novo/` com:
+  - `N° do Ofício: Gerado automaticamente ao salvar.`
+  - `Data criação: será definida automaticamente ao salvar`
+  - `Status: Rascunho`
+- exibição condicional de `custeio_observacao` por valor de `custeio`.
+- criação do CRUD de modelos de motivo em `/oficios/modelos-motivo/`.
+
 ## Fase 14 — Ofício: equipe/viajantes
 
 Itens:
