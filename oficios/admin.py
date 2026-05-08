@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from .models import ModeloMotivoOficio
 from .models import Oficio
 
 
@@ -13,3 +14,11 @@ class OficioAdmin(admin.ModelAdmin):
     @admin.display(description="N° do Ofício")
     def numero_do_oficio(self, obj):
         return obj.numero_formatado
+
+
+@admin.register(ModeloMotivoOficio)
+class ModeloMotivoOficioAdmin(admin.ModelAdmin):
+    list_display = ("nome", "ativo", "is_padrao", "ordem", "updated_at")
+    list_filter = ("ativo", "is_padrao")
+    search_fields = ("nome", "texto")
+    ordering = ("ordem", "nome")

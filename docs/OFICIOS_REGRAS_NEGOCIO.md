@@ -160,3 +160,20 @@
 - Riscos: perda de dados em formulários extensos.
 - Testes necessários: autosave por input, navegação e abandono de página.
 
+## REG-OF-017 — Etapa 1 usa somente Motivo
+- Descrição: a Etapa 1 do wizard de Ofícios não exibe mais "Assunto e motivo"; o bloco oficial é somente "Motivo".
+- Origem no legacy: regra de simplificação funcional com manutenção do texto de motivo.
+- Estado no 3.0: implementado.
+
+## REG-OF-018 — Data de criação automática e não editável
+- Descrição: `data_criacao` é preenchida automaticamente com a data local no salvamento e não pode ser editada na Etapa 1.
+- Estado no 3.0: implementado.
+
+## REG-OF-019 — Status automático RASCUNHO/GERADO
+- Descrição: status é calculado por completude da Etapa 1 e pela ação do usuário (`save_draft` ou `save_continue`).
+- Estado no 3.0: implementado.
+
+## REG-OF-020 — Modelo de motivo para preenchimento assistido
+- Descrição: usuário pode selecionar um modelo ativo para preencher o campo `motivo`, com edição manual livre.
+- Estado no 3.0: implementado com backend obrigatório e JS progressivo opcional.
+

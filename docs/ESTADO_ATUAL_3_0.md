@@ -257,3 +257,12 @@ Resultado prático da fase:
 - extração e priorização de regras de negócio para migração controlada;
 - backlog faseado de implementação (Fase 13 a Fase 23) alinhado ao padrão document-centric;
 - diagnóstico de lacunas entre o CRUD mínimo atual e o comportamento funcional legado completo.
+
+## 10. Atualização mais recente em Ofícios (Etapa 1)
+
+- Etapa 1 mantida como **Dados e viajantes**, sem bloco de assunto manual e sem contexto operacional.
+- `data_criacao` passou a ser automática no backend e informativa no wizard.
+- `protocolo` passou a aceitar entrada com ou sem máscara, persistindo em dígitos e exibindo formatado.
+- `status` passou a ser automático, com base em completude da etapa e ação de salvamento.
+- `ModeloMotivoOficio` foi adicionado para gerenciamento de modelos de motivo ativos/inativos.
+- seleção de viajantes recebeu filtro progressivo em frontend, preservando submissão via `<select multiple>`.

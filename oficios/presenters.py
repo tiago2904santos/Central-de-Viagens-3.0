@@ -2,13 +2,14 @@ from core.presenters.actions import build_action
 from core.presenters.actions import build_delete_action
 from core.presenters.actions import build_edit_action
 from core.presenters.meta import build_meta
+from core.utils.masks import format_protocolo
 from django.urls import reverse
 
 from .models import Oficio
 
 
 def _status_variant(status: str) -> str:
-    if status == Oficio.STATUS_FINALIZADO:
+    if status in {Oficio.STATUS_GERADO, Oficio.STATUS_FINALIZADO}:
         return "status-chip--success"
     if status == Oficio.STATUS_ARQUIVADO:
         return "status-chip--muted"
@@ -16,20 +17,17 @@ def _status_variant(status: str) -> str:
 
 
 def apresentar_oficio_card(oficio):
-    roteiro_label = str(oficio.roteiro) if oficio.roteiro else "Sem roteiro"
-    solicitante_label = str(oficio.solicitante) if oficio.solicitante else "—"
     return {
         "number_label": "N° do Ofício",
         "number": oficio.numero_formatado,
         "status": oficio.get_status_display(),
         "status_class": _status_variant(oficio.status),
         "title": f"Ofício {oficio.numero_formatado}",
-        "subtitle": oficio.assunto or "Sem assunto",
+        "subtitle": oficio.motivo[:120] if oficio.motivo else "Sem motivo",
         "meta": [
-            build_meta("Protocolo", oficio.protocolo or "—"),
+            build_meta("Protocolo", format_protocolo(oficio.protocolo) or "—"),
             build_meta("Data criação", oficio.data_criacao.strftime("%d/%m/%Y")),
-            build_meta("Roteiro", roteiro_label),
-            build_meta("Solicitante", solicitante_label),
+            build_meta("Custeio", oficio.get_custeio_display()),
             build_meta("Viajantes", str(oficio.servidores.count())),
         ],
     }
@@ -40,12 +38,9 @@ def apresentar_pagina_detalhe_oficio(oficio):
         "status": oficio.get_status_display(),
         "status_class": _status_variant(oficio.status),
         "numero_formatado": oficio.numero_formatado,
-        "protocolo": oficio.protocolo or "—",
-        "assunto": oficio.assunto or "—",
+        "protocolo": format_protocolo(oficio.protocolo) or "—",
         "motivo": oficio.motivo or "—",
         "data_criacao": oficio.data_criacao.strftime("%d/%m/%Y"),
-        "roteiro": str(oficio.roteiro) if oficio.roteiro else "—",
-        "solicitante": str(oficio.solicitante) if oficio.solicitante else "—",
         "servidores": [servidor.nome for servidor in oficio.servidores.all()],
         "viatura": oficio.viatura.placa_formatada if oficio.viatura else "—",
         "motorista": oficio.motorista.nome if oficio.motorista else "—",

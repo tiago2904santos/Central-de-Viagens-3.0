@@ -32,17 +32,9 @@ class OficioViewsTests(TestCase):
         response = self.client.post(
             reverse("oficios:novo"),
             data={
-                "numero": "1",
-                "ano": "2026",
-                "data_criacao": "2026-05-08",
-                "protocolo": "abc 1",
-                "assunto": "Assunto",
+                "protocolo": "12.345.678-1",
                 "motivo": "Motivo",
-                "status": Oficio.STATUS_RASCUNHO,
-                "solicitante": str(self.unidade.pk),
                 "servidores": [str(self.servidor.pk)],
-                "viatura": "",
-                "motorista": "",
                 "custeio": Oficio.CUSTEIO_UNIDADE_DPC,
                 "custeio_observacao": "",
             },
@@ -68,23 +60,15 @@ class OficioViewsTests(TestCase):
         oficio = Oficio.objects.create(
             numero=1,
             ano=2026,
-            assunto="Assunto antigo",
+            motivo="Motivo antigo",
             custeio=Oficio.CUSTEIO_UNIDADE_DPC,
         )
         response = self.client.post(
             reverse("oficios:editar", args=[oficio.pk]),
             data={
-                "numero": "2",
-                "ano": "2026",
-                "data_criacao": "2026-05-08",
-                "protocolo": "abc 2",
-                "assunto": "Assunto novo",
+                "protocolo": "12.345.678-2",
                 "motivo": "Motivo novo",
-                "status": Oficio.STATUS_FINALIZADO,
-                "solicitante": str(self.unidade.pk),
                 "servidores": [str(self.servidor.pk)],
-                "viatura": "",
-                "motorista": "",
                 "custeio": Oficio.CUSTEIO_UNIDADE_DPC,
                 "custeio_observacao": "",
             },
@@ -93,7 +77,7 @@ class OficioViewsTests(TestCase):
         self.assertEqual(response.url, reverse("oficios:dados_viajantes", args=[oficio.pk]))
         oficio.refresh_from_db()
         self.assertEqual(oficio.numero, 1)
-        self.assertEqual(oficio.assunto, "Assunto antigo")
+        self.assertEqual(oficio.motivo, "Motivo antigo")
 
     def test_post_excluir_remove(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)

@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+from oficios.models import ModeloMotivoOficio
 from oficios.models import Oficio
 
 
@@ -19,3 +20,7 @@ class OficioModelTests(TestCase):
     def test_status_default_rascunho(self):
         oficio = Oficio.objects.create()
         self.assertEqual(oficio.status, Oficio.STATUS_RASCUNHO)
+
+    def test_modelo_motivo_normaliza_nome(self):
+        modelo = ModeloMotivoOficio.objects.create(nome="   padrão equipe  ", texto=" Texto base ")
+        self.assertEqual(modelo.nome, "PADRÃO EQUIPE")

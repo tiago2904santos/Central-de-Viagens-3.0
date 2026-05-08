@@ -11,9 +11,7 @@ from .presenters import apresentar_oficio_wizard_steps
 from .presenters import apresentar_pagina_detalhe_oficio
 from .selectors import get_oficio_by_id
 from .selectors import listar_oficios
-from .selectors import listar_roteiros_para_oficio
 from .selectors import listar_servidores_para_oficio
-from .selectors import listar_unidades_para_oficio
 from .services import OficioVinculadoError
 from .services import atualizar_oficio_dados_viajantes
 from .services import avaliar_oficio_dados_viajantes
@@ -22,8 +20,6 @@ from .services import excluir_oficio
 
 
 def _prepare_dados_viajantes_form(form):
-    form.fields["roteiro"].queryset = listar_roteiros_para_oficio()
-    form.fields["solicitante"].queryset = listar_unidades_para_oficio()
     form.fields["servidores"].queryset = listar_servidores_para_oficio()
 
 
@@ -40,6 +36,8 @@ def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
         ),
         "pendencias": pendencias,
         "numero_preview": oficio.numero_formatado if oficio else "Gerado automaticamente ao salvar.",
+        "data_criacao_info": oficio.data_criacao.strftime("%d/%m/%Y") if oficio else "",
+        "status_info": oficio.get_status_display() if oficio else "Rascunho",
         "form": form,
         "oficio": oficio,
         "back_url": reverse("oficios:index"),
@@ -96,7 +94,7 @@ def novo(request):
     form = OficioDadosViajantesForm(request.POST or None)
     _prepare_dados_viajantes_form(form)
     if request.method == "POST" and form.is_valid():
-        oficio = criar_oficio_dados_viajantes(form)
+        oficio = criar_oficio_dados_viajantes(form, action=request.POST.get("action", "save_draft"))
         return _redirect_after_dados_viajantes_save(request, oficio, created=True)
     avaliacao = avaliar_oficio_dados_viajantes(form=form) if request.method == "POST" else None
     return render(
@@ -134,7 +132,7 @@ def dados_viajantes(request, pk):
     form = OficioDadosViajantesForm(request.POST or None, instance=oficio)
     _prepare_dados_viajantes_form(form)
     if request.method == "POST" and form.is_valid():
-        oficio = atualizar_oficio_dados_viajantes(oficio, form)
+        oficio = atualizar_oficio_dados_viajantes(oficio, form, action=request.POST.get("action", "save_draft"))
         return _redirect_after_dados_viajantes_save(request, oficio)
     avaliacao = avaliar_oficio_dados_viajantes(form=form, oficio=oficio)
     return render(

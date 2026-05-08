@@ -34,16 +34,7 @@
             <div class="document-meta-item"><dt>Status</dt><dd><span class="status-chip {{ detail.status_class }}">{{ detail.status }}</span></dd></div>
             <div class="document-meta-item"><dt>N° do Ofício</dt><dd>{{ detail.numero_formatado }}</dd></div>
             <div class="document-meta-item"><dt>Protocolo</dt><dd>{{ detail.protocolo }}</dd></div>
-            <div class="document-meta-item"><dt>Data</dt><dd>{{ detail.data_criacao }}</dd></div>
-            <div class="document-meta-item"><dt>Assunto</dt><dd>{{ detail.assunto }}</dd></div>
-          </dl>
-        </div>
-
-        <div class="form-section">
-          {% include "components/forms/form_section.html" with title="Contexto" only %}
-          <dl class="document-meta">
-            <div class="document-meta-item"><dt>Roteiro</dt><dd>{{ detail.roteiro }}</dd></div>
-            <div class="document-meta-item"><dt>Solicitante</dt><dd>{{ detail.solicitante }}</dd></div>
+            <div class="document-meta-item"><dt>Data criação</dt><dd>{{ detail.data_criacao }}</dd></div>
           </dl>
         </div>
 

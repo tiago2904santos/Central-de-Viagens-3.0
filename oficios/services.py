@@ -2,6 +2,8 @@ from django.db import transaction
 from django.db.models import ProtectedError
 from django.utils import timezone
 
+from core.utils.masks import format_protocolo
+
 from .models import Oficio
 
 
@@ -20,18 +22,51 @@ def atualizar_oficio(instance, form):
     return form.save()
 
 
+def aplicar_modelo_motivo_no_oficio(oficio, modelo_motivo, motivo_digitado):
+    motivo_limpo = (motivo_digitado or "").strip()
+    if motivo_limpo:
+        oficio.motivo = motivo_limpo
+        return oficio
+    if modelo_motivo:
+        oficio.motivo = (modelo_motivo.texto or "").strip()
+    return oficio
+
+
+def atualizar_status_automatico_oficio(oficio, action="save_draft", form=None):
+    avaliacao = avaliar_oficio_dados_viajantes(form=form) if form is not None else avaliar_oficio_dados_viajantes(oficio=oficio)
+    if action == "save_continue" and avaliacao["status"] == "complete":
+        oficio.status = Oficio.STATUS_GERADO
+    else:
+        oficio.status = Oficio.STATUS_RASCUNHO
+    return oficio
+
+
 @transaction.atomic
-def criar_oficio_dados_viajantes(form):
+def criar_oficio_dados_viajantes(form, action="save_draft"):
     oficio = form.save(commit=False)
+    oficio.data_criacao = oficio.data_criacao or timezone.localdate()
+    modelo_motivo = form.cleaned_data.get("modelo_motivo")
+    aplicar_modelo_motivo_no_oficio(oficio, modelo_motivo, form.cleaned_data.get("motivo"))
     reservar_numero_oficio(oficio)
+    atualizar_status_automatico_oficio(oficio, action=action, form=form)
+    oficio.save()
     form.save_m2m()
     return oficio
 
 
 @transaction.atomic
-def atualizar_oficio_dados_viajantes(oficio, form):
-    _ = oficio
-    return form.save()
+def atualizar_oficio_dados_viajantes(oficio, form, action="save_draft"):
+    data_criacao_original = oficio.data_criacao
+    atualizado = form.save(commit=False)
+    atualizado.numero = oficio.numero
+    atualizado.ano = oficio.ano
+    atualizado.data_criacao = data_criacao_original
+    modelo_motivo = form.cleaned_data.get("modelo_motivo")
+    aplicar_modelo_motivo_no_oficio(atualizado, modelo_motivo, form.cleaned_data.get("motivo"))
+    atualizar_status_automatico_oficio(atualizado, action=action, form=form)
+    atualizado.save()
+    form.save_m2m()
+    return atualizado
 
 
 def get_next_available_numero_oficio(ano):
@@ -70,10 +105,6 @@ def avaliar_oficio_dados_viajantes(oficio=None, form=None):
         values = {}
 
     pendencias = []
-    if not values.get("data_criacao"):
-        pendencias.append("Informe a data de criação.")
-    if not values.get("assunto"):
-        pendencias.append("Informe o assunto.")
     if not values.get("motivo"):
         pendencias.append("Informe o motivo.")
     if not values.get("custeio"):
@@ -112,7 +143,6 @@ def _dados_viajantes_from_form(form):
         has_started = form.is_bound or any(str(value).strip() for value in text_values) or bool(servidores)
         return {
             "data_criacao": get_value("data_criacao"),
-            "assunto": str(get_value("assunto", "") or "").strip(),
             "motivo": str(get_value("motivo", "") or "").strip(),
             "custeio": get_value("custeio"),
             "custeio_observacao": str(get_value("custeio_observacao", "") or "").strip(),
@@ -126,11 +156,10 @@ def _dados_viajantes_from_form(form):
 def _dados_viajantes_from_oficio(oficio):
     if oficio is None:
         return {}
-    text_values = [oficio.assunto, oficio.motivo, oficio.protocolo, oficio.custeio_observacao]
+    text_values = [oficio.motivo, oficio.protocolo, oficio.custeio_observacao]
     servidores_count = oficio.servidores.count() if oficio.pk else 0
     return {
         "data_criacao": oficio.data_criacao,
-        "assunto": oficio.assunto.strip(),
         "motivo": oficio.motivo.strip(),
         "custeio": oficio.custeio,
         "custeio_observacao": oficio.custeio_observacao.strip(),
@@ -152,7 +181,7 @@ def build_oficio_document_payload(oficio):
         "numero": oficio.numero,
         "ano": oficio.ano,
         "numero_formatado": oficio.numero_formatado,
-        "protocolo": oficio.protocolo,
+        "protocolo": format_protocolo(oficio.protocolo),
         "assunto": oficio.assunto,
         "motivo": oficio.motivo,
         "data_criacao": oficio.data_criacao,

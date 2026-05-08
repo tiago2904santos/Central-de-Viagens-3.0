@@ -33,6 +33,14 @@
     return `${v.slice(0, 5)}-${v.slice(5)}`;
   }
 
+  function maskProtocolo(value) {
+    const v = onlyDigits(value).slice(0, 9);
+    if (v.length <= 2) return v;
+    if (v.length <= 5) return `${v.slice(0, 2)}.${v.slice(2)}`;
+    if (v.length <= 8) return `${v.slice(0, 2)}.${v.slice(2, 5)}.${v.slice(5)}`;
+    return `${v.slice(0, 2)}.${v.slice(2, 5)}.${v.slice(5, 8)}-${v.slice(8)}`;
+  }
+
   function maskTelefone(value) {
     const v = onlyDigits(value).slice(0, 11);
     if (!v) return "";
@@ -54,6 +62,7 @@
     if (mask === "placa") input.value = maskPlaca(input.value);
     if (mask === "cep") input.value = maskCep(input.value);
     if (mask === "telefone") input.value = maskTelefone(input.value);
+    if (mask === "protocolo") input.value = maskProtocolo(input.value);
   }
 
   function initMasks() {

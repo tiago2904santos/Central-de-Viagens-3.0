@@ -8,16 +8,19 @@ from cadastros.models import Unidade
 from cadastros.models import Viatura
 from core.normalizers import normalize_spaces
 from core.normalizers import normalize_upper
+from core.utils.masks import normalize_protocolo
 from roteiros.models import Roteiro
 
 
 class Oficio(TimeStampedModel):
     STATUS_RASCUNHO = "RASCUNHO"
+    STATUS_GERADO = "GERADO"
     STATUS_FINALIZADO = "FINALIZADO"
     STATUS_ARQUIVADO = "ARQUIVADO"
     STATUS_CHOICES = [
         (STATUS_RASCUNHO, "Rascunho"),
-        (STATUS_FINALIZADO, "Finalizado"),
+        (STATUS_GERADO, "Gerado"),
+        (STATUS_FINALIZADO, "Finalizado (legado)"),
         (STATUS_ARQUIVADO, "Arquivado"),
     ]
 
@@ -108,8 +111,31 @@ class Oficio(TimeStampedModel):
         return numero
 
     def save(self, *args, **kwargs):
-        self.protocolo = normalize_upper(self.protocolo)
+        self.protocolo = normalize_protocolo(self.protocolo)
         self.assunto = normalize_spaces(self.assunto)
         self.motivo = normalize_spaces(self.motivo)
         self.custeio_observacao = normalize_spaces(self.custeio_observacao)
+        super().save(*args, **kwargs)
+
+
+class ModeloMotivoOficio(TimeStampedModel):
+    nome = models.CharField(max_length=120, unique=True)
+    texto = models.TextField()
+    ativo = models.BooleanField(default=True)
+    ordem = models.PositiveIntegerField(default=100)
+    is_padrao = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["ordem", "nome"]
+        verbose_name = "Modelo de motivo de ofício"
+        verbose_name_plural = "Modelos de motivo de ofício"
+
+    def __str__(self):
+        return self.nome
+
+    def save(self, *args, **kwargs):
+        self.nome = normalize_upper(self.nome)
+        self.texto = normalize_spaces(self.texto)
+        if self.is_padrao:
+            ModeloMotivoOficio.objects.exclude(pk=self.pk).update(is_padrao=False)
         super().save(*args, **kwargs)

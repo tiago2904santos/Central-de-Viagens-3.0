@@ -1,4 +1,5 @@
 {% extends "oficios/wizard_base.html" %}
+{% load static %}
 
 {% block wizard_content %}
   {% if pendencias %}
@@ -13,22 +14,43 @@
   {% endif %}
 
   <div class="form-section">
-    {% include "components/forms/form_section.html" with title="Dados do ofício" description="Identificação administrativa e status inicial." only %}
+    {% include "components/forms/form_section.html" with title="Dados do ofício" description="Identificação administrativa, protocolo e custeio." only %}
     <div class="form-grid">
       <div class="oficio-number-preview field-span-12">
         <span class="oficio-number-preview__label">N° do Ofício:</span>
         <strong class="oficio-number-preview__value">{{ numero_preview }}</strong>
       </div>
-      {% include "components/forms/form_field.html" with field=form.data_criacao only %}
+      <div class="oficio-number-preview field-span-12">
+        <span class="oficio-number-preview__label">Data criação:</span>
+        {% if oficio %}
+          <strong class="oficio-number-preview__value">{{ data_criacao_info }}</strong>
+        {% else %}
+          <strong class="oficio-number-preview__value">será definida automaticamente ao salvar</strong>
+        {% endif %}
+      </div>
+      <div class="oficio-number-preview field-span-12">
+        <span class="oficio-number-preview__label">Status:</span>
+        <span class="status-chip {% if status_info == 'Gerado' %}status-chip--success{% else %}status-chip--warning{% endif %}">{{ status_info }}</span>
+      </div>
       {% include "components/forms/form_field.html" with field=form.protocolo only %}
-      {% include "components/forms/form_field.html" with field=form.status only %}
+      {% include "components/forms/form_field.html" with field=form.custeio only %}
+      {% include "components/forms/form_field.html" with field=form.custeio_observacao only %}
     </div>
   </div>
 
   <div class="form-section">
-    {% include "components/forms/form_section.html" with title="Assunto e motivo" description="Síntese formal da demanda e motivação do deslocamento." only %}
+    {% include "components/forms/form_section.html" with title="Motivo" description="Selecione um modelo opcional e ajuste o texto conforme necessário." only %}
     <div class="form-grid">
-      {% include "components/forms/form_field.html" with field=form.assunto only %}
+      <div class="field">
+        <label for="{{ form.modelo_motivo.id_for_label }}">{{ form.modelo_motivo.label }}</label>
+        <select name="{{ form.modelo_motivo.html_name }}" id="{{ form.modelo_motivo.id_for_label }}" class="form-select" data-modelo-motivo-select="true">
+          <option value="">Selecione um modelo (opcional)</option>
+          {% for modelo in form.fields.modelo_motivo.queryset %}
+            <option value="{{ modelo.pk }}" data-texto-motivo="{{ modelo.texto }}"{% if form.modelo_motivo.value|stringformat:'s' == modelo.pk|stringformat:'s' %} selected{% endif %}>{{ modelo.nome }}</option>
+          {% endfor %}
+        </select>
+        {% if form.modelo_motivo.errors %}<p class="field-error">{{ form.modelo_motivo.errors|striptags }}</p>{% endif %}
+      </div>
       <div class="field-span-12">
         {% include "components/forms/form_field.html" with field=form.motivo only %}
       </div>
@@ -36,27 +58,27 @@
   </div>
 
   <div class="form-section">
-    {% include "components/forms/form_section.html" with title="Contexto operacional" description="Vínculos opcionais que ajudam a compor o documento." only %}
-    <div class="form-grid">
-      {% include "components/forms/form_field.html" with field=form.roteiro only %}
-      {% include "components/forms/form_field.html" with field=form.solicitante only %}
-    </div>
-  </div>
-
-  <div class="form-section">
-    {% include "components/forms/form_section.html" with title="Custeio" description="Origem do custeio e observação quando aplicável." only %}
-    <div class="form-grid">
-      {% include "components/forms/form_field.html" with field=form.custeio only %}
-      {% include "components/forms/form_field.html" with field=form.custeio_observacao only %}
-    </div>
-  </div>
-
-  <div class="form-section">
     {% include "components/forms/form_section.html" with title="Viajantes" description="Servidores vinculados ao ofício nesta etapa inicial." only %}
     <div class="form-grid">
       <div class="field-span-12">
+        <div class="field">
+          <label for="servidores-filter">Filtrar viajantes</label>
+          <input
+            id="servidores-filter"
+            type="search"
+            class="form-control"
+            placeholder="Pesquisar por nome do servidor"
+            data-filterable-multiselect-input="id_servidores"
+          >
+        </div>
         {% include "components/forms/form_field.html" with field=form.servidores help_text="Selecione ao menos um viajante para concluir a etapa." only %}
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script src="{% static 'js/components/filterable-multiselect.js' %}" defer></script>
+  <script src="{% static 'js/pages/oficios-dados-viajantes.js' %}" defer></script>
 {% endblock %}

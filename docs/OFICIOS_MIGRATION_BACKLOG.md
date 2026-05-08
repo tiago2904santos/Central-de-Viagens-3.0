@@ -31,6 +31,15 @@ Itens:
 |---|---|---|---|---|---|
 | 13 | Completar modelo operacional do ofício | `oficios/models.py`, `oficios/forms.py`, `oficios/services.py`, `oficios/tests/*` | Sim | Alto | Ofício contempla campos e regras mínimas legadas sem quebrar arquitetura |
 
+### Atualização da fase 12.3 (concluída)
+- Etapa 1 ajustada para "Dados e viajantes" com:
+  - data de criação automática;
+  - protocolo canônico (9 dígitos) e máscara `XX.XXX.XXX-X`;
+  - status automático `RASCUNHO/GERADO`;
+  - remoção de "Assunto e motivo" e de "Contexto operacional";
+  - inclusão de `ModeloMotivoOficio` e seleção de modelo no form;
+  - viajantes com filtro progressivo sem quebrar fallback de `<select multiple>`.
+
 ## Fase 14 — Ofício: equipe/viajantes
 
 Itens:

@@ -34,3 +34,13 @@
 | templates | Wizard + docs + globais | CRUD simples | Sim | Média | evoluir para componentes de domínio |
 | JS | Alto uso em fluxo e preview | JS básico | Sim | Média | reescrever sem copiar legado |
 
+## Delta aplicado na Etapa 1 (página 3)
+- `data_criacao`: agora automática e informativa na UI.
+- `protocolo`: normalizado para dígitos e exibido com máscara.
+- `status`: cálculo automático com transição para `GERADO` em `save_continue` quando completo.
+- `assunto`: removido da UI da Etapa 1 (mantido apenas para compatibilidade interna).
+- `motivo`: bloco único com suporte a modelo de motivo ativo.
+- `contexto operacional`: removido da Etapa 1.
+- `custeio`: consolidado no bloco "Dados do ofício".
+- `viajantes`: seleção com filtro progressivo e fallback sem JS.
+
