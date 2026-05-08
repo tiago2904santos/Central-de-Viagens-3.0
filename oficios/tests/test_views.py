@@ -29,6 +29,16 @@ class OficioViewsTests(TestCase):
     def test_get_novo_retorna_200(self):
         response = self.client.get(reverse("oficios:novo"))
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "oficio-data-grid--four")
+        self.assertContains(response, "Gerado automaticamente ao salvar.")
+        self.assertContains(response, "será definida automaticamente ao salvar")
+        self.assertContains(response, "motivo-card__header")
+        self.assertContains(response, "Modelo de motivo")
+        self.assertContains(response, reverse("oficios:modelos_motivo_index"))
+        self.assertNotContains(
+            response,
+            "Escolha um modelo para iniciar com texto pré-preenchido ou escreva manualmente o motivo.",
+        )
 
     def test_post_novo_valido_cria_oficio_e_redireciona(self):
         response = self.client.post(
@@ -92,15 +102,14 @@ class OficioViewsTests(TestCase):
         list_response = self.client.get(reverse("oficios:modelos_motivo_index"))
         self.assertEqual(list_response.status_code, 200)
         self.assertContains(list_response, "Nenhum modelo de motivo cadastrado.")
-        self.assertContains(list_response, "Criar primeiro modelo")
         self.assertContains(list_response, "Novo modelo")
-        self.assertContains(list_response, reverse("oficios:novo"))
+        self.assertContains(list_response, "Buscar modelos de motivo")
 
         new_get = self.client.get(reverse("oficios:modelo_motivo_novo"))
         self.assertEqual(new_get.status_code, 200)
         self.assertContains(new_get, "Novo modelo de motivo")
         self.assertContains(new_get, "Texto do modelo")
-        self.assertContains(new_get, "Modelo padrão")
+        self.assertNotContains(new_get, "Modelo padrão")
         self.assertNotContains(new_get, "Is padrão")
 
         new_post = self.client.post(
@@ -108,8 +117,6 @@ class OficioViewsTests(TestCase):
             data={
                 "nome": "Padrao equipe",
                 "texto": "Texto base",
-                "ativo": "on",
-                "ordem": "10",
                 "is_padrao": "on",
             },
         )
@@ -124,47 +131,37 @@ class OficioViewsTests(TestCase):
             data={
                 "nome": "Padrao equipe atualizado",
                 "texto": "Texto atualizado",
-                "ativo": "on",
-                "ordem": "20",
                 "is_padrao": "",
             },
         )
         self.assertEqual(edit_post.status_code, 302)
         modelo.refresh_from_db()
-        self.assertEqual(modelo.ordem, 20)
-
-        ModeloAtivoPadrao = listar_modelos_motivo().get(pk=modelo.pk)
-        self.assertTrue(ModeloAtivoPadrao.ativo)
+        self.assertEqual(modelo.nome, "PADRAO EQUIPE ATUALIZADO")
 
         delete_post = self.client.post(reverse("oficios:modelo_motivo_excluir", args=[modelo.pk]))
         self.assertEqual(delete_post.status_code, 302)
         self.assertFalse(listar_modelos_motivo().filter(pk=modelo.pk).exists())
 
-    def test_listagem_modelos_exibe_badges_ativo_inativo_e_padrao(self):
+    def test_listagem_modelos_exibe_apenas_badge_padrao(self):
         self.client.post(
             reverse("oficios:modelo_motivo_novo"),
             data={
                 "nome": "Modelo Ativo Padrão",
                 "texto": "Texto ativo padrão",
-                "ativo": "on",
-                "ordem": "5",
                 "is_padrao": "on",
             },
         )
         self.client.post(
             reverse("oficios:modelo_motivo_novo"),
             data={
-                "nome": "Modelo Inativo",
-                "texto": "Texto inativo",
-                "ordem": "9",
+                "nome": "Modelo Secundario",
+                "texto": "Texto secundario",
                 "is_padrao": "",
             },
         )
 
         response = self.client.get(reverse("oficios:modelos_motivo_index"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Ativo")
-        self.assertContains(response, "Inativo")
         self.assertContains(response, "Padrão")
 
     def test_templates_modelos_motivo_sem_href_falso_css_ou_js_inline(self):
@@ -178,3 +175,17 @@ class OficioViewsTests(TestCase):
             self.assertNotIn('href="#"', content)
             self.assertNotIn('style="', content)
             self.assertNotIn("<script", content)
+
+    def test_listagem_modelos_ordenada_alfabeticamente(self):
+        self.client.post(
+            reverse("oficios:modelo_motivo_novo"),
+            data={"nome": "Zeta", "texto": "texto zeta", "is_padrao": ""},
+        )
+        self.client.post(
+            reverse("oficios:modelo_motivo_novo"),
+            data={"nome": "Alfa", "texto": "texto alfa", "is_padrao": ""},
+        )
+
+        response = self.client.get(reverse("oficios:modelos_motivo_index"))
+        content = response.content.decode("utf-8")
+        self.assertLess(content.find("ALFA"), content.find("ZETA"))

@@ -728,15 +728,21 @@ html[data-theme="light-dark"] input[type="checkbox"] {
    -------------------------------------------------------------------------- */
 .motivo-card {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .motivo-card__header {
-  align-items: start;
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
   justify-content: space-between;
+}
+
+.motivo-card__heading {
+  display: grid;
+  gap: var(--space-1);
+  min-width: min(100%, 28rem);
 }
 
 .motivo-card__title {
@@ -747,40 +753,43 @@ html[data-theme="light-dark"] input[type="checkbox"] {
 
 .motivo-card__description {
   color: var(--color-muted);
+  font-size: var(--font-size-sm);
   margin: 0;
 }
 
 .motivo-card__actions {
   display: flex;
+  flex-shrink: 0;
   gap: var(--space-2);
+  margin-left: auto;
 }
 
-.motivo-card__grid {
+.motivo-card__body {
   display: grid;
-  gap: var(--space-4);
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr);
 }
 
-.motivo-card__model-select {
-  max-width: 560px;
+.motivo-card__model {
+  min-width: 0;
 }
 
-.motivo-card__hint {
-  background: var(--color-card-muted);
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-control);
-  color: var(--color-muted-strong);
-  font-size: var(--font-size-sm);
-  padding: var(--space-3);
+.motivo-card__model .form-select {
+  width: 100%;
 }
 
-.motivo-card__hint p {
-  margin: 0;
+.motivo-card__textarea {
+  min-width: 0;
+}
+
+.motivo-card__textarea .field {
+  max-width: none;
 }
 
 .motivo-card__textarea textarea.form-control {
-  min-height: 132px;
+  min-height: 112px;
   resize: vertical;
+  width: 100%;
 }
 
 .modelo-motivo-options {
@@ -876,8 +885,13 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   color: var(--color-muted-strong);
 }
 
-@media (max-width: 900px) {
-  .motivo-card__grid {
-    grid-template-columns: 1fr;
+@media (max-width: 560px) {
+  .motivo-card__actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .motivo-card__actions .btn {
+    width: 100%;
   }
 }

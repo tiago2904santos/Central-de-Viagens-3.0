@@ -71,6 +71,14 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Gerenciar modelos")
         self.assertContains(response, reverse("oficios:modelos_motivo_index"))
         self.assertContains(response, "Use um modelo salvo ou descreva o motivo da viagem.")
+        self.assertContains(response, "Modelo de motivo")
+        self.assertContains(response, 'name="modelo_motivo"')
+        self.assertContains(response, 'name="motivo"')
+        self.assertContains(response, "motivo-card__body")
+        self.assertNotContains(
+            response,
+            "Escolha um modelo para iniciar com texto pré-preenchido ou escreva manualmente o motivo.",
+        )
         self.assertNotContains(response, "Assunto e motivo")
         self.assertNotContains(response, "Contexto operacional")
         self.assertNotContains(response, "Is padrão")
