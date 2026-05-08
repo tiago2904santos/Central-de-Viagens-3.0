@@ -15,23 +15,41 @@
 
   <div class="form-section">
     {% include "components/forms/form_section.html" with title="Dados do ofício" description="Identificação administrativa, protocolo e custeio." only %}
-    <div class="form-grid">
-      <div class="oficio-number-preview field-span-12">
-        <span class="oficio-number-preview__label">N° do Ofício:</span>
-        <strong class="oficio-number-preview__value">{{ wizard_summary.numero_label }}</strong>
-      </div>
-      <div class="oficio-number-preview field-span-12">
-        <span class="oficio-number-preview__label">Data criação:</span>
-        <strong class="oficio-number-preview__value">{{ wizard_summary.data_criacao_label }}</strong>
-      </div>
-      <div class="oficio-number-preview field-span-12">
-        <span class="oficio-number-preview__label">Status:</span>
+    <div class="oficio-data-block">
+      <div class="oficio-data-status">
+        <span class="oficio-data-status__label">Status:</span>
         <span class="status-chip {% if wizard_summary.status_label == 'Gerado' %}status-chip--success{% else %}status-chip--warning{% endif %}">{{ wizard_summary.status_label }}</span>
       </div>
-      {% include "components/forms/form_field.html" with field=form.protocolo only %}
-      {% include "components/forms/form_field.html" with field=form.custeio only %}
-      <div class="{% if not mostrar_custeio_observacao %}form-field--hidden{% endif %}" data-custeio-observacao-wrapper>
-        {% include "components/forms/form_field.html" with field=form.custeio_observacao only %}
+      <div class="oficio-data-grid oficio-data-grid--four">
+        <div class="oficio-data-info">
+          <span class="oficio-data-info__label">N° do Ofício:</span>
+          <p class="oficio-data-info__value">
+            {% if oficio %}
+              {{ wizard_summary.numero_label }}
+            {% else %}
+              Gerado automaticamente ao salvar.
+            {% endif %}
+          </p>
+        </div>
+        <div class="oficio-data-info">
+          <span class="oficio-data-info__label">Data criação:</span>
+          <p class="oficio-data-info__value">
+            {% if oficio %}
+              {{ wizard_summary.data_criacao_label }}
+            {% else %}
+              será definida automaticamente ao salvar
+            {% endif %}
+          </p>
+        </div>
+        <div class="oficio-data-grid__field">
+          {% include "components/forms/form_field.html" with field=form.protocolo label="Protocolo" only %}
+        </div>
+        <div class="oficio-data-grid__field">
+          {% include "components/forms/form_field.html" with field=form.custeio label="Custeio" only %}
+        </div>
+      </div>
+      <div class="oficio-data-observacao{% if not mostrar_custeio_observacao %} form-field--hidden{% endif %}" data-custeio-observacao-wrapper>
+        {% include "components/forms/form_field.html" with field=form.custeio_observacao label="Custeio observação" only %}
       </div>
     </div>
   </div>

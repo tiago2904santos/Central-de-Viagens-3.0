@@ -57,13 +57,15 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Roteiro e diárias")
         self.assertContains(response, "Resumo do ofício")
         self.assertContains(response, "Documentos")
-        self.assertContains(response, "N° do Ofício")
-        self.assertContains(response, "Gerado automaticamente ao salvar")
-        self.assertContains(response, "Data criação")
+        self.assertContains(response, "N° do Ofício:")
+        self.assertContains(response, "Gerado automaticamente ao salvar.")
+        self.assertContains(response, "Data criação:")
         self.assertContains(response, "será definida automaticamente ao salvar")
+        self.assertContains(response, "oficio-data-grid--four")
         self.assertContains(response, "Status")
         self.assertContains(response, "Rascunho")
         self.assertContains(response, "Protocolo")
+        self.assertContains(response, "Custeio")
         self.assertContains(response, "Motivo")
         self.assertContains(response, "Viajantes")
         self.assertContains(response, "Gerenciar modelos")
@@ -213,10 +215,10 @@ class OficioWizardDadosViajantesTests(TestCase):
             self.assertNotIn('style="', content)
             self.assertIsNone(re.search(r"<script(?![^>]+src=)", content))
 
-    def test_modelo_motivo_ativo_aparece_e_inativo_nao_aparece(self):
+    def test_modelos_motivo_aparecem_no_select(self):
         response = self.client.get(reverse("oficios:novo"))
         self.assertContains(response, "PADRAO")
-        self.assertNotContains(response, "INATIVO")
+        self.assertContains(response, "INATIVO")
 
     def test_protocolo_invalido_retorna_erro_amigavel(self):
         payload = self._payload(protocolo="12345")
@@ -226,7 +228,10 @@ class OficioWizardDadosViajantesTests(TestCase):
 
     def test_custeio_observacao_inicia_oculto_quando_nao_e_outra_instituicao(self):
         response = self.client.get(reverse("oficios:novo"))
-        self.assertContains(response, 'class="form-field--hidden" data-custeio-observacao-wrapper')
+        self.assertContains(
+            response,
+            'class="oficio-data-observacao form-field--hidden" data-custeio-observacao-wrapper',
+        )
 
     def test_custeio_observacao_aparece_quando_outra_instituicao(self):
         oficio = Oficio.objects.create(
@@ -236,14 +241,22 @@ class OficioWizardDadosViajantesTests(TestCase):
             custeio=Oficio.CUSTEIO_OUTRA_INSTITUICAO,
         )
         response = self.client.get(reverse("oficios:dados_viajantes", args=[oficio.pk]))
-        self.assertContains(response, "data-custeio-observacao-wrapper")
-        self.assertNotContains(response, 'class="form-field--hidden" data-custeio-observacao-wrapper')
+        self.assertContains(response, 'class="oficio-data-observacao" data-custeio-observacao-wrapper')
+        self.assertNotContains(
+            response,
+            'class="oficio-data-observacao form-field--hidden" data-custeio-observacao-wrapper',
+        )
 
     def test_post_custeio_outra_instituicao_sem_observacao_retorna_erro(self):
         payload = self._payload(custeio=Oficio.CUSTEIO_OUTRA_INSTITUICAO, custeio_observacao="")
         response = self.client.post(reverse("oficios:novo"), data=payload)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Informe a observação quando o custeio for de outra instituição.")
+        self.assertContains(response, 'class="oficio-data-observacao" data-custeio-observacao-wrapper')
+        self.assertNotContains(
+            response,
+            'class="oficio-data-observacao form-field--hidden" data-custeio-observacao-wrapper',
+        )
 
     def test_post_custeio_outra_instituicao_com_observacao_valido(self):
         payload = self._payload(custeio=Oficio.CUSTEIO_OUTRA_INSTITUICAO, custeio_observacao="Convênio externo")

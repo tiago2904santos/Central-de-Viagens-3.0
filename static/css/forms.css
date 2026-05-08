@@ -47,17 +47,23 @@
 .form-grid {
   display: grid;
   gap: var(--space-4);
-  grid-auto-flow: column;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
-
-
 .form-grid > * {
-  grid-column: span 2;
+  grid-column: span 6;
+}
+
+.form-grid--stack > * {
+  grid-column: span 12;
 }
 
 .field-span-12 {
   grid-column: span 12;
+}
+
+.field-span-6 {
+  grid-column: span 6;
 }
 
 .field-span-8 {
@@ -66,6 +72,10 @@
 
 .field-span-4 {
   grid-column: span 4;
+}
+
+.field-span-2 {
+  grid-column: span 2;
 }
 
 /* --------------------------------------------------------------------------
@@ -614,31 +624,91 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   min-width: 0;
 }
 
-.oficio-number-preview {
+/* Bloco "Dados do ofício" — grid responsivo (wizard etapa 1). */
+.oficio-data-block {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.oficio-data-status {
   align-items: center;
-  background:
-    linear-gradient(135deg, rgba(11, 58, 102, 0.06), rgba(216, 162, 27, 0.08)),
-    var(--color-card-muted);
-  border: 1px solid var(--color-border);
-  border-left: 5px solid var(--color-accent);
-  border-radius: var(--radius-control);
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  justify-content: space-between;
-  min-height: var(--control-height-lg);
+}
+
+.oficio-data-status__label {
+  color: var(--color-label);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+
+.oficio-data-grid--four {
+  align-items: stretch;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.oficio-data-grid__field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.oficio-data-grid__field > .field {
+  flex: 1 1 auto;
+}
+
+.oficio-data-info {
+  align-content: center;
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-inner-light);
+  display: grid;
+  gap: var(--space-field-gap);
+  min-height: calc(var(--control-height-md) + var(--space-field-gap) + 1.35em);
   padding: var(--space-3) var(--space-4);
 }
 
-.oficio-number-preview__label {
+.oficio-data-info__label {
   color: var(--color-label);
   font-size: var(--font-size-sm);
-  font-weight: 900;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  margin: 0;
 }
 
-.oficio-number-preview__value {
+.oficio-data-info__value {
   color: var(--color-heading);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+  word-break: break-word;
+}
+
+.oficio-data-observacao {
+  margin: 0;
+  min-width: 0;
+}
+
+.oficio-data-observacao .field {
+  max-width: none;
+}
+
+@media (max-width: 1024px) {
+  .oficio-data-grid--four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .oficio-data-grid--four {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .oficio-wizard-pendencias--inline {
