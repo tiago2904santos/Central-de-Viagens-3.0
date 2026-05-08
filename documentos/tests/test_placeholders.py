@@ -13,6 +13,14 @@ class PlaceholderTests(SimpleTestCase):
         placeholders = extract_placeholders("Olá {{nome}}, ofício {{ numero }}")
         self.assertEqual(placeholders, {"nome", "numero"})
 
+    def test_extract_placeholders_removes_duplicates(self):
+        placeholders = extract_placeholders("{{nome}} - {{ nome }} - {{nome}}")
+        self.assertEqual(placeholders, {"nome"})
+
+    def test_extract_placeholders_supports_underscore(self):
+        placeholders = extract_placeholders("{{numero_oficio}}")
+        self.assertEqual(placeholders, {"numero_oficio"})
+
     def test_ensure_required_placeholders_raises_when_missing(self):
         with self.assertRaises(DocumentValidationError):
             ensure_required_placeholders({"nome": "Tiago"}, ("nome", "numero"))

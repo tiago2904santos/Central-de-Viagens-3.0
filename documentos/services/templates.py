@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from .exceptions import DocumentValidationError
 from .exceptions import DocumentTemplateNotFound
 from .types import DocumentoFormato
 from .types import DocumentoTipo
@@ -19,6 +20,11 @@ class DocumentTemplateRegistry:
 
     def register(self, definition: DocumentTemplateDefinition) -> None:
         key = (definition.tipo, definition.formato)
+        if key in self._items:
+            raise DocumentValidationError(
+                "Template documental já registrado para "
+                f"tipo={definition.tipo.value} e formato={definition.formato.value}",
+            )
         self._items[key] = definition
 
     def get(self, tipo: DocumentoTipo, formato: DocumentoFormato) -> DocumentTemplateDefinition:
@@ -28,6 +34,12 @@ class DocumentTemplateRegistry:
                 f"Template não encontrado para tipo={tipo.value} e formato={formato.value}",
             )
         return self._items[key]
+
+    def has(self, tipo: DocumentoTipo, formato: DocumentoFormato) -> bool:
+        return (tipo, formato) in self._items
+
+    def all(self) -> tuple[DocumentTemplateDefinition, ...]:
+        return tuple(self._items.values())
 
 
 def build_default_template_registry() -> DocumentTemplateRegistry:

@@ -26,3 +26,21 @@ class DocumentoRegistryTests(SimpleTestCase):
         registry = DocumentoRegistry()
         with self.assertRaises(UnsupportedDocumentType):
             registry.get(DocumentoTipo.OFICIO)
+
+    def test_supports_format_true_for_allowed_format(self):
+        definicao = DocumentoTipoDefinicao(
+            tipo=DocumentoTipo.OFICIO,
+            label="Ofício",
+            descricao="Documento de teste",
+            formatos_permitidos=(DocumentoFormato.DOCX, DocumentoFormato.PDF),
+        )
+        self.assertTrue(definicao.supports_format(DocumentoFormato.PDF))
+
+    def test_supports_format_false_for_disallowed_format(self):
+        definicao = DocumentoTipoDefinicao(
+            tipo=DocumentoTipo.OFICIO,
+            label="Ofício",
+            descricao="Documento de teste",
+            formatos_permitidos=(DocumentoFormato.DOCX,),
+        )
+        self.assertFalse(definicao.supports_format(DocumentoFormato.PDF))

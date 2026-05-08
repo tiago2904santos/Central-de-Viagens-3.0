@@ -161,6 +161,15 @@ Nesta etapa, o núcleo é infra de baixo acoplamento: sem CRUD completo de domí
 - renderização controlada (`DocumentRenderRequest`, `DocumentRenderResult`, `DocumentRenderer`, `NoopDocumentRenderer`, `render_document`);
 - resposta de download (`build_download_response`) sem acoplamento a view específica.
 
+### Hardening V1.1 do núcleo documental
+
+O núcleo documental V1.1 reforça contratos sem ampliar escopo funcional:
+
+- `DocumentoRegistry` continua definindo formatos aceitos conceitualmente por tipo (DOCX/PDF);
+- `DocumentTemplateRegistry` passa a validar duplicidade de `(tipo, formato)` e explicita ausência de template;
+- `render_document` aplica ordem previsível de validação (tipo -> formato -> template -> placeholders -> renderer);
+- PDF permanece como formato de contrato, sem promessa de conversão final de produção nesta etapa.
+
 ## Navegacao lateral
 
 A navegacao principal e declarada em `core/navigation.py` e suporta hierarquia. O grupo `Cadastros` organiza:

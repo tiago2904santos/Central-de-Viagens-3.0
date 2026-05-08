@@ -1,4 +1,6 @@
 from ..exceptions import DocumentRendererUnavailable
+from ..exceptions import DocumentTemplateNotFound
+from ..exceptions import UnsupportedDocumentType
 from ..exceptions import UnsupportedDocumentFormat
 from ..filenames import build_document_filename
 from ..placeholders import ensure_no_unresolved_placeholders
@@ -20,6 +22,10 @@ DocumentRenderResult = RenderResult
 DocumentRenderer = BaseDocumentRenderer
 
 
+def _enum_value(value: object) -> str:
+    return getattr(value, "value", str(value))
+
+
 class NoopDocumentRenderer(BaseDocumentRenderer):
     def is_available(self) -> bool:
         return False
@@ -36,10 +42,19 @@ def render_document(
     template_content: str = "",
     reference: str | None = None,
 ) -> tuple[DocumentRenderResult, str]:
+    if not default_document_registry.has(request.tipo):
+        raise UnsupportedDocumentType(f"Tipo documental não suportado: {_enum_value(request.tipo)}")
+
     type_definition = default_document_registry.get(request.tipo)
     if not type_definition.supports_format(request.formato):
         raise UnsupportedDocumentFormat(
-            f"Formato {request.formato.value} não suportado para {request.tipo.value}",
+            f"Formato {_enum_value(request.formato)} não suportado para {_enum_value(request.tipo)}",
+        )
+
+    if not default_template_registry.has(request.tipo, request.formato):
+        raise DocumentTemplateNotFound(
+            "Template não encontrado para tipo="
+            f"{_enum_value(request.tipo)} e formato={_enum_value(request.formato)}",
         )
 
     template_definition = default_template_registry.get(request.tipo, request.formato)
@@ -51,11 +66,11 @@ def render_document(
     selected_renderer = renderer or NoopDocumentRenderer()
     if not selected_renderer.is_available():
         raise DocumentRendererUnavailable(
-            f"Renderer indisponível para formato {request.formato.value}",
+            f"Renderer indisponível para formato {_enum_value(request.formato)}",
         )
     if request.formato != selected_renderer.formato:
         raise UnsupportedDocumentFormat(
-            f"Renderer incompatível com formato {request.formato.value}",
+            f"Renderer incompatível com formato {_enum_value(request.formato)}",
         )
 
     result = selected_renderer.render(request)

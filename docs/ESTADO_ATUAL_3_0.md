@@ -141,6 +141,8 @@ Com a fase "Nucleo Documental V1", o app passa a ter contratos técnicos testáv
 - renderização controlada com renderer inicial seguro (sem dependência obrigatória de DOCX/PDF externo);
 - helper de resposta de download com content type e filename centralizados.
 
+Com a fase "Nucleo Documental V1.1 (hardening)", os contratos são reforçados com validação previsível de erros (tipo, formato, template, placeholders e renderer) e cobertura de testes ampliada. O núcleo segue sem geração DOCX/PDF final de produção nesta etapa.
+
 ### Oficios
 
 Estado atual: **app real em fase parcial**, ainda sem completar todo escopo funcional legado.
