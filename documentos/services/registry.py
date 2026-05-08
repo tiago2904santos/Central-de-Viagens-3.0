@@ -1,6 +1,8 @@
 from .types import DocumentoFormato
 from .types import DocumentoTipo
 from .types import DocumentoTipoDefinicao
+from .exceptions import DocumentValidationError
+from .exceptions import UnsupportedDocumentType
 
 
 class DocumentoRegistry:
@@ -8,9 +10,13 @@ class DocumentoRegistry:
         self._items: dict[DocumentoTipo, DocumentoTipoDefinicao] = {}
 
     def register(self, definicao: DocumentoTipoDefinicao) -> None:
+        if definicao.tipo in self._items:
+            raise DocumentValidationError(f"Tipo documental já registrado: {definicao.tipo.value}")
         self._items[definicao.tipo] = definicao
 
     def get(self, tipo: DocumentoTipo) -> DocumentoTipoDefinicao:
+        if tipo not in self._items:
+            raise UnsupportedDocumentType(f"Tipo documental não suportado: {tipo.value}")
         return self._items[tipo]
 
     def all(self) -> tuple[DocumentoTipoDefinicao, ...]:

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Mapping
 from typing import Protocol
 
+from .exceptions import DocumentValidationError
 from .types import DocumentoTipo
 
 
@@ -34,4 +35,21 @@ class NoopDocumentValidator:
     def validate(self, payload: Mapping[str, object]) -> ValidationResult:
         _ = payload
         return ValidationResult(ok=True, errors=())
-# Validadores de documentos serao implementados aqui.
+
+
+class DocumentValidatorRegistry:
+    def __init__(self):
+        self._validators: dict[DocumentoTipo, DocumentValidator] = {}
+
+    def register(self, validator: DocumentValidator) -> None:
+        if validator.tipo in self._validators:
+            raise DocumentValidationError(
+                f"Validador já registrado para o tipo: {validator.tipo.value}",
+            )
+        self._validators[validator.tipo] = validator
+
+    def validate(self, tipo: DocumentoTipo, payload: Mapping[str, object]) -> ValidationResult:
+        validator = self._validators.get(tipo)
+        if validator is None:
+            validator = NoopDocumentValidator(tipo=tipo)
+        return validator.validate(payload)

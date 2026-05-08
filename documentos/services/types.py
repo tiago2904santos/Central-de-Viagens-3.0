@@ -21,3 +21,6 @@ class DocumentoTipoDefinicao:
     label: str
     descricao: str
     formatos_permitidos: tuple[DocumentoFormato, ...]
+
+    def supports_format(self, formato: DocumentoFormato) -> bool:
+        return formato in self.formatos_permitidos

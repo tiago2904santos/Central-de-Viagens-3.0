@@ -18,6 +18,8 @@ class RenderRequest:
     tipo: DocumentoTipo
     formato: DocumentoFormato
     payload: Mapping[str, object]
+    template_content: str = ""
+    reference: str | None = None
 
 
 @dataclass(frozen=True)

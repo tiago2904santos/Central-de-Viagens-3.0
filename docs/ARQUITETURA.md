@@ -149,6 +149,18 @@ O app novo nao importa codigo do legacy em runtime; a tela apenas adapta as regr
 
 Nesta etapa, o núcleo é infra de baixo acoplamento: sem CRUD completo de domínio e sem dependência obrigatória de conversor externo em runtime. Os apps de `oficios`, `termos`, `planos_trabalho` e `ordens_servico` devem consumir esse núcleo quando seus fluxos forem implementados.
 
+### API técnica pública do núcleo documental v1
+
+`documentos/services` expõe contratos estáveis para:
+
+- exceções padronizadas (`DocumentError` e especializações por tipo, formato, template, renderer e placeholders);
+- registro de tipos (`DocumentoRegistry` e `default_document_registry`) com proteção contra duplicidade;
+- validação (`ensure_required_fields` e `DocumentValidatorRegistry`);
+- templates (`DocumentTemplateRegistry` e `default_template_registry`);
+- placeholders (`extract_placeholders`, `ensure_required_placeholders`, `ensure_no_unresolved_placeholders`);
+- renderização controlada (`DocumentRenderRequest`, `DocumentRenderResult`, `DocumentRenderer`, `NoopDocumentRenderer`, `render_document`);
+- resposta de download (`build_download_response`) sem acoplamento a view específica.
+
 ## Navegacao lateral
 
 A navegacao principal e declarada em `core/navigation.py` e suporta hierarquia. O grupo `Cadastros` organiza:

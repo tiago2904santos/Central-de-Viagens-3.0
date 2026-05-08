@@ -132,6 +132,15 @@ Mapeamento:
 - templates DOCX e conversao PDF: claramente documentados como nucleo futuro;
 - relacao com Oficios/Termos/PT/OS: prevista, ainda parcial.
 
+Com a fase "Nucleo Documental V1", o app passa a ter contratos técnicos testáveis para:
+
+- exceções documentais padronizadas;
+- registro e validação segura de tipo/formato;
+- validação de placeholders e detecção de placeholders não resolvidos;
+- registry de templates por tipo e formato;
+- renderização controlada com renderer inicial seguro (sem dependência obrigatória de DOCX/PDF externo);
+- helper de resposta de download com content type e filename centralizados.
+
 ### Oficios
 
 Estado atual: **app real em fase parcial**, ainda sem completar todo escopo funcional legado.
