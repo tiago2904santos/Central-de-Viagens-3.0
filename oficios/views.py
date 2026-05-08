@@ -2,11 +2,12 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 
 from .forms import OficioDadosViajantesForm
 from .forms import ModeloMotivoOficioForm
 from .presenters import apresentar_acoes_oficio
-from .presenters import apresentar_modelo_motivo_card
+from .presenters import apresentar_linha_lista_simples_modelo_motivo
 from .presenters import apresentar_oficio_card
 from .presenters import apresentar_oficio_wizard_header
 from .presenters import apresentar_oficio_wizard_summary
@@ -25,6 +26,7 @@ from .services import criar_modelo_motivo
 from .services import criar_oficio_dados_viajantes
 from .services import excluir_modelo_motivo
 from .services import excluir_oficio
+from .services import get_next_available_numero_oficio
 
 
 def _prepare_dados_viajantes_form(form):
@@ -34,7 +36,15 @@ def _prepare_dados_viajantes_form(form):
 def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
     avaliacao = avaliacao or avaliar_oficio_dados_viajantes(oficio=oficio, form=form)
     pendencias = avaliacao["pendencias"]
-    summary = apresentar_oficio_wizard_summary(oficio)
+    summary_kwargs = {}
+    if oficio is None:
+        ano_corrente = timezone.localdate().year
+        numero_preview = get_next_available_numero_oficio(ano_corrente)
+        summary_kwargs = {
+            "numero_preview": f"{numero_preview:02d}/{ano_corrente}",
+            "data_preview": timezone.localdate().strftime("%d/%m/%Y"),
+        }
+    summary = apresentar_oficio_wizard_summary(oficio, **summary_kwargs)
     custeio_value = ""
     if form.is_bound:
         custeio_value = form.data.get("custeio", "")
@@ -188,7 +198,14 @@ def excluir(request, pk):
 def modelos_motivo_index(request):
     q = request.GET.get("q", "").strip()
     modelos = listar_modelos_motivo(q=q or None, incluir_inativos=True)
-    cards = [apresentar_modelo_motivo_card(modelo) for modelo in modelos]
+    rows = [
+        apresentar_linha_lista_simples_modelo_motivo(
+            modelo,
+            edit_url=reverse("oficios:modelo_motivo_editar", args=[modelo.pk]),
+            delete_url=reverse("oficios:modelo_motivo_excluir", args=[modelo.pk]),
+        )
+        for modelo in modelos
+    ]
     return render(
         request,
         "oficios/modelos_motivo/index.html",
@@ -196,9 +213,8 @@ def modelos_motivo_index(request):
             "page_title": "Modelos de motivo",
             "page_description": "Cadastre textos reutilizáveis para preencher rapidamente o motivo dos ofícios.",
             "q": q,
-            "cards": cards,
+            "rows": rows,
             "new_url": reverse("oficios:modelo_motivo_novo"),
-            "back_url": reverse("oficios:novo"),
         },
     )
 

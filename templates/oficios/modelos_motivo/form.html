@@ -22,18 +22,16 @@
       <section class="app-page__form-card">
         <form method="post" class="form-shell" novalidate>
           {% csrf_token %}
+          {% if form.is_padrao.value %}
+            <input type="hidden" name="{{ form.is_padrao.html_name }}" value="on">
+          {% endif %}
           <div class="form-section">
             {% include "components/forms/form_section.html" with title="Dados do modelo" only %}
-            <div class="form-grid">
+            <div class="form-grid form-grid--stack">
               {% include "components/forms/form_field.html" with field=form.nome only %}
-              {% include "components/forms/form_field.html" with field=form.ordem only %}
               <div class="field-span-12">
                 {% include "components/forms/form_field.html" with field=form.texto only %}
               </div>
-            </div>
-            <div class="modelo-motivo-options">
-              {% include "components/forms/card_toggle.html" with field=form.ativo title="Ativo" description="Disponível para seleção no cadastro de ofícios." on_label="ATIVO" off_label="INATIVO" icon="A" only %}
-              {% include "components/forms/card_toggle.html" with field=form.is_padrao title="Modelo padrão" description="Usado como sugestão inicial quando aplicável." on_label="PADRÃO" off_label="OPCIONAL" icon="P" only %}
             </div>
           </div>
           {% include "components/forms/form_actions.html" with primary_label=submit_label secondary_label="Voltar" secondary_url=back_url only %}

@@ -1,6 +1,7 @@
 from core.presenters.actions import build_action
 from core.presenters.actions import build_delete_action
 from core.presenters.actions import build_edit_action
+from core.presenters.badges import build_badge
 from core.presenters.meta import build_meta
 from core.utils.masks import format_protocolo
 from django.urls import reverse
@@ -120,11 +121,11 @@ def apresentar_oficio_wizard_steps(oficio=None, etapa_atual="dados_viajantes", d
     return steps
 
 
-def apresentar_oficio_wizard_summary(oficio=None):
+def apresentar_oficio_wizard_summary(oficio=None, *, numero_preview=None, data_preview=None):
     if oficio is None:
         return {
-            "numero_label": "Gerado automaticamente ao salvar.",
-            "data_criacao_label": "será definida automaticamente ao salvar",
+            "numero_label": numero_preview or "Gerado automaticamente ao salvar.",
+            "data_criacao_label": data_preview or "será definida automaticamente ao salvar",
             "status_label": "Rascunho",
             "status_state": "rascunho",
         }
@@ -138,19 +139,33 @@ def apresentar_oficio_wizard_summary(oficio=None):
 
 
 def apresentar_modelo_motivo_card(modelo):
-    status = "Ativo" if modelo.ativo else "Inativo"
     texto = (modelo.texto or "").strip()
     if len(texto) > 140:
         texto = f"{texto[:140]}..."
     return {
         "id": modelo.pk,
         "nome": modelo.nome,
-        "status": status,
-        "status_variant": "success" if modelo.ativo else "muted",
         "is_padrao": modelo.is_padrao,
-        "ordem": modelo.ordem,
         "texto_preview": texto or "—",
         "editar_url": reverse("oficios:modelo_motivo_editar", args=[modelo.pk]),
         "excluir_url": reverse("oficios:modelo_motivo_excluir", args=[modelo.pk]),
+    }
+
+
+def apresentar_linha_lista_simples_modelo_motivo(modelo, edit_url="#", delete_url="#"):
+    badges = []
+    if modelo.is_padrao:
+        badges.append(build_badge("Padrão", "accent"))
+    texto = (modelo.texto or "").strip()
+    if len(texto) > 90:
+        texto = f"{texto[:90]}..."
+    return {
+        "title": modelo.nome,
+        "badges": badges,
+        "meta": [
+            build_meta("Prévia", texto or "—"),
+        ],
+        "edit_url": edit_url,
+        "delete_url": delete_url,
     }
 

@@ -58,9 +58,8 @@ def listar_unidades_para_oficio():
 
 
 def listar_modelos_motivo(q: str | None = None, incluir_inativos: bool = True):
-    queryset = ModeloMotivoOficio.objects.order_by("ordem", "nome")
-    if not incluir_inativos:
-        queryset = queryset.filter(ativo=True)
+    _ = incluir_inativos
+    queryset = ModeloMotivoOficio.objects.order_by("nome")
     if q:
         query = q.strip()
         queryset = queryset.filter(Q(nome__icontains=query) | Q(texto__icontains=query))
@@ -68,7 +67,7 @@ def listar_modelos_motivo(q: str | None = None, incluir_inativos: bool = True):
 
 
 def listar_modelos_motivo_ativos():
-    return ModeloMotivoOficio.objects.filter(ativo=True).order_by("ordem", "nome")
+    return ModeloMotivoOficio.objects.order_by("nome")
 
 
 def get_modelo_motivo_by_id(pk: int):

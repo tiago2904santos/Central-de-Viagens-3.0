@@ -104,7 +104,7 @@ class OficioDadosViajantesForm(OficioForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["modelo_motivo"].queryset = ModeloMotivoOficio.objects.filter(ativo=True).order_by("ordem", "nome")
+        self.fields["modelo_motivo"].queryset = ModeloMotivoOficio.objects.order_by("ordem", "nome")
 
     def clean_protocolo(self):
         protocolo = normalize_protocolo(self.cleaned_data.get("protocolo", ""))
@@ -137,17 +137,6 @@ class ModeloMotivoOficioForm(forms.ModelForm):
         help_text="Este texto será copiado para o motivo do ofício e poderá ser editado antes de salvar.",
         widget=forms.Textarea(attrs={"class": "form-control", "rows": 4}),
     )
-    ativo = forms.BooleanField(
-        label="Ativo",
-        required=False,
-        help_text="Modelos inativos não aparecem no cadastro de ofícios.",
-        widget=forms.CheckboxInput(attrs={"class": "app-card-toggle__input"}),
-    )
-    ordem = forms.IntegerField(
-        label="Ordem",
-        help_text="Modelos com ordem menor aparecem primeiro.",
-        widget=forms.NumberInput(attrs={"class": "form-control"}),
-    )
     is_padrao = forms.BooleanField(
         label="Modelo padrão",
         required=False,
@@ -157,4 +146,4 @@ class ModeloMotivoOficioForm(forms.ModelForm):
 
     class Meta:
         model = ModeloMotivoOficio
-        fields = ["nome", "texto", "ativo", "ordem", "is_padrao"]
+        fields = ["nome", "texto", "is_padrao"]

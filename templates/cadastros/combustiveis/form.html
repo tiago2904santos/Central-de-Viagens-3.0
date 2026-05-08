@@ -23,7 +23,9 @@
           <div class="form-section">
             {% include "components/forms/form_section.html" with title="Dados do combustível" description="Nome único. Opcionalmente marque o padrão para novas viaturas." only %}
             <div class="form-grid">
-              {% include "components/forms/form_field.html" with field=form.nome only %}
+              <div class="field-span-12">
+                {% include "components/forms/form_field.html" with field=form.nome only %}
+              </div>
             </div>
           </div>
           {% include "components/forms/form_actions.html" with primary_label=submit_label secondary_label="Voltar" secondary_url=back_url only %}
