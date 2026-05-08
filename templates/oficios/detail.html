@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="app-page">
+    <div class="app-page__shell">
+      <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact" aria-labelledby="oficios-detail-title">
+        <div class="app-page-hero__stage">
+          <span class="app-page-hero__eyebrow">Ofícios</span>
+          <h1 class="app-page-hero__title" id="oficios-detail-title">{{ page_title }}</h1>
+        </div>
+        <div class="app-page-hero__body">
+          <div class="app-page__hero-top">
+            <div class="app-page__brand">
+              <div class="app-page__brand-mark" aria-hidden="true">OF</div>
+              <div class="app-page__brand-copy">
+                <p class="app-page__subtitle">{{ page_description }}</p>
+              </div>
+            </div>
+            <div class="app-page__hero-actions">
+              {% include "components/buttons/action_button.html" with href=edit_url label="Editar" variant="primary" only %}
+              {% include "components/buttons/action_button.html" with href=delete_url label="Excluir" variant="danger" only %}
+            </div>
+          </div>
+        </div>
+        <div class="app-page-hero__ribbon" aria-hidden="true"></div>
+      </header>
+
+      <section class="app-page__form-card">
+        <div class="form-section">
+          {% include "components/forms/form_section.html" with title="Identificação" only %}
+          <dl class="document-meta">
+            <div class="document-meta-item"><dt>Status</dt><dd><span class="status-chip {{ detail.status_class }}">{{ detail.status }}</span></dd></div>
+            <div class="document-meta-item"><dt>Número</dt><dd>{{ detail.numero_formatado }}</dd></div>
+            <div class="document-meta-item"><dt>Protocolo</dt><dd>{{ detail.protocolo }}</dd></div>
+            <div class="document-meta-item"><dt>Data</dt><dd>{{ detail.data_criacao }}</dd></div>
+            <div class="document-meta-item"><dt>Assunto</dt><dd>{{ detail.assunto }}</dd></div>
+          </dl>
+        </div>
+
+        <div class="form-section">
+          {% include "components/forms/form_section.html" with title="Contexto" only %}
+          <dl class="document-meta">
+            <div class="document-meta-item"><dt>Roteiro</dt><dd>{{ detail.roteiro }}</dd></div>
+            <div class="document-meta-item"><dt>Solicitante</dt><dd>{{ detail.solicitante }}</dd></div>
+          </dl>
+        </div>
+
+        <div class="form-section">
+          {% include "components/forms/form_section.html" with title="Equipe e transporte" only %}
+          <dl class="document-meta">
+            <div class="document-meta-item"><dt>Servidores</dt><dd>{% if detail.servidores %}{{ detail.servidores|join:", " }}{% else %}—{% endif %}</dd></div>
+            <div class="document-meta-item"><dt>Viatura</dt><dd>{{ detail.viatura }}</dd></div>
+            <div class="document-meta-item"><dt>Motorista</dt><dd>{{ detail.motorista }}</dd></div>
+          </dl>
+        </div>
+
+        <div class="form-section">
+          {% include "components/forms/form_section.html" with title="Custeio e motivo" only %}
+          <dl class="document-meta">
+            <div class="document-meta-item"><dt>Custeio</dt><dd>{{ detail.custeio }}</dd></div>
+            <div class="document-meta-item"><dt>Observação de custeio</dt><dd>{{ detail.custeio_observacao }}</dd></div>
+            <div class="document-meta-item"><dt>Motivo</dt><dd>{{ detail.motivo }}</dd></div>
+          </dl>
+        </div>
+
+        <div class="form-actions">
+          {% include "components/buttons/action_button.html" with href=back_url label="Voltar" variant="secondary" only %}
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

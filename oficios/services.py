@@ -1,15 +1,43 @@
-"""
-Contratos de services para `oficios`.
+from django.db import transaction
+from django.db.models import ProtectedError
 
-Services serão a camada oficial para regras de negócio, persistência e
-orquestração documental do domínio de Ofícios.
-"""
 
-# TODO(fase-oficios-services): definir serviço de criação/edição de ofício com
-# transação e separação por etapas funcionais.
-#
-# TODO(fase-oficios-services): integrar núcleo `documentos/services` para
-# validação, nome de arquivo e render de artefatos por tipo/formato.
-#
-# TODO(fase-oficios-services): definir serviço de assinatura (pedido, status e
-# invalidação por alteração) em coordenação com app `assinaturas`.
+class OficioVinculadoError(Exception):
+    """Exclusão bloqueada porque o ofício possui vínculos protegidos."""
+
+
+@transaction.atomic
+def criar_oficio(form):
+    return form.save()
+
+
+@transaction.atomic
+def atualizar_oficio(instance, form):
+    _ = instance
+    return form.save()
+
+
+@transaction.atomic
+def excluir_oficio(instance):
+    try:
+        instance.delete()
+    except ProtectedError as exc:
+        raise OficioVinculadoError from exc
+
+
+def build_oficio_document_payload(oficio):
+    return {
+        "numero": oficio.numero,
+        "ano": oficio.ano,
+        "numero_formatado": oficio.numero_formatado,
+        "protocolo": oficio.protocolo,
+        "assunto": oficio.assunto,
+        "motivo": oficio.motivo,
+        "data_criacao": oficio.data_criacao,
+        "status": oficio.status,
+        "roteiro": str(oficio.roteiro) if oficio.roteiro else "",
+        "servidores": [servidor.nome for servidor in oficio.servidores.all()],
+        "viatura": oficio.viatura.placa_formatada if oficio.viatura else "",
+        "motorista": oficio.motorista.nome if oficio.motorista else "",
+        "custeio": oficio.custeio,
+    }

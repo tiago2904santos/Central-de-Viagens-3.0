@@ -170,6 +170,17 @@ O núcleo documental V1.1 reforça contratos sem ampliar escopo funcional:
 - `render_document` aplica ordem previsível de validação (tipo -> formato -> template -> placeholders -> renderer);
 - PDF permanece como formato de contrato, sem promessa de conversão final de produção nesta etapa.
 
+## App oficios (CRUD mínimo real)
+
+`oficios` passa a ter uma implementação mínima funcional e document-centric:
+
+- model `Oficio` com número/ano/protocolo/status/custeio e vínculos opcionais com roteiro, unidade, servidores, viatura e motorista;
+- CRUD básico (`index`, `novo`, `detalhe`, `editar`, `excluir`) com views magras;
+- camadas separadas por contrato (`forms`, `selectors`, `services`, `presenters`);
+- sem geração DOCX/PDF final nesta fase, apenas preparação de payload por `build_oficio_document_payload`.
+
+O app é o primeiro consumidor de referência para a evolução dos próximos módulos documentais.
+
 ## Navegacao lateral
 
 A navegacao principal e declarada em `core/navigation.py` e suporta hierarquia. O grupo `Cadastros` organiza:

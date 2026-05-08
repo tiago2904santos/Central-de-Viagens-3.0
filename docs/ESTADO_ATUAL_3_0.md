@@ -145,14 +145,14 @@ Com a fase "Nucleo Documental V1.1 (hardening)", os contratos são reforçados c
 
 ### Oficios
 
-Estado atual: **app real em fase parcial**, ainda sem completar todo escopo funcional legado.
+Estado atual: **CRUD mínimo inicial** com model real, form, selectors, services, presenters, views, URLs e templates.
 
 Mapeamento:
 - models/forms/selectors/services/presenters/views/urls: existentes;
-- wizard e fluxos documentais: direcao definida, maturacao pendente;
+- wizard e fluxos documentais avançados: direcao definida, maturacao pendente;
 - vinculo opcional com Roteiro/Evento: esperado e documentado como alvo;
-- documentos/justificativa/trechos/diarias: alvo funcional claro, implementacao parcial;
-- geracao DOCX/PDF: dependencia do nucleo documental ainda nao completamente consolidado.
+- documentos/justificativa/trechos/diarias: alvo funcional claro, fora do escopo do CRUD mínimo;
+- geracao DOCX/PDF final: ainda fora do escopo, dependente das próximas fases documentais.
 
 ### Termos, Justificativas, Planos e OS
 
