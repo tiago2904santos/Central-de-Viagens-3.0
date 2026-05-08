@@ -139,7 +139,6 @@ def apresentar_oficio_wizard_summary(oficio=None):
 
 def apresentar_modelo_motivo_card(modelo):
     status = "Ativo" if modelo.ativo else "Inativo"
-    padrao = "Sim" if modelo.is_padrao else "Não"
     texto = (modelo.texto or "").strip()
     if len(texto) > 140:
         texto = f"{texto[:140]}..."
@@ -147,7 +146,8 @@ def apresentar_modelo_motivo_card(modelo):
         "id": modelo.pk,
         "nome": modelo.nome,
         "status": status,
-        "padrao": padrao,
+        "status_variant": "success" if modelo.ativo else "muted",
+        "is_padrao": modelo.is_padrao,
         "ordem": modelo.ordem,
         "texto_preview": texto or "—",
         "editar_url": reverse("oficios:modelo_motivo_editar", args=[modelo.pk]),

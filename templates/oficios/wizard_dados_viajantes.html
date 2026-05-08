@@ -36,13 +36,18 @@
     </div>
   </div>
 
-  <div class="form-section">
-    {% include "components/forms/form_section.html" with title="Motivo" description="Selecione um modelo opcional e ajuste o texto conforme necessário." only %}
-    <div class="form-actions">
-      {% include "components/buttons/action_button.html" with href=modelos_motivo_url label="Gerenciar modelos" variant="secondary" only %}
+  <div class="form-section motivo-card">
+    <div class="motivo-card__header">
+      <div>
+        <h3 class="motivo-card__title">Motivo</h3>
+        <p class="motivo-card__description">Use um modelo salvo ou descreva o motivo da viagem.</p>
+      </div>
+      <div class="motivo-card__actions">
+        {% include "components/buttons/action_button.html" with href=modelos_motivo_url label="Gerenciar modelos" variant="secondary" only %}
+      </div>
     </div>
-    <div class="form-grid">
-      <div class="field">
+    <div class="motivo-card__grid">
+      <div class="field motivo-card__model-select">
         <label for="{{ form.modelo_motivo.id_for_label }}">{{ form.modelo_motivo.label }}</label>
         <select name="{{ form.modelo_motivo.html_name }}" id="{{ form.modelo_motivo.id_for_label }}" class="form-select" data-modelo-motivo-select="true">
           <option value="">Selecione um modelo (opcional)</option>
@@ -51,8 +56,17 @@
           {% endfor %}
         </select>
         {% if form.modelo_motivo.errors %}<p class="field-error">{{ form.modelo_motivo.errors|striptags }}</p>{% endif %}
+        {% if not tem_modelos_motivo %}
+          <p class="field-help">Nenhum modelo cadastrado. Crie um modelo para agilizar o preenchimento.</p>
+          <p class="field-help"><a href="{{ modelos_motivo_url }}">Abrir gerenciamento de modelos</a></p>
+        {% elif modelo_motivo_selecionado %}
+          <p class="field-help">O texto pode ser editado antes de salvar.</p>
+        {% endif %}
       </div>
-      <div class="field-span-12">
+      <div class="motivo-card__hint">
+        <p>Escolha um modelo para iniciar com texto pré-preenchido ou escreva manualmente o motivo.</p>
+      </div>
+      <div class="field-span-12 motivo-card__textarea">
         {% include "components/forms/form_field.html" with field=form.motivo only %}
       </div>
     </div>

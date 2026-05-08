@@ -41,6 +41,7 @@ def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
     else:
         custeio_value = getattr(form.instance, "custeio", "") if getattr(form, "instance", None) else ""
     mostrar_custeio_observacao = custeio_value == "OUTRA_INSTITUICAO"
+    modelos_queryset = form.fields["modelo_motivo"].queryset
     return {
         "page_title": "Cadastro de ofício",
         "wizard_header": apresentar_oficio_wizard_header("dados_viajantes"),
@@ -53,6 +54,8 @@ def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
         "wizard_summary": summary,
         "mostrar_custeio_observacao": mostrar_custeio_observacao,
         "modelos_motivo_url": reverse("oficios:modelos_motivo_index"),
+        "tem_modelos_motivo": modelos_queryset.exists(),
+        "modelo_motivo_selecionado": bool(form["modelo_motivo"].value()),
         "form": form,
         "oficio": oficio,
         "back_url": reverse("oficios:index"),
@@ -191,6 +194,7 @@ def modelos_motivo_index(request):
         "oficios/modelos_motivo/index.html",
         {
             "page_title": "Modelos de motivo",
+            "page_description": "Cadastre textos reutilizáveis para preencher rapidamente o motivo dos ofícios.",
             "q": q,
             "cards": cards,
             "new_url": reverse("oficios:modelo_motivo_novo"),
@@ -210,6 +214,7 @@ def modelo_motivo_novo(request):
         "oficios/modelos_motivo/form.html",
         {
             "page_title": "Novo modelo de motivo",
+            "page_description": "Crie textos reutilizáveis para agilizar o preenchimento do motivo nos ofícios.",
             "form": form,
             "back_url": reverse("oficios:modelos_motivo_index"),
             "submit_label": "Salvar modelo",
@@ -229,6 +234,7 @@ def modelo_motivo_editar(request, pk):
         "oficios/modelos_motivo/form.html",
         {
             "page_title": "Editar modelo de motivo",
+            "page_description": "Crie textos reutilizáveis para agilizar o preenchimento do motivo nos ofícios.",
             "form": form,
             "back_url": reverse("oficios:modelos_motivo_index"),
             "submit_label": "Salvar alterações",
@@ -247,6 +253,7 @@ def modelo_motivo_excluir(request, pk):
         "oficios/modelos_motivo/confirm_delete.html",
         {
             "page_title": "Excluir modelo de motivo",
+            "page_description": "Confirme a remoção deste modelo de motivo.",
             "object": modelo,
             "back_url": reverse("oficios:modelos_motivo_index"),
         },

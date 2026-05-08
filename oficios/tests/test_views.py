@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from pathlib import Path
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -90,9 +91,17 @@ class OficioViewsTests(TestCase):
     def test_crud_modelo_motivo_views(self):
         list_response = self.client.get(reverse("oficios:modelos_motivo_index"))
         self.assertEqual(list_response.status_code, 200)
+        self.assertContains(list_response, "Nenhum modelo de motivo cadastrado.")
+        self.assertContains(list_response, "Criar primeiro modelo")
+        self.assertContains(list_response, "Novo modelo")
+        self.assertContains(list_response, reverse("oficios:novo"))
 
         new_get = self.client.get(reverse("oficios:modelo_motivo_novo"))
         self.assertEqual(new_get.status_code, 200)
+        self.assertContains(new_get, "Novo modelo de motivo")
+        self.assertContains(new_get, "Texto do modelo")
+        self.assertContains(new_get, "Modelo padrão")
+        self.assertNotContains(new_get, "Is padrão")
 
         new_post = self.client.post(
             reverse("oficios:modelo_motivo_novo"),
@@ -124,6 +133,48 @@ class OficioViewsTests(TestCase):
         modelo.refresh_from_db()
         self.assertEqual(modelo.ordem, 20)
 
+        ModeloAtivoPadrao = listar_modelos_motivo().get(pk=modelo.pk)
+        self.assertTrue(ModeloAtivoPadrao.ativo)
+
         delete_post = self.client.post(reverse("oficios:modelo_motivo_excluir", args=[modelo.pk]))
         self.assertEqual(delete_post.status_code, 302)
         self.assertFalse(listar_modelos_motivo().filter(pk=modelo.pk).exists())
+
+    def test_listagem_modelos_exibe_badges_ativo_inativo_e_padrao(self):
+        self.client.post(
+            reverse("oficios:modelo_motivo_novo"),
+            data={
+                "nome": "Modelo Ativo Padrão",
+                "texto": "Texto ativo padrão",
+                "ativo": "on",
+                "ordem": "5",
+                "is_padrao": "on",
+            },
+        )
+        self.client.post(
+            reverse("oficios:modelo_motivo_novo"),
+            data={
+                "nome": "Modelo Inativo",
+                "texto": "Texto inativo",
+                "ordem": "9",
+                "is_padrao": "",
+            },
+        )
+
+        response = self.client.get(reverse("oficios:modelos_motivo_index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ativo")
+        self.assertContains(response, "Inativo")
+        self.assertContains(response, "Padrão")
+
+    def test_templates_modelos_motivo_sem_href_falso_css_ou_js_inline(self):
+        template_paths = [
+            Path("templates/oficios/modelos_motivo/index.html"),
+            Path("templates/oficios/modelos_motivo/form.html"),
+            Path("templates/oficios/modelos_motivo/confirm_delete.html"),
+        ]
+        for template_path in template_paths:
+            content = template_path.read_text(encoding="utf-8")
+            self.assertNotIn('href="#"', content)
+            self.assertNotIn('style="', content)
+            self.assertNotIn("<script", content)

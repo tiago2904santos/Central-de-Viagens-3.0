@@ -127,13 +127,34 @@ class OficioDadosViajantesForm(OficioForm):
 
 
 class ModeloMotivoOficioForm(forms.ModelForm):
+    nome = forms.CharField(
+        label="Nome",
+        help_text="Use um nome curto para identificar o modelo.",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    texto = forms.CharField(
+        label="Texto do modelo",
+        help_text="Este texto será copiado para o motivo do ofício e poderá ser editado antes de salvar.",
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+    )
+    ativo = forms.BooleanField(
+        label="Ativo",
+        required=False,
+        help_text="Modelos inativos não aparecem no cadastro de ofícios.",
+        widget=forms.CheckboxInput(attrs={"class": "app-card-toggle__input"}),
+    )
+    ordem = forms.IntegerField(
+        label="Ordem",
+        help_text="Modelos com ordem menor aparecem primeiro.",
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+    is_padrao = forms.BooleanField(
+        label="Modelo padrão",
+        required=False,
+        help_text="Marque apenas se este modelo deve ser sugerido como principal.",
+        widget=forms.CheckboxInput(attrs={"class": "app-card-toggle__input"}),
+    )
+
     class Meta:
         model = ModeloMotivoOficio
         fields = ["nome", "texto", "ativo", "ordem", "is_padrao"]
-        widgets = {
-            "nome": forms.TextInput(attrs={"class": "form-control"}),
-            "texto": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
-            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-            "ordem": forms.NumberInput(attrs={"class": "form-control"}),
-            "is_padrao": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-        }

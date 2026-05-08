@@ -3,22 +3,33 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-  <div class="app-page">
+  <div class="app-page modelos-motivo-page">
     <div class="app-page__shell">
       <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact">
         <div class="app-page-hero__stage">
           <span class="app-page-hero__eyebrow">Ofícios</span>
           <h1 class="app-page-hero__title">{{ page_title }}</h1>
+          <p class="app-page__subtitle">{{ page_description }}</p>
         </div>
       </header>
 
-      <section class="app-page__form-card">
-        <p>Confirma a exclusão do modelo <strong>{{ object.nome }}</strong>?</p>
+      <section class="app-page__form-card modelos-motivo-delete">
+        <div class="form-section">
+          {% include "components/forms/form_section.html" with title="Confirmação de exclusão" only %}
+          <p class="modelos-motivo-delete__lead">Confirma a exclusão do modelo <strong>{{ object.nome }}</strong>?</p>
+          <div class="modelos-motivo-delete__preview">
+            <p><strong>Prévia do texto:</strong></p>
+            <p>{{ object.texto|default:"—" }}</p>
+          </div>
+          <div class="oficio-wizard-pendencias oficio-wizard-pendencias--inline modelos-motivo-delete__alert">
+            <p>Esta ação remove o modelo da lista de sugestões, mas não altera ofícios já criados.</p>
+          </div>
+        </div>
         <form method="post" class="form-shell">
           {% csrf_token %}
           <div class="form-actions">
             {% include "components/buttons/action_button.html" with href=back_url label="Cancelar" variant="secondary" only %}
-            <button class="btn btn-danger" type="submit">Excluir</button>
+            <button class="btn btn-danger" type="submit">Excluir modelo</button>
           </div>
         </form>
       </section>
