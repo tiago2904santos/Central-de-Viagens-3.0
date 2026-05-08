@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.db.models import ProtectedError
+from django.utils import timezone
 
 from .models import Oficio
 
@@ -21,13 +22,43 @@ def atualizar_oficio(instance, form):
 
 @transaction.atomic
 def criar_oficio_dados_viajantes(form):
-    return form.save()
+    oficio = form.save(commit=False)
+    reservar_numero_oficio(oficio)
+    form.save_m2m()
+    return oficio
 
 
 @transaction.atomic
 def atualizar_oficio_dados_viajantes(oficio, form):
     _ = oficio
     return form.save()
+
+
+def get_next_available_numero_oficio(ano):
+    resolved_year = ano or timezone.localdate().year
+    numeros_ocupados = set(
+        Oficio.objects.filter(ano=resolved_year)
+        .exclude(numero__isnull=True)
+        .order_by("numero")
+        .values_list("numero", flat=True)
+    )
+    numero = 1
+    while numero in numeros_ocupados:
+        numero += 1
+    return numero
+
+
+@transaction.atomic
+def reservar_numero_oficio(oficio, ano=None):
+    if oficio.numero and oficio.ano:
+        return oficio
+
+    resolved_year = ano or timezone.localdate().year
+    list(Oficio.objects.select_for_update().filter(ano=resolved_year).exclude(numero__isnull=True))
+    oficio.ano = resolved_year
+    oficio.numero = get_next_available_numero_oficio(resolved_year)
+    oficio.save()
+    return oficio
 
 
 def avaliar_oficio_dados_viajantes(oficio=None, form=None):

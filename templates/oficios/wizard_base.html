@@ -4,32 +4,30 @@
 
 {% block content %}
   <div class="app-page oficio-wizard">
-    <div class="app-page__shell">
-      <section class="oficio-wizard__top" aria-labelledby="oficios-wizard-title">
-        <header class="oficio-wizard__header">
-          <div class="oficio-wizard__header-copy">
-            <h1 class="oficio-wizard__title" id="oficios-wizard-title">{{ wizard_header.title }}</h1>
-            <p class="oficio-wizard__subtitle">{{ wizard_header.subtitle }}</p>
-          </div>
-          <div class="app-page__brand-mark" aria-hidden="true">OF</div>
-        </header>
+    <section class="oficio-wizard__section">
+      <div class="app-page__shell oficio-wizard__shell">
+        <section class="oficio-wizard__top" aria-labelledby="oficios-wizard-title">
+          <header class="oficio-wizard__header">
+            <div class="oficio-wizard__header-copy">
+              <h1 class="oficio-wizard__title" id="oficios-wizard-title">{{ wizard_header.title }}</h1>
+              <p class="oficio-wizard__subtitle">{{ wizard_header.subtitle }}</p>
+            </div>
+            <div class="app-page__brand-mark" aria-hidden="true">OF</div>
+          </header>
 
-        {% include "oficios/partials/wizard_stepper.html" with steps=wizard_steps only %}
-      </section>
+          {% include "oficios/partials/wizard_stepper.html" with steps=wizard_steps only %}
+        </section>
 
-      <div class="oficio-wizard__layout">
-        <main class="oficio-wizard__main">
-          <form class="form-shell" method="post" novalidate>
-            {% csrf_token %}
-            {% block wizard_content %}{% endblock %}
-            {% include "oficios/partials/wizard_actions.html" with back_url=back_url only %}
-          </form>
-        </main>
-
-        <aside class="oficio-wizard__aside" aria-label="Resumo da etapa">
-          {% include "oficios/partials/wizard_summary.html" with summary=wizard_summary only %}
-        </aside>
+        <div class="oficio-wizard__layout">
+          <main class="oficio-wizard__main">
+            <form class="form-shell" method="post" novalidate>
+              {% csrf_token %}
+              {% block wizard_content %}{% endblock %}
+              {% include "oficios/partials/wizard_actions.html" with back_url=back_url only %}
+            </form>
+          </main>
+        </div>
       </div>
-    </div>
+    </section>
   </div>
 {% endblock %}

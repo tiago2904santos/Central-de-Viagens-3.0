@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.utils import timezone
 
 from cadastros.models import Cargo
 from cadastros.models import Servidor
@@ -13,6 +14,7 @@ from oficios.services import avaliar_oficio_dados_viajantes
 from oficios.services import build_oficio_document_payload
 from oficios.services import criar_oficio
 from oficios.services import criar_oficio_dados_viajantes
+from oficios.services import get_next_available_numero_oficio
 
 
 class OficioServicesTests(TestCase):
@@ -110,8 +112,6 @@ class OficioServicesTests(TestCase):
     def test_criar_oficio_dados_viajantes_salva_m2m(self):
         form = OficioDadosViajantesForm(
             data={
-                "numero": "3",
-                "ano": "2026",
                 "data_criacao": "2026-05-08",
                 "protocolo": "proto 3",
                 "assunto": "Assunto",
@@ -127,7 +127,17 @@ class OficioServicesTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         oficio = criar_oficio_dados_viajantes(form)
         self.assertEqual(oficio.protocolo, "PROTO 3")
+        self.assertEqual(oficio.numero, 1)
+        self.assertEqual(oficio.ano, timezone.localdate().year)
         self.assertEqual(list(oficio.servidores.all()), [self.servidor])
+
+    def test_get_next_available_numero_reaproveita_menor_lacuna(self):
+        ano = timezone.localdate().year
+        primeiro = Oficio.objects.create(numero=1, ano=ano, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
+        Oficio.objects.create(numero=2, ano=ano, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
+        primeiro.delete()
+
+        self.assertEqual(get_next_available_numero_oficio(ano), 1)
 
     def test_atualizar_oficio_dados_viajantes_preserva_transporte(self):
         oficio = Oficio.objects.create(
@@ -159,7 +169,8 @@ class OficioServicesTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         atualizado = atualizar_oficio_dados_viajantes(oficio, form)
         atualizado.refresh_from_db()
-        self.assertEqual(atualizado.numero, 4)
+        self.assertEqual(atualizado.numero, 1)
+        self.assertEqual(atualizado.ano, 2026)
         self.assertEqual(atualizado.viatura, self.viatura)
         self.assertEqual(atualizado.motorista, self.servidor)
         self.assertEqual(list(atualizado.servidores.all()), [self.servidor])

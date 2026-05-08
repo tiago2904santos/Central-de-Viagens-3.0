@@ -3,6 +3,39 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-  {% url "oficios:novo" as create_url %}
-  {% include "components/lists/list_page.html" with title=page_title description=page_description eyebrow="Ofícios" brand_mark="OF" search_placeholder="Buscar por protocolo, assunto ou número" action_label="Novo ofício" action_url=create_url cards=cards q=q empty_message="Nenhum ofício cadastrado ainda." search_form_action="" search_clear_url="" only %}
+  <div class="app-page app-page--oficios-list">
+    <section class="oficios-list__section">
+      <div class="app-page__shell">
+        <header class="app-page-hero app-page-hero--hybrid app-page-hero--oficios-list" aria-labelledby="oficios-list-title">
+          <div class="app-page-hero__stage">
+            <div class="app-page-hero__roteiros-head">
+              <div class="app-page-hero__roteiros-text">
+                <span class="app-page-hero__eyebrow">Ofícios</span>
+                <h1 class="app-page-hero__title" id="oficios-list-title">{{ page_title }}</h1>
+                {% if page_description %}
+                  <p class="app-page-hero__roteiros-sub">{{ page_description }}</p>
+                {% endif %}
+              </div>
+              <div class="app-page-hero__roteiros-actions">
+                {% include "components/buttons/action_button.html" with href=create_url label="Novo ofício" variant="primary" only %}
+              </div>
+            </div>
+          </div>
+          <div class="app-page-hero__ribbon" aria-hidden="true"></div>
+        </header>
+
+        <div class="app-page__toolbar">
+          {% include "components/lists/list_toolbar.html" with search_placeholder="Buscar por protocolo, assunto ou número" q=q search_clear_url=search_clear_url action_label="" action_url="" only %}
+        </div>
+
+        <div class="list-grid list-grid--oficios">
+          {% for card in cards %}
+            {% include "oficios/partials/oficio_list_card.html" with card=card only %}
+          {% empty %}
+            {% include "components/lists/list_empty.html" with message=empty_message action_label="Novo ofício" action_url=create_url only %}
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </div>
 {% endblock %}

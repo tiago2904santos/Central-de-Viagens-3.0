@@ -6,13 +6,18 @@ Itens:
 - substituir o formulário único de cadastro por wizard inicial;
 - criar header "Cadastro de ofício" com subtítulo da etapa atual;
 - implementar stepper visual com estados `not_started`, `current`, `incomplete`, `complete` e `locked`;
+- posicionar o stepper acoplado ao header, seguindo o padrão visual de Eventos;
 - implementar a etapa 1 "Dados e viajantes";
+- remover resumo lateral do cadastro;
+- ajustar o cadastro para estrutura `background > section > div interna`;
+- aproximar cards de listagem do padrão visual de Roteiros;
+- gerar `numero`/`ano` automaticamente, com formato `01/2026` e reaproveitamento da menor lacuna anual;
 - exigir assunto, motivo, custeio válido e ao menos um servidor para considerar a etapa concluída;
 - manter transporte, roteiro/diárias, resumo final e documentos como etapas futuras bloqueadas.
 
 | Fase | Objetivo | Arquivos prováveis | Migration? | Risco | Critério de aceite |
 |---|---|---|---|---|---|
-| 12.2 | Wizard de Ofício: Dados e viajantes | `oficios/forms.py`, `oficios/services.py`, `oficios/presenters.py`, `oficios/views.py`, `oficios/tests/*`, `templates/oficios/*`, `static/css/forms.css` | Não | Médio | Wizard substitui formulário único, stepper visual tem estados, Etapa 1 funciona, etapas futuras ficam bloqueadas, sem `href="#"` e sem CSS/JS inline |
+| 12.2 | Wizard de Ofício: Dados e viajantes | `oficios/models.py`, `oficios/forms.py`, `oficios/services.py`, `oficios/presenters.py`, `oficios/views.py`, `oficios/tests/*`, `templates/oficios/*`, `static/css/forms.css`, `static/css/cards.css`, `static/css/lists.css` | Sim | Médio | Wizard substitui formulário único, stepper visual tem estados e fica acoplado ao header, Etapa 1 funciona, resumo lateral removido, cards da listagem evoluídos, numeração anual automatizada, etapas futuras ficam bloqueadas, sem `href="#"` e sem CSS/JS inline |
 
 ## Fase 13 — Ofício: modelo operacional completo
 

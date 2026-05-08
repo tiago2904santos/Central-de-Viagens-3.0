@@ -1,11 +1,24 @@
 {% extends "oficios/wizard_base.html" %}
 
 {% block wizard_content %}
+  {% if pendencias %}
+    <div class="oficio-wizard-pendencias oficio-wizard-pendencias--inline" role="status">
+      <h3>Pendências para concluir esta etapa</h3>
+      <ul>
+        {% for pendencia in pendencias %}
+          <li>{{ pendencia }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
   <div class="form-section">
     {% include "components/forms/form_section.html" with title="Dados do ofício" description="Identificação administrativa e status inicial." only %}
     <div class="form-grid">
-      {% include "components/forms/form_field.html" with field=form.numero only %}
-      {% include "components/forms/form_field.html" with field=form.ano only %}
+      <div class="oficio-number-preview field-span-12">
+        <span class="oficio-number-preview__label">N° do Ofício:</span>
+        <strong class="oficio-number-preview__value">{{ numero_preview }}</strong>
+      </div>
       {% include "components/forms/form_field.html" with field=form.data_criacao only %}
       {% include "components/forms/form_field.html" with field=form.protocolo only %}
       {% include "components/forms/form_field.html" with field=form.status only %}

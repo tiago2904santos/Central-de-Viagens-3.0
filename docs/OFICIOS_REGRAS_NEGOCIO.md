@@ -1,14 +1,14 @@
 # Regras de negócio de Ofícios
 
 ## REG-OF-001 — Numeração anual incremental por menor lacuna
-- Descrição: ao criar ofício sem número, o sistema reserva o próximo número disponível no ano, com retry para concorrência.
+- Descrição: ao criar ofício sem número, o sistema reserva o menor número disponível no ano e exibe em dois dígitos (`01/2026`).
 - Origem no legacy: `eventos/models.py` (`Oficio.get_next_available_numero`, `Oficio.save`).
-- Arquivos/funções: model `Oficio`.
-- Estado no 3.0: parcial (incremento simples).
-- Adaptação correta: mover para service transacional e manter constraint `(ano, numero)`.
+- Arquivos/funções: model `Oficio`, services `get_next_available_numero_oficio` e `reservar_numero_oficio`.
+- Estado no 3.0: implementado na Fase 12.2 para criação pelo wizard de Dados e viajantes.
+- Adaptação correta: manter service transacional e constraint `(ano, numero)`.
 - Prioridade: Alta.
 - Riscos: colisão de número em concorrência.
-- Testes necessários: concorrência e criação sequencial no mesmo ano.
+- Testes necessários: criação sequencial, reaproveitamento de lacuna e concorrência.
 
 ## REG-OF-002 — Protocolo canônico e visual
 - Descrição: protocolo é persistido em dígitos e exibido em máscara `XX.XXX.XXX-X`.

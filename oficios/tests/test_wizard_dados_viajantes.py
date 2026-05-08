@@ -3,6 +3,7 @@ from pathlib import Path
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from cadastros.models import Cargo
 from cadastros.models import Servidor
@@ -30,8 +31,6 @@ class OficioWizardDadosViajantesTests(TestCase):
 
     def _payload(self, **overrides):
         data = {
-            "numero": "7",
-            "ano": "2026",
             "data_criacao": "2026-05-08",
             "protocolo": "proto 7",
             "status": Oficio.STATUS_RASCUNHO,
@@ -58,7 +57,10 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Roteiro e diárias")
         self.assertContains(response, "Resumo do ofício")
         self.assertContains(response, "Documentos")
+        self.assertContains(response, "N° do Ofício")
+        self.assertContains(response, "Gerado automaticamente ao salvar")
         self.assertNotContains(response, 'href="#"')
+        self.assertNotContains(response, "oficio-wizard__aside")
 
     def test_post_novo_save_draft_cria_e_redireciona_para_etapa(self):
         response = self.client.post(reverse("oficios:novo"), data=self._payload(action="save_draft"))
@@ -66,8 +68,9 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertEqual(response.status_code, 302)
         oficio = Oficio.objects.get()
         self.assertEqual(response.url, reverse("oficios:dados_viajantes", args=[oficio.pk]))
-        self.assertEqual(oficio.numero, 7)
-        self.assertEqual(oficio.ano, 2026)
+        self.assertEqual(oficio.numero, 1)
+        self.assertEqual(oficio.ano, timezone.localdate().year)
+        self.assertEqual(oficio.numero_formatado, f"01/{timezone.localdate().year}")
         self.assertEqual(oficio.protocolo, "PROTO 7")
         self.assertEqual(oficio.assunto, "Assunto inicial")
         self.assertEqual(oficio.motivo, "Motivo inicial")
@@ -97,6 +100,7 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertTemplateUsed(response, "oficios/wizard_dados_viajantes.html")
         self.assertContains(response, "Assunto existente")
         self.assertContains(response, "oficio-stepper")
+        self.assertContains(response, "01/2026")
 
     def test_post_dados_viajantes_atualiza_sem_apagar_transporte(self):
         oficio = Oficio.objects.create(
@@ -124,7 +128,8 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("oficios:dados_viajantes", args=[oficio.pk]))
         oficio.refresh_from_db()
-        self.assertEqual(oficio.numero, 8)
+        self.assertEqual(oficio.numero, 1)
+        self.assertEqual(oficio.ano, 2026)
         self.assertEqual(oficio.assunto, "Assunto atualizado")
         self.assertEqual(oficio.motivo, "Motivo atualizado")
         self.assertEqual(list(oficio.servidores.all()), [self.outro_servidor])
@@ -139,7 +144,18 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("oficios:dados_viajantes", args=[oficio.pk]))
 
-    def test_completude_e_pendencias_aparecem_no_resumo(self):
+    def test_numero_automatico_reaproveita_numero_excluido(self):
+        ano = timezone.localdate().year
+        self.client.post(reverse("oficios:novo"), data=self._payload(action="save_draft"))
+        self.client.post(reverse("oficios:novo"), data=self._payload(protocolo="proto 8", action="save_draft"))
+        primeiro = Oficio.objects.get(numero=1, ano=ano)
+        primeiro.delete()
+
+        self.client.post(reverse("oficios:novo"), data=self._payload(protocolo="proto 9", action="save_draft"))
+
+        self.assertTrue(Oficio.objects.filter(numero=1, ano=ano, protocolo="PROTO 9").exists())
+
+    def test_completude_e_pendencias_aparecem_no_fluxo(self):
         oficio = Oficio.objects.create(custeio=Oficio.CUSTEIO_UNIDADE_DPC)
 
         response = self.client.get(reverse("oficios:dados_viajantes", args=[oficio.pk]))
@@ -156,14 +172,24 @@ class OficioWizardDadosViajantesTests(TestCase):
         response = self.client.get(reverse("oficios:dados_viajantes", args=[oficio.pk]))
 
         self.assertContains(response, "Concluída")
-        self.assertContains(response, "Dados e viajantes completos.")
+        self.assertNotContains(response, "Pendências para concluir esta etapa")
+
+    def test_index_renderiza_card_com_numero_do_oficio(self):
+        ano = timezone.localdate().year
+        Oficio.objects.create(numero=1, ano=ano, assunto="Assunto card", custeio=Oficio.CUSTEIO_UNIDADE_DPC)
+
+        response = self.client.get(reverse("oficios:index"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "N° do Ofício")
+        self.assertContains(response, f"01/{ano}")
+        self.assertContains(response, "Assunto card")
 
     def test_templates_do_wizard_nao_usam_href_falso_css_ou_script_inline(self):
         template_paths = [
             Path("templates/oficios/wizard_base.html"),
             Path("templates/oficios/wizard_dados_viajantes.html"),
             Path("templates/oficios/partials/wizard_stepper.html"),
-            Path("templates/oficios/partials/wizard_summary.html"),
             Path("templates/oficios/partials/wizard_actions.html"),
         ]
         for template_path in template_paths:

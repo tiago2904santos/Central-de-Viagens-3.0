@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from cadastros.models import Cargo
 from cadastros.models import Servidor
@@ -48,6 +49,9 @@ class OficioViewsTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Oficio.objects.count(), 1)
+        oficio = Oficio.objects.order_by("pk").first()
+        self.assertEqual(oficio.numero, 1)
+        self.assertEqual(oficio.ano, timezone.localdate().year)
 
     def test_get_detalhe_retorna_200(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)

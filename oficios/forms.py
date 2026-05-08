@@ -75,8 +75,6 @@ class OficioForm(forms.ModelForm):
 class OficioDadosViajantesForm(OficioForm):
     class Meta(OficioForm.Meta):
         fields = [
-            "numero",
-            "ano",
             "data_criacao",
             "protocolo",
             "status",

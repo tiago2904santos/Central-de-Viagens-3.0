@@ -409,23 +409,11 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   align-items: start;
   display: grid;
   gap: var(--space-5);
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  grid-template-columns: minmax(0, 1fr);
 }
 
-.oficio-wizard__main,
-.oficio-wizard__aside {
+.oficio-wizard__main {
   min-width: 0;
-}
-
-.oficio-wizard__aside {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-left: 5px solid var(--color-accent);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-soft);
-  padding: var(--space-5);
-  position: sticky;
-  top: var(--space-4);
 }
 
 .oficio-stepper {
@@ -582,10 +570,6 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   .oficio-wizard__layout {
     grid-template-columns: 1fr;
   }
-
-  .oficio-wizard__aside {
-    position: static;
-  }
 }
 
 @media (max-width: 640px) {
@@ -604,4 +588,57 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   .oficio-wizard__actions > * {
     width: 100%;
   }
+}
+
+/* Ajuste da pagina 2: header e stepper em um bloco unico, sem resumo lateral. */
+.oficio-wizard__section {
+  width: 100%;
+}
+
+.oficio-wizard__shell {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.oficio-wizard__layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.oficio-wizard__main {
+  min-width: 0;
+}
+
+.oficio-number-preview {
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(11, 58, 102, 0.06), rgba(216, 162, 27, 0.08)),
+    var(--color-card-muted);
+  border: 1px solid var(--color-border);
+  border-left: 5px solid var(--color-accent);
+  border-radius: var(--radius-control);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+  min-height: var(--control-height-lg);
+  padding: var(--space-3) var(--space-4);
+}
+
+.oficio-number-preview__label {
+  color: var(--color-label);
+  font-size: var(--font-size-sm);
+  font-weight: 900;
+}
+
+.oficio-number-preview__value {
+  color: var(--color-heading);
+  font-size: var(--font-size-lg);
+}
+
+.oficio-wizard-pendencias--inline {
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border-soft);
+  border-radius: var(--radius-md);
+  margin-top: 0;
+  padding: var(--space-4);
 }

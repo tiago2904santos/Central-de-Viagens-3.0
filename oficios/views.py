@@ -8,7 +8,6 @@ from .presenters import apresentar_acoes_oficio
 from .presenters import apresentar_oficio_card
 from .presenters import apresentar_oficio_wizard_header
 from .presenters import apresentar_oficio_wizard_steps
-from .presenters import apresentar_oficio_wizard_summary
 from .presenters import apresentar_pagina_detalhe_oficio
 from .selectors import get_oficio_by_id
 from .selectors import listar_oficios
@@ -39,22 +38,28 @@ def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
             etapa_atual="dados_viajantes",
             dados_viajantes_status=avaliacao["status"],
         ),
-        "wizard_summary": apresentar_oficio_wizard_summary(oficio, pendencias=pendencias),
+        "pendencias": pendencias,
+        "numero_preview": oficio.numero_formatado if oficio else "Gerado automaticamente ao salvar.",
         "form": form,
         "oficio": oficio,
         "back_url": reverse("oficios:index"),
     }
 
 
-def _redirect_after_dados_viajantes_save(request, oficio):
+def _redirect_after_dados_viajantes_save(request, oficio, *, created=False):
     action = request.POST.get("action")
     if action == "save_continue":
         messages.success(
             request,
-            "Dados e viajantes salvos. As próximas etapas serão habilitadas nas próximas fases.",
+            "Ofício cadastrado com sucesso."
+            if created
+            else "Dados e viajantes atualizados com sucesso.",
         )
         return redirect("oficios:detalhe", pk=oficio.pk)
-    messages.success(request, "Rascunho salvo com sucesso.")
+    messages.success(
+        request,
+        "Ofício cadastrado com sucesso." if created else "Dados e viajantes atualizados com sucesso.",
+    )
     return redirect("oficios:dados_viajantes", pk=oficio.pk)
 
 
@@ -80,6 +85,9 @@ def index(request):
             "q": q,
             "status": status,
             "cards": cards,
+            "create_url": reverse("oficios:novo"),
+            "search_clear_url": reverse("oficios:index"),
+            "empty_message": "Nenhum ofício cadastrado ainda.",
         },
     )
 
@@ -89,7 +97,7 @@ def novo(request):
     _prepare_dados_viajantes_form(form)
     if request.method == "POST" and form.is_valid():
         oficio = criar_oficio_dados_viajantes(form)
-        return _redirect_after_dados_viajantes_save(request, oficio)
+        return _redirect_after_dados_viajantes_save(request, oficio, created=True)
     avaliacao = avaliar_oficio_dados_viajantes(form=form) if request.method == "POST" else None
     return render(
         request,

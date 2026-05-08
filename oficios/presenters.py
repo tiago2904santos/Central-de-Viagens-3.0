@@ -17,19 +17,20 @@ def _status_variant(status: str) -> str:
 
 def apresentar_oficio_card(oficio):
     roteiro_label = str(oficio.roteiro) if oficio.roteiro else "Sem roteiro"
+    solicitante_label = str(oficio.solicitante) if oficio.solicitante else "—"
     return {
+        "number_label": "N° do Ofício",
+        "number": oficio.numero_formatado,
         "status": oficio.get_status_display(),
         "status_class": _status_variant(oficio.status),
         "title": f"Ofício {oficio.numero_formatado}",
         "subtitle": oficio.assunto or "Sem assunto",
         "meta": [
             build_meta("Protocolo", oficio.protocolo or "—"),
-            build_meta("Data", oficio.data_criacao.strftime("%d/%m/%Y")),
+            build_meta("Data criação", oficio.data_criacao.strftime("%d/%m/%Y")),
             build_meta("Roteiro", roteiro_label),
-            build_meta("Servidores", str(oficio.servidores.count())),
-            build_meta("Viatura", oficio.viatura.placa_formatada if oficio.viatura else "—"),
-            build_meta("Motorista", oficio.motorista.nome if oficio.motorista else "—"),
-            build_meta("Custeio", oficio.get_custeio_display()),
+            build_meta("Solicitante", solicitante_label),
+            build_meta("Viajantes", str(oficio.servidores.count())),
         ],
     }
 
@@ -123,27 +124,3 @@ def apresentar_oficio_wizard_steps(oficio=None, etapa_atual="dados_viajantes", d
         step["state_label"] = status_data["label"]
     return steps
 
-
-def apresentar_oficio_wizard_summary(oficio=None, pendencias=None):
-    pendencias = pendencias or []
-    if not oficio:
-        return {
-            "numero_formatado": "Ainda não salvo",
-            "protocolo": "Ainda não salvo",
-            "status": "Rascunho",
-            "roteiro": "Não informado",
-            "solicitante": "Não informado",
-            "custeio": "Não informado",
-            "viajantes": "0",
-            "pendencias": pendencias,
-        }
-    return {
-        "numero_formatado": oficio.numero_formatado,
-        "protocolo": oficio.protocolo or "Não informado",
-        "status": oficio.get_status_display(),
-        "roteiro": str(oficio.roteiro) if oficio.roteiro else "Não informado",
-        "solicitante": str(oficio.solicitante) if oficio.solicitante else "Não informado",
-        "custeio": oficio.get_custeio_display(),
-        "viajantes": str(oficio.servidores.count()),
-        "pendencias": pendencias,
-    }

@@ -10,11 +10,11 @@ class OficioModelTests(TestCase):
 
     def test_numero_formatado_funciona(self):
         oficio = Oficio.objects.create(numero=1, ano=2026)
-        self.assertEqual(oficio.numero_formatado, "001/2026")
+        self.assertEqual(oficio.numero_formatado, "01/2026")
 
     def test_str_funciona(self):
         oficio = Oficio.objects.create(numero=12, ano=2026)
-        self.assertEqual(str(oficio), "Ofício 012/2026")
+        self.assertEqual(str(oficio), "Ofício 12/2026")
 
     def test_status_default_rascunho(self):
         oficio = Oficio.objects.create()

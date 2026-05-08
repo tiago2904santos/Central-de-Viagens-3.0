@@ -149,7 +149,10 @@ Estado atual: **CRUD mínimo inicial com wizard em implantação**. O app já po
 
 Mapeamento:
 - models/forms/selectors/services/presenters/views/urls: existentes;
-- wizard por etapas: Etapa 1 "Dados e viajantes" implementada com stepper visual e estados; etapas 2 a 5 aparecem como futuras/bloqueadas;
+- wizard por etapas: Etapa 1 "Dados e viajantes" implementada com header "Cadastro de ofício", stepper visual acoplado ao cabeçalho e estados `not_started`, `current`, `incomplete`, `complete` e `locked`; etapas 2 a 5 aparecem como futuras/bloqueadas;
+- layout do cadastro: segue estrutura `background > section > div interna`, sem resumo lateral;
+- listagem: cards de Ofícios foram aproximados do padrão visual de Roteiros, com destaque para "N° do Ofício", status, protocolo, data, roteiro, solicitante, viajantes e ações;
+- numeração: `numero` e `ano` não são preenchidos pelo usuário no wizard; o service reserva automaticamente o menor número disponível no ano, reaproveitando lacunas após exclusão, com exibição em dois dígitos (`01/2026`);
 - fluxos documentais avançados: direção definida, maturação pendente;
 - vinculo opcional com Roteiro/Evento: esperado e documentado como alvo;
 - transporte, roteiro, trechos e diárias: alvo funcional claro, fora do escopo desta fase;

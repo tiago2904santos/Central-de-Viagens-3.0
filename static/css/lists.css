@@ -62,6 +62,10 @@
   gap: var(--space-4);
 }
 
+.list-grid--oficios {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
 .list-stack {
   display: grid;
   gap: var(--space-3);

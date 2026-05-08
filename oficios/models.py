@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 from cadastros.models import Servidor
@@ -76,6 +77,13 @@ class Oficio(TimeStampedModel):
         ordering = ["-data_criacao", "-created_at"]
         verbose_name = "Ofício"
         verbose_name_plural = "Ofícios"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["ano", "numero"],
+                condition=Q(ano__isnull=False, numero__isnull=False),
+                name="oficios_oficio_ano_numero_unique",
+            )
+        ]
 
     def __str__(self):
         return f"Ofício {self.numero_formatado}"
@@ -83,16 +91,21 @@ class Oficio(TimeStampedModel):
     @property
     def numero_formatado(self) -> str:
         if self.numero and self.ano:
-            return f"{self.numero:03d}/{self.ano}"
+            return f"{self.numero:02d}/{self.ano}"
         return "—"
 
     @classmethod
     def get_next_available_numero(cls, ano: int | None = None) -> int:
         resolved_year = ano or timezone.localdate().year
-        maior_numero = cls.objects.filter(ano=resolved_year).aggregate(max_numero=models.Max("numero"))[
-            "max_numero"
-        ]
-        return (maior_numero or 0) + 1
+        numeros_ocupados = set(
+            cls.objects.filter(ano=resolved_year)
+            .exclude(numero__isnull=True)
+            .values_list("numero", flat=True)
+        )
+        numero = 1
+        while numero in numeros_ocupados:
+            numero += 1
+        return numero
 
     def save(self, *args, **kwargs):
         self.protocolo = normalize_upper(self.protocolo)
