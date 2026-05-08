@@ -1,6 +1,7 @@
 <div class="simple-list__row" role="listitem">
   <div class="simple-list__main">
     <div class="simple-list__title">
+      <span class="simple-list__title-text">{{ row.title }}</span>
       {% if row.badges %}
         <span class="simple-list__badges">
           {% for badge in row.badges %}
@@ -8,7 +9,6 @@
           {% endfor %}
         </span>
       {% endif %}
-      <span class="simple-list__title-text">{{ row.title }}</span>
     </div>
     {% if row.meta %}
       <div class="simple-list__meta">

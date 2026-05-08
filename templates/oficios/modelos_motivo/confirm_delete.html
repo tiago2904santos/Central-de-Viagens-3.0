@@ -5,12 +5,18 @@
 {% block content %}
   <div class="app-page modelos-motivo-page">
     <div class="app-page__shell">
-      <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact">
+      <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact" aria-labelledby="modelos-motivo-delete-title">
         <div class="app-page-hero__stage">
           <span class="app-page-hero__eyebrow">Ofícios</span>
-          <h1 class="app-page-hero__title">{{ page_title }}</h1>
-          <p class="app-page__subtitle">{{ page_description }}</p>
+          <h1 class="app-page-hero__title" id="modelos-motivo-delete-title">{{ page_title }}</h1>
         </div>
+        <div class="app-page-hero__body">
+          <div class="app-page__hero-single">
+            <div class="app-page__brand-mark" aria-hidden="true">OF</div>
+            <p class="app-page__subtitle">{{ page_description }}</p>
+          </div>
+        </div>
+        <div class="app-page-hero__ribbon" aria-hidden="true"></div>
       </header>
 
       <section class="app-page__form-card modelos-motivo-delete">
@@ -27,10 +33,7 @@
         </div>
         <form method="post" class="form-shell">
           {% csrf_token %}
-          <div class="form-actions">
-            {% include "components/buttons/action_button.html" with href=back_url label="Cancelar" variant="secondary" only %}
-            <button class="btn btn-danger" type="submit">Excluir modelo</button>
-          </div>
+          {% include "components/forms/form_actions.html" with primary_label="Excluir modelo" primary_variant="danger" secondary_label="Cancelar" secondary_url=back_url only %}
         </form>
       </section>
     </div>
