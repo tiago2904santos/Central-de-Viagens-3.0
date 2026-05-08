@@ -4,11 +4,15 @@ from cadastros.models import Cargo
 from cadastros.models import Servidor
 from cadastros.models import Unidade
 from cadastros.models import Viatura
+from oficios.forms import OficioDadosViajantesForm
 from oficios.forms import OficioForm
 from oficios.models import Oficio
 from oficios.services import atualizar_oficio
+from oficios.services import atualizar_oficio_dados_viajantes
+from oficios.services import avaliar_oficio_dados_viajantes
 from oficios.services import build_oficio_document_payload
 from oficios.services import criar_oficio
+from oficios.services import criar_oficio_dados_viajantes
 
 
 class OficioServicesTests(TestCase):
@@ -102,3 +106,78 @@ class OficioServicesTests(TestCase):
             "custeio",
         }
         self.assertEqual(set(payload.keys()), expected_keys)
+
+    def test_criar_oficio_dados_viajantes_salva_m2m(self):
+        form = OficioDadosViajantesForm(
+            data={
+                "numero": "3",
+                "ano": "2026",
+                "data_criacao": "2026-05-08",
+                "protocolo": "proto 3",
+                "assunto": "Assunto",
+                "motivo": "Motivo",
+                "status": Oficio.STATUS_RASCUNHO,
+                "roteiro": "",
+                "solicitante": str(self.unidade.pk),
+                "servidores": [str(self.servidor.pk)],
+                "custeio": Oficio.CUSTEIO_UNIDADE_DPC,
+                "custeio_observacao": "",
+            },
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        oficio = criar_oficio_dados_viajantes(form)
+        self.assertEqual(oficio.protocolo, "PROTO 3")
+        self.assertEqual(list(oficio.servidores.all()), [self.servidor])
+
+    def test_atualizar_oficio_dados_viajantes_preserva_transporte(self):
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            status=Oficio.STATUS_RASCUNHO,
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+            viatura=self.viatura,
+            motorista=self.servidor,
+        )
+        oficio.servidores.add(self.servidor)
+        form = OficioDadosViajantesForm(
+            data={
+                "numero": "4",
+                "ano": "2026",
+                "data_criacao": "2026-05-08",
+                "protocolo": "proto 4",
+                "assunto": "Assunto novo",
+                "motivo": "Motivo novo",
+                "status": Oficio.STATUS_RASCUNHO,
+                "roteiro": "",
+                "solicitante": "",
+                "servidores": [str(self.servidor.pk)],
+                "custeio": Oficio.CUSTEIO_ONUS_LIMITADO,
+                "custeio_observacao": "",
+            },
+            instance=oficio,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        atualizado = atualizar_oficio_dados_viajantes(oficio, form)
+        atualizado.refresh_from_db()
+        self.assertEqual(atualizado.numero, 4)
+        self.assertEqual(atualizado.viatura, self.viatura)
+        self.assertEqual(atualizado.motorista, self.servidor)
+        self.assertEqual(list(atualizado.servidores.all()), [self.servidor])
+
+    def test_avaliar_oficio_dados_viajantes_incomplete_e_complete(self):
+        incompleto = Oficio.objects.create(custeio=Oficio.CUSTEIO_UNIDADE_DPC)
+        avaliacao_incompleta = avaliar_oficio_dados_viajantes(incompleto)
+        self.assertEqual(avaliacao_incompleta["status"], "incomplete")
+        self.assertIn("Informe o assunto.", avaliacao_incompleta["pendencias"])
+        self.assertIn("Informe o motivo.", avaliacao_incompleta["pendencias"])
+        self.assertIn("Selecione ao menos um viajante.", avaliacao_incompleta["pendencias"])
+
+        completo = Oficio.objects.create(
+            assunto="Assunto",
+            motivo="Motivo",
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+        )
+        completo.servidores.add(self.servidor)
+        avaliacao_completa = avaliar_oficio_dados_viajantes(completo)
+        self.assertEqual(avaliacao_completa["status"], "complete")
+        self.assertEqual(avaliacao_completa["pendencias"], [])

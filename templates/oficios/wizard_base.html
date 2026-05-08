@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="app-page oficio-wizard">
+    <div class="app-page__shell">
+      <header class="oficio-wizard__header" aria-labelledby="oficios-wizard-title">
+        <div class="oficio-wizard__header-copy">
+          <h1 class="oficio-wizard__title" id="oficios-wizard-title">{{ wizard_header.title }}</h1>
+          <p class="oficio-wizard__subtitle">{{ wizard_header.subtitle }}</p>
+        </div>
+        <div class="app-page__brand-mark" aria-hidden="true">OF</div>
+      </header>
+
+      {% include "oficios/partials/wizard_stepper.html" with steps=wizard_steps only %}
+
+      <div class="oficio-wizard__layout">
+        <main class="oficio-wizard__main">
+          <form class="form-shell" method="post" novalidate>
+            {% csrf_token %}
+            {% block wizard_content %}{% endblock %}
+            {% include "oficios/partials/wizard_actions.html" with back_url=back_url only %}
+          </form>
+        </main>
+
+        <aside class="oficio-wizard__aside" aria-label="Resumo da etapa">
+          {% include "oficios/partials/wizard_summary.html" with summary=wizard_summary only %}
+        </aside>
+      </div>
+    </div>
+  </div>
+{% endblock %}

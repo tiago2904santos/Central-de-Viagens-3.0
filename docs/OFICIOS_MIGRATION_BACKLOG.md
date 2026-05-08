@@ -1,5 +1,19 @@
 # Backlog de migração funcional do Ofício
 
+## Fase 12.2 - Wizard de Ofício: Dados e viajantes
+
+Itens:
+- substituir o formulário único de cadastro por wizard inicial;
+- criar header "Cadastro de ofício" com subtítulo da etapa atual;
+- implementar stepper visual com estados `not_started`, `current`, `incomplete`, `complete` e `locked`;
+- implementar a etapa 1 "Dados e viajantes";
+- exigir assunto, motivo, custeio válido e ao menos um servidor para considerar a etapa concluída;
+- manter transporte, roteiro/diárias, resumo final e documentos como etapas futuras bloqueadas.
+
+| Fase | Objetivo | Arquivos prováveis | Migration? | Risco | Critério de aceite |
+|---|---|---|---|---|---|
+| 12.2 | Wizard de Ofício: Dados e viajantes | `oficios/forms.py`, `oficios/services.py`, `oficios/presenters.py`, `oficios/views.py`, `oficios/tests/*`, `templates/oficios/*`, `static/css/forms.css` | Não | Médio | Wizard substitui formulário único, stepper visual tem estados, Etapa 1 funciona, etapas futuras ficam bloqueadas, sem `href="#"` e sem CSS/JS inline |
+
 ## Fase 13 — Ofício: modelo operacional completo
 
 Itens:

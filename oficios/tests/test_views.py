@@ -54,12 +54,13 @@ class OficioViewsTests(TestCase):
         response = self.client.get(reverse("oficios:detalhe", args=[oficio.pk]))
         self.assertEqual(response.status_code, 200)
 
-    def test_get_editar_retorna_200(self):
+    def test_get_editar_redireciona_para_dados_viajantes(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
         response = self.client.get(reverse("oficios:editar", args=[oficio.pk]))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("oficios:dados_viajantes", args=[oficio.pk]))
 
-    def test_post_editar_valido_altera(self):
+    def test_post_editar_redireciona_sem_alterar(self):
         oficio = Oficio.objects.create(
             numero=1,
             ano=2026,
@@ -85,9 +86,10 @@ class OficioViewsTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("oficios:dados_viajantes", args=[oficio.pk]))
         oficio.refresh_from_db()
-        self.assertEqual(oficio.numero, 2)
-        self.assertEqual(oficio.assunto, "Assunto novo")
+        self.assertEqual(oficio.numero, 1)
+        self.assertEqual(oficio.assunto, "Assunto antigo")
 
     def test_post_excluir_remove(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)

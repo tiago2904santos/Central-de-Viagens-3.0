@@ -1,0 +1,49 @@
+{% extends "oficios/wizard_base.html" %}
+
+{% block wizard_content %}
+  <div class="form-section">
+    {% include "components/forms/form_section.html" with title="Dados do ofício" description="Identificação administrativa e status inicial." only %}
+    <div class="form-grid">
+      {% include "components/forms/form_field.html" with field=form.numero only %}
+      {% include "components/forms/form_field.html" with field=form.ano only %}
+      {% include "components/forms/form_field.html" with field=form.data_criacao only %}
+      {% include "components/forms/form_field.html" with field=form.protocolo only %}
+      {% include "components/forms/form_field.html" with field=form.status only %}
+    </div>
+  </div>
+
+  <div class="form-section">
+    {% include "components/forms/form_section.html" with title="Assunto e motivo" description="Síntese formal da demanda e motivação do deslocamento." only %}
+    <div class="form-grid">
+      {% include "components/forms/form_field.html" with field=form.assunto only %}
+      <div class="field-span-12">
+        {% include "components/forms/form_field.html" with field=form.motivo only %}
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    {% include "components/forms/form_section.html" with title="Contexto operacional" description="Vínculos opcionais que ajudam a compor o documento." only %}
+    <div class="form-grid">
+      {% include "components/forms/form_field.html" with field=form.roteiro only %}
+      {% include "components/forms/form_field.html" with field=form.solicitante only %}
+    </div>
+  </div>
+
+  <div class="form-section">
+    {% include "components/forms/form_section.html" with title="Custeio" description="Origem do custeio e observação quando aplicável." only %}
+    <div class="form-grid">
+      {% include "components/forms/form_field.html" with field=form.custeio only %}
+      {% include "components/forms/form_field.html" with field=form.custeio_observacao only %}
+    </div>
+  </div>
+
+  <div class="form-section">
+    {% include "components/forms/form_section.html" with title="Viajantes" description="Servidores vinculados ao ofício nesta etapa inicial." only %}
+    <div class="form-grid">
+      <div class="field-span-12">
+        {% include "components/forms/form_field.html" with field=form.servidores help_text="Selecione ao menos um viajante para concluir a etapa." only %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

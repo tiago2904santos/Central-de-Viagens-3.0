@@ -1,30 +1,61 @@
 from django.contrib import messages
-from django.urls import reverse
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.urls import reverse
 
-from .forms import OficioForm
+from .forms import OficioDadosViajantesForm
 from .presenters import apresentar_acoes_oficio
 from .presenters import apresentar_oficio_card
+from .presenters import apresentar_oficio_wizard_header
+from .presenters import apresentar_oficio_wizard_steps
+from .presenters import apresentar_oficio_wizard_summary
 from .presenters import apresentar_pagina_detalhe_oficio
 from .selectors import get_oficio_by_id
 from .selectors import listar_oficios
 from .selectors import listar_roteiros_para_oficio
 from .selectors import listar_servidores_para_oficio
 from .selectors import listar_unidades_para_oficio
-from .selectors import listar_viaturas_para_oficio
 from .services import OficioVinculadoError
-from .services import atualizar_oficio
-from .services import criar_oficio
+from .services import atualizar_oficio_dados_viajantes
+from .services import avaliar_oficio_dados_viajantes
+from .services import criar_oficio_dados_viajantes
 from .services import excluir_oficio
 
 
-def _prepare_form(form):
+def _prepare_dados_viajantes_form(form):
     form.fields["roteiro"].queryset = listar_roteiros_para_oficio()
     form.fields["solicitante"].queryset = listar_unidades_para_oficio()
     form.fields["servidores"].queryset = listar_servidores_para_oficio()
-    form.fields["viatura"].queryset = listar_viaturas_para_oficio()
-    form.fields["motorista"].queryset = listar_servidores_para_oficio()
+
+
+def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
+    avaliacao = avaliacao or avaliar_oficio_dados_viajantes(oficio=oficio, form=form)
+    pendencias = avaliacao["pendencias"]
+    return {
+        "page_title": "Cadastro de ofício",
+        "wizard_header": apresentar_oficio_wizard_header("dados_viajantes"),
+        "wizard_steps": apresentar_oficio_wizard_steps(
+            oficio=oficio,
+            etapa_atual="dados_viajantes",
+            dados_viajantes_status=avaliacao["status"],
+        ),
+        "wizard_summary": apresentar_oficio_wizard_summary(oficio, pendencias=pendencias),
+        "form": form,
+        "oficio": oficio,
+        "back_url": reverse("oficios:index"),
+    }
+
+
+def _redirect_after_dados_viajantes_save(request, oficio):
+    action = request.POST.get("action")
+    if action == "save_continue":
+        messages.success(
+            request,
+            "Dados e viajantes salvos. As próximas etapas serão habilitadas nas próximas fases.",
+        )
+        return redirect("oficios:detalhe", pk=oficio.pk)
+    messages.success(request, "Rascunho salvo com sucesso.")
+    return redirect("oficios:dados_viajantes", pk=oficio.pk)
 
 
 def index(request):
@@ -54,22 +85,16 @@ def index(request):
 
 
 def novo(request):
-    form = OficioForm(request.POST or None)
-    _prepare_form(form)
+    form = OficioDadosViajantesForm(request.POST or None)
+    _prepare_dados_viajantes_form(form)
     if request.method == "POST" and form.is_valid():
-        criar_oficio(form)
-        messages.success(request, "Ofício criado com sucesso.")
-        return redirect("oficios:index")
+        oficio = criar_oficio_dados_viajantes(form)
+        return _redirect_after_dados_viajantes_save(request, oficio)
+    avaliacao = avaliar_oficio_dados_viajantes(form=form) if request.method == "POST" else None
     return render(
         request,
-        "oficios/form.html",
-        {
-            "page_title": "Novo ofício",
-            "page_description": "Cadastre os dados iniciais do ofício.",
-            "form": form,
-            "submit_label": "Criar ofício",
-            "back_url": reverse("oficios:index"),
-        },
+        "oficios/wizard_dados_viajantes.html",
+        _wizard_dados_viajantes_context(form=form, avaliacao=avaliacao),
     )
 
 
@@ -93,22 +118,21 @@ def detalhe(request, pk):
 
 def editar(request, pk):
     oficio = get_oficio_by_id(pk)
-    form = OficioForm(request.POST or None, instance=oficio)
-    _prepare_form(form)
+    return redirect("oficios:dados_viajantes", pk=oficio.pk)
+
+
+def dados_viajantes(request, pk):
+    oficio = get_oficio_by_id(pk)
+    form = OficioDadosViajantesForm(request.POST or None, instance=oficio)
+    _prepare_dados_viajantes_form(form)
     if request.method == "POST" and form.is_valid():
-        atualizar_oficio(oficio, form)
-        messages.success(request, "Ofício atualizado com sucesso.")
-        return redirect("oficios:index")
+        oficio = atualizar_oficio_dados_viajantes(oficio, form)
+        return _redirect_after_dados_viajantes_save(request, oficio)
+    avaliacao = avaliar_oficio_dados_viajantes(form=form, oficio=oficio)
     return render(
         request,
-        "oficios/form.html",
-        {
-            "page_title": "Editar ofício",
-            "page_description": "Atualize os campos básicos do ofício.",
-            "form": form,
-            "submit_label": "Salvar ofício",
-            "back_url": reverse("oficios:index"),
-        },
+        "oficios/wizard_dados_viajantes.html",
+        _wizard_dados_viajantes_context(form=form, oficio=oficio, avaliacao=avaliacao),
     )
 
 

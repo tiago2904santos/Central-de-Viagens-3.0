@@ -145,14 +145,16 @@ Com a fase "Nucleo Documental V1.1 (hardening)", os contratos são reforçados c
 
 ### Oficios
 
-Estado atual: **CRUD mínimo inicial** com model real, form, selectors, services, presenters, views, URLs e templates.
+Estado atual: **CRUD mínimo inicial com wizard em implantação**. O app já possui model real, forms, selectors, services, presenters, views, URLs e templates; o cadastro de Ofícios iniciou fluxo por etapas com a Etapa 1 "Dados e viajantes" implementada.
 
 Mapeamento:
 - models/forms/selectors/services/presenters/views/urls: existentes;
-- wizard e fluxos documentais avançados: direcao definida, maturacao pendente;
+- wizard por etapas: Etapa 1 "Dados e viajantes" implementada com stepper visual e estados; etapas 2 a 5 aparecem como futuras/bloqueadas;
+- fluxos documentais avançados: direção definida, maturação pendente;
 - vinculo opcional com Roteiro/Evento: esperado e documentado como alvo;
-- documentos/justificativa/trechos/diarias: alvo funcional claro, fora do escopo do CRUD mínimo;
-- geracao DOCX/PDF final: ainda fora do escopo, dependente das próximas fases documentais.
+- transporte, roteiro, trechos e diárias: alvo funcional claro, fora do escopo desta fase;
+- documentos/justificativa/termos: alvo funcional claro, fora do escopo desta fase;
+- geração DOCX/PDF final: ainda fora do escopo, dependente das próximas fases documentais.
 
 ### Termos, Justificativas, Planos e OS
 

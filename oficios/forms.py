@@ -44,11 +44,9 @@ class OficioForm(forms.ModelForm):
                 field.widget.attrs.setdefault("class", "form-control")
             if field_name in {"protocolo", "assunto"}:
                 field.widget.attrs.setdefault("data-mask", "upper")
-        self.fields["roteiro"].required = False
-        self.fields["solicitante"].required = False
-        self.fields["viatura"].required = False
-        self.fields["motorista"].required = False
-        self.fields["servidores"].required = False
+        for optional_field in ("roteiro", "solicitante", "viatura", "motorista", "servidores"):
+            if optional_field in self.fields:
+                self.fields[optional_field].required = False
 
     def clean_protocolo(self):
         return normalize_upper(self.cleaned_data.get("protocolo", ""))
@@ -72,3 +70,21 @@ class OficioForm(forms.ModelForm):
                 "Informe a observação quando o custeio for de outra instituição.",
             )
         return cleaned_data
+
+
+class OficioDadosViajantesForm(OficioForm):
+    class Meta(OficioForm.Meta):
+        fields = [
+            "numero",
+            "ano",
+            "data_criacao",
+            "protocolo",
+            "status",
+            "assunto",
+            "motivo",
+            "roteiro",
+            "solicitante",
+            "custeio",
+            "custeio_observacao",
+            "servidores",
+        ]
