@@ -236,3 +236,19 @@ Justificativa:
 | 5 | Criar auditorias automaticas (enforcement) | evita regressao de padrao durante expansao dos apps | Baixo | Medio/alto | scripts atuais consolidados em pipeline |
 | 6 | Finalizar theme/contraste | fechamento de qualidade visual e acessibilidade | Baixo | Medio | sem bloquear backend documental |
 | 7 | Estabilizar Prestacao/Diario | etapas dependentes de documentos e vinculos anteriores | Alto | Alto | cadeia documental principal operacional |
+
+## 9. Fase 12.1 concluída (auditoria funcional)
+
+Foi concluída a auditoria funcional do Ofício no legado 2.0, com quatro entregáveis documentais:
+
+- `docs/OFICIOS_LEGACY_MAP.md`
+- `docs/OFICIOS_MIGRATION_BACKLOG.md`
+- `docs/OFICIOS_REGRAS_NEGOCIO.md`
+- `docs/OFICIOS_COMPARATIVO_2_0_3_0.md`
+
+Resultado prático da fase:
+
+- mapeamento técnico dos artefatos legacy (models, forms, views, urls, services, templates, JS e templates DOCX);
+- extração e priorização de regras de negócio para migração controlada;
+- backlog faseado de implementação (Fase 13 a Fase 23) alinhado ao padrão document-centric;
+- diagnóstico de lacunas entre o CRUD mínimo atual e o comportamento funcional legado completo.

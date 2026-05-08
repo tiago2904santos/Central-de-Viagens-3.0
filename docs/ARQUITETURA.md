@@ -181,6 +181,21 @@ O núcleo documental V1.1 reforça contratos sem ampliar escopo funcional:
 
 O app é o primeiro consumidor de referência para a evolução dos próximos módulos documentais.
 
+## Fase 12.1 - Auditoria funcional do legado de Ofícios
+
+A auditoria funcional do legado 2.0 consolidou que o fluxo de Ofícios antigo era composto por:
+
+- wizard próprio de ofício (dados, transporte, roteiro/diárias e resumo);
+- integração forte com evento e roteiro;
+- documentos derivados (justificativa, termo, plano de trabalho, ordem de serviço);
+- renderização DOCX/PDF com validações de prontidão e placeholders.
+
+No 3.0, essa base é tratada como insumo de migração faseada, mantendo as decisões arquiteturais:
+
+- sem import runtime de `legacy/`;
+- regras de negócio em `services` e validações, não em templates;
+- núcleo documental (`documentos/services`) como contrato transversal para tipos, formatos, templates, placeholders e renderização.
+
 ## Navegacao lateral
 
 A navegacao principal e declarada em `core/navigation.py` e suporta hierarquia. O grupo `Cadastros` organiza:
