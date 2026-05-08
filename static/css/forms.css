@@ -363,19 +363,26 @@ html[data-theme="light-dark"] input[type="checkbox"] {
 /* --------------------------------------------------------------------------
    7. Wizard de oficios
    -------------------------------------------------------------------------- */
+.oficio-wizard__top {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+
 .oficio-wizard__header {
   align-items: center;
   background:
     linear-gradient(135deg, rgba(11, 58, 102, 0.96), rgba(21, 91, 154, 0.92)),
     var(--color-primary);
-  border: 1px solid var(--color-accent-border-soft);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-panel);
+  border: 0;
   color: var(--color-white);
   display: flex;
   gap: var(--space-4);
   justify-content: space-between;
-  padding: var(--space-5);
+  min-height: 108px;
+  padding: var(--space-5) var(--space-5) var(--space-6);
 }
 
 .oficio-wizard__header-copy {
@@ -423,9 +430,9 @@ html[data-theme="light-dark"] input[type="checkbox"] {
 
 .oficio-stepper {
   background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-soft);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   padding: var(--space-3);
 }
 
