@@ -7,13 +7,19 @@
 
   function debounce(fn, ms) {
     let handle = null;
-    return function debounced() {
+    function debounced() {
       const args = arguments;
       window.clearTimeout(handle);
       handle = window.setTimeout(function () {
+        handle = null;
         fn.apply(null, args);
       }, ms);
+    }
+    debounced.cancel = function () {
+      window.clearTimeout(handle);
+      handle = null;
     };
+    return debounced;
   }
 
   function dispatchFieldEvents(element) {
@@ -58,7 +64,27 @@
     const wrap = this.root.querySelector(".oficio-viatura-busca__wrap");
     if (!wrap || !this.dropdown) return;
     if (!wrap.contains(event.target)) {
+      if (this.runViaturaSearchDebounced && this.runViaturaSearchDebounced.cancel) {
+        this.runViaturaSearchDebounced.cancel();
+      }
+      this.closeViaturaDropdown();
+    }
+  };
+
+  OficioTransporte.prototype.closeViaturaDropdown = function () {
+    if (this.dropdown) {
       this.dropdown.hidden = true;
+      this.dropdown.setAttribute("hidden", "hidden");
+    }
+    if (this.resultsEl) {
+      this.resultsEl.innerHTML = "";
+    }
+    if (this.emptyEl) {
+      this.emptyEl.hidden = true;
+      this.emptyEl.setAttribute("hidden", "hidden");
+    }
+    if (this.buscaInput) {
+      this.buscaInput.setAttribute("aria-expanded", "false");
     }
   };
 
@@ -66,11 +92,15 @@
     const self = this;
     if (!this.buscaInput || !this.apiUrl) return;
 
-    const runSearch = debounce(function () {
+    this.runViaturaSearchDebounced = debounce(function () {
       self.runViaturaSearch();
     }, 380);
 
     this.buscaInput.addEventListener("input", function () {
+      if (self._suppressViaturaBuscaInput) {
+        self._suppressViaturaBuscaInput = false;
+        return;
+      }
       const term = (self.buscaInput.value || "").trim();
       const selLabel = self.buscaInput.dataset.selectedLabel || "";
       if (self.selectedViaturaId && selLabel && term !== selLabel) {
@@ -86,7 +116,7 @@
         self.setViaturaLocked(false);
         delete self.buscaInput.dataset.selectedLabel;
       }
-      runSearch();
+      self.runViaturaSearchDebounced();
     });
 
     this.buscaInput.addEventListener("change", function () {
@@ -110,8 +140,7 @@
     if (!this.dropdown || !this.resultsEl) return;
 
     if (term.length < 2) {
-      this.dropdown.hidden = true;
-      if (this.emptyEl) this.emptyEl.hidden = true;
+      this.closeViaturaDropdown();
       return;
     }
 
@@ -126,17 +155,31 @@
         self.resultsEl.innerHTML = "";
         if (!results.length) {
           self.dropdown.hidden = false;
-          if (self.emptyEl) self.emptyEl.hidden = false;
+          self.dropdown.removeAttribute("hidden");
+          if (self.emptyEl) {
+            self.emptyEl.hidden = false;
+            self.emptyEl.removeAttribute("hidden");
+          }
+          if (self.buscaInput) {
+            self.buscaInput.setAttribute("aria-expanded", "true");
+          }
           return;
         }
-        if (self.emptyEl) self.emptyEl.hidden = true;
+        if (self.emptyEl) {
+          self.emptyEl.hidden = true;
+          self.emptyEl.setAttribute("hidden", "hidden");
+        }
         results.forEach(function (item) {
           self.resultsEl.appendChild(self.buildResultButton(item));
         });
         self.dropdown.hidden = false;
+        self.dropdown.removeAttribute("hidden");
+        if (self.buscaInput) {
+          self.buscaInput.setAttribute("aria-expanded", "true");
+        }
       })
       .catch(function () {
-        self.dropdown.hidden = true;
+        self.closeViaturaDropdown();
       });
   };
 
@@ -168,6 +211,11 @@
   };
 
   OficioTransporte.prototype.applyViaturaFromResult = function (item) {
+    if (this.runViaturaSearchDebounced && this.runViaturaSearchDebounced.cancel) {
+      this.runViaturaSearchDebounced.cancel();
+    }
+    this.closeViaturaDropdown();
+    this._suppressViaturaBuscaInput = true;
     if (this.viaturaInput) {
       this.viaturaInput.value = String(item.id);
       dispatchFieldEvents(this.viaturaInput);
@@ -196,7 +244,6 @@
     }
     this.selectedViaturaId = String(item.id);
     this.setViaturaLocked(true);
-    if (this.dropdown) this.dropdown.hidden = true;
   };
 
   OficioTransporte.prototype.bindMotoristaToggle = function () {
