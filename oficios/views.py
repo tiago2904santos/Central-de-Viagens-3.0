@@ -1,9 +1,12 @@
+import re
+
 from django.contrib import messages
 from django.http import Http404
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 from cadastros.models import Combustivel
@@ -40,6 +43,14 @@ from .services import excluir_modelo_motivo
 from .services import excluir_oficio
 from .services import gerar_resposta_documento_oficio
 from .services import validar_oficio_para_documento
+
+
+def _motorista_oficio_numero_display(ref):
+    ref = (ref or "").strip()
+    if not ref:
+        return ""
+    head = ref.split("/", 1)[0]
+    return re.sub(r"\D", "", head)[:3]
 
 
 def _prepare_dados_viajantes_form(form):
@@ -114,6 +125,11 @@ def _wizard_transporte_context(*, form, oficio):
     motorista_extras_visivel = modo_motorista == Oficio.MOTORISTA_MODO_MANUAL or (
         bool(oficio.motorista_id) and oficio.motorista_id not in equipe_ids
     )
+    ano_motorista_ctx = oficio.ano or timezone.localdate().year
+    if form.is_bound:
+        ref_raw = (form.data.get("motorista_oficio_referencia") or "").strip()
+    else:
+        ref_raw = (oficio.motorista_oficio_referencia or "").strip()
     return {
         "page_title": "Cadastro de ofício",
         "wizard_header": apresentar_oficio_wizard_header("transporte"),
@@ -130,6 +146,8 @@ def _wizard_transporte_context(*, form, oficio):
         "servidor_create_url": reverse("cadastros:servidor_create"),
         "equipe_servidor_ids_csv": ",".join(str(pk) for pk in equipe_ids),
         "motorista_extras_visivel": motorista_extras_visivel,
+        "motorista_oficio_ano": ano_motorista_ctx,
+        "motorista_oficio_numero_inicial": _motorista_oficio_numero_display(ref_raw),
         "api_viatura_placa_url": reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
         "wizard_back_url": reverse("oficios:dados_viajantes", args=[oficio.pk]),
         "wizard_back_label": "Voltar",

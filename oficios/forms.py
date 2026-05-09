@@ -264,12 +264,9 @@ class OficioTransporteForm(forms.ModelForm):
                     "placeholder": "Digite o nome do motorista",
                 },
             ),
-            "motorista_oficio_referencia": forms.TextInput(
+            "motorista_oficio_referencia": forms.HiddenInput(
                 attrs={
-                    "class": "form-control",
-                    "data-mask": "oficio_motorista",
-                    "inputmode": "numeric",
-                    "autocomplete": "off",
+                    "data-oficio-motorista-hidden": "true",
                 },
             ),
             "motorista_protocolo_ref": forms.TextInput(
@@ -313,7 +310,6 @@ class OficioTransporteForm(forms.ModelForm):
         ano_str = str(ano_motorista)
         self.fields["motorista_oficio_referencia"].widget.attrs["data-mask-year"] = ano_str
         self.fields["motorista_oficio_referencia"].widget.attrs["data-oficio-ano"] = ano_str
-        self.fields["motorista_oficio_referencia"].widget.attrs["placeholder"] = f"__/{ano_motorista}"
 
         if not self.is_bound and self.instance.pk:
             modo = self.instance.motorista_modo or Oficio.MOTORISTA_MODO_SERVIDOR

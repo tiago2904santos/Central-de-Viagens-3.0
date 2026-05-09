@@ -1895,3 +1895,55 @@ html[data-theme="light-dark"] input[type="checkbox"] {
     width: 100%;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Input com sufixo fixo (ex.: número do ofício do motorista + /ANO)
+   -------------------------------------------------------------------------- */
+.app-input-addon {
+  align-items: stretch;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  display: flex;
+  max-width: 100%;
+  min-height: calc(var(--font-size-md, 1rem) * 2.6);
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  width: 100%;
+}
+
+.app-input-addon:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(21, 91, 154, 0.2);
+}
+
+.app-input-addon__control {
+  background: transparent;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  flex: 1;
+  min-width: 0;
+}
+
+.app-input-addon__control:focus {
+  outline: none;
+}
+
+.app-input-addon__suffix {
+  align-items: center;
+  background: var(--route-section-bg, var(--color-card-muted));
+  border-left: 1px solid var(--color-border-soft, var(--color-border));
+  color: var(--color-muted-strong, var(--color-muted));
+  display: flex;
+  flex-shrink: 0;
+  font-size: var(--font-size-md);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  padding: 0 var(--space-3);
+  user-select: none;
+  white-space: nowrap;
+}
