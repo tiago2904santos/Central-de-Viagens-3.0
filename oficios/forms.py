@@ -310,7 +310,9 @@ class OficioTransporteForm(forms.ModelForm):
             ano_motorista = self.instance.ano
         if not ano_motorista:
             ano_motorista = tz.localdate().year
-        self.fields["motorista_oficio_referencia"].widget.attrs["data-mask-year"] = str(ano_motorista)
+        ano_str = str(ano_motorista)
+        self.fields["motorista_oficio_referencia"].widget.attrs["data-mask-year"] = ano_str
+        self.fields["motorista_oficio_referencia"].widget.attrs["data-oficio-ano"] = ano_str
         self.fields["motorista_oficio_referencia"].widget.attrs["placeholder"] = f"__/{ano_motorista}"
 
         if not self.is_bound and self.instance.pk:
