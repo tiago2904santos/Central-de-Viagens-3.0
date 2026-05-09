@@ -37,7 +37,8 @@ class OficioViewsTests(TestCase):
         self.assertEqual(oficio.data_criacao, timezone.localdate())
 
         response = self.client.get(response.url)
-        self.assertContains(response, "oficio-data-grid--four")
+        self.assertContains(response, "oficio-data-grid--three")
+        self.assertContains(response, "oficio-data-grid--full")
         self.assertContains(response, oficio.numero_formatado)
         self.assertContains(response, oficio.data_criacao.strftime("%d/%m/%Y"))
         self.assertNotContains(response, "Gerado automaticamente ao salvar.")

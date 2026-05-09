@@ -16,12 +16,15 @@
   <div class="form-section">
     {% include "components/forms/form_section.html" with title="Dados do ofício" description="Identificação administrativa, protocolo e custeio." only %}
     <div class="oficio-data-block">
-      <div class="oficio-data-grid oficio-data-grid--four">
+      <div class="oficio-data-grid oficio-data-grid--three">
         <div class="oficio-data-info">
           <span class="oficio-data-info__label">N° do Ofício:</span>
           <p class="oficio-data-info__value">
             {{ wizard_summary.numero_label }}
           </p>
+        </div>
+        <div class="oficio-data-grid__field">
+          {% include "components/forms/form_field.html" with field=form.protocolo label="Protocolo" only %}
         </div>
         <div class="oficio-data-info">
           <span class="oficio-data-info__label">Data criação:</span>
@@ -29,15 +32,14 @@
             {{ wizard_summary.data_criacao_label }}
           </p>
         </div>
-        <div class="oficio-data-grid__field">
-          {% include "components/forms/form_field.html" with field=form.protocolo label="Protocolo" only %}
-        </div>
+      </div>
+      <div class="oficio-data-grid oficio-data-grid--full">
         <div class="oficio-data-grid__field">
           {% include "components/forms/form_field.html" with field=form.custeio label="Custeio" only %}
         </div>
       </div>
       <div class="oficio-data-observacao{% if not mostrar_custeio_observacao %} form-field--hidden{% endif %}" data-custeio-observacao-wrapper>
-        {% include "components/forms/form_field.html" with field=form.custeio_observacao label="Custeio observação" only %}
+        {% include "components/forms/form_field.html" with field=form.custeio_observacao label="Nome da Instituição" only %}
       </div>
     </div>
   </div>
