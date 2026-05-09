@@ -1,6 +1,8 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
+from core.normalizers import normalize_plate
+
 from cadastros.models import Servidor
 from cadastros.models import Unidade
 from cadastros.models import Viatura
@@ -35,7 +37,14 @@ def listar_oficios(q: str | None = None, status: str | None = None):
 
 
 def get_oficio_by_id(pk: int):
-    queryset = Oficio.objects.select_related("roteiro", "viatura", "motorista", "solicitante").prefetch_related(
+    queryset = Oficio.objects.select_related(
+        "roteiro",
+        "viatura",
+        "viatura__combustivel",
+        "transporte_combustivel_manual",
+        "motorista",
+        "solicitante",
+    ).prefetch_related(
         "servidores",
     )
     return get_object_or_404(queryset, pk=pk)
@@ -51,6 +60,16 @@ def listar_servidores_para_oficio():
 
 def listar_viaturas_para_oficio():
     return Viatura.objects.select_related("combustivel").prefetch_related("motoristas").order_by("placa")
+
+
+def get_viatura_por_placa_normalizada(placa_bruta: str):
+    placa = normalize_plate(placa_bruta or "")
+    if len(placa) != 7:
+        return None
+    try:
+        return Viatura.objects.select_related("combustivel").get(placa=placa)
+    except Viatura.DoesNotExist:
+        return None
 
 
 def listar_unidades_para_oficio():

@@ -2,6 +2,10 @@ from django.db import transaction
 from django.db.models import ProtectedError
 from django.utils import timezone
 
+from core.normalizers import normalize_digits
+from core.normalizers import normalize_spaces
+from core.normalizers import normalize_upper
+from core.utils.masks import format_placa
 from core.utils.masks import format_protocolo
 from documentos.services.responses import build_download_response
 from documentos.services.types import DocumentoFormato
@@ -73,6 +77,55 @@ def atualizar_oficio_dados_viajantes(oficio, form, action="save_draft"):
     atualizado.save()
     form.save_m2m()
     return atualizado
+
+
+@transaction.atomic
+def atualizar_oficio_transporte(oficio, form, action="save_draft"):
+    _ = action
+    data_criacao_original = oficio.data_criacao
+    atualizado = form.save(commit=False)
+    atualizado.numero = oficio.numero
+    atualizado.ano = oficio.ano
+    atualizado.data_criacao = data_criacao_original
+    if atualizado.viatura_id:
+        atualizado.transporte_placa_manual = ""
+        atualizado.transporte_modelo_manual = ""
+        atualizado.transporte_combustivel_manual_id = None
+        atualizado.transporte_tipo_manual = ""
+    else:
+        atualizado.transporte_modelo_manual = normalize_upper(atualizado.transporte_modelo_manual or "")
+    if atualizado.motorista_modo == Oficio.MOTORISTA_MODO_MANUAL:
+        atualizado.motorista_id = None
+        atualizado.motorista_manual_nome = normalize_upper(atualizado.motorista_manual_nome or "")
+        atualizado.motorista_manual_cargo = normalize_upper(atualizado.motorista_manual_cargo or "")
+        atualizado.motorista_manual_unidade = normalize_upper(atualizado.motorista_manual_unidade or "")
+        atualizado.motorista_manual_cpf = normalize_digits(atualizado.motorista_manual_cpf or "")
+        atualizado.motorista_manual_observacao = normalize_spaces(atualizado.motorista_manual_observacao or "")
+    else:
+        atualizado.motorista_manual_nome = ""
+        atualizado.motorista_manual_rg = ""
+        atualizado.motorista_manual_cpf = ""
+        atualizado.motorista_manual_cargo = ""
+        atualizado.motorista_manual_unidade = ""
+        atualizado.motorista_manual_observacao = ""
+    atualizado.save()
+    return atualizado
+
+
+def avaliar_oficio_transporte(oficio):
+    if oficio is None:
+        return {"status": "not_started", "pendencias": []}
+    tem_viatura = bool(oficio.viatura_id) or bool((oficio.transporte_placa_manual or "").strip())
+    tem_motorista = bool(oficio.motorista_id) or (
+        oficio.motorista_modo == Oficio.MOTORISTA_MODO_MANUAL and (oficio.motorista_manual_nome or "").strip()
+    )
+    if tem_viatura and tem_motorista:
+        status = "complete"
+    elif not tem_viatura and not tem_motorista:
+        status = "not_started"
+    else:
+        status = "incomplete"
+    return {"status": status, "pendencias": []}
 
 
 @transaction.atomic
@@ -214,6 +267,16 @@ def excluir_oficio(instance):
 
 
 def build_oficio_document_payload(oficio):
+    viatura_label = ""
+    if oficio.viatura_id:
+        viatura_label = oficio.viatura.placa_formatada
+    elif (oficio.transporte_placa_manual or "").strip():
+        viatura_label = format_placa(oficio.transporte_placa_manual)
+    motorista_label = ""
+    if oficio.motorista_id:
+        motorista_label = oficio.motorista.nome
+    elif oficio.motorista_modo == Oficio.MOTORISTA_MODO_MANUAL:
+        motorista_label = (oficio.motorista_manual_nome or "").strip()
     return {
         "numero": oficio.numero,
         "ano": oficio.ano,
@@ -225,8 +288,8 @@ def build_oficio_document_payload(oficio):
         "status": oficio.status,
         "roteiro": str(oficio.roteiro) if oficio.roteiro else "",
         "servidores": [servidor.nome for servidor in oficio.servidores.all()],
-        "viatura": oficio.viatura.placa_formatada if oficio.viatura else "",
-        "motorista": oficio.motorista.nome if oficio.motorista else "",
+        "viatura": viatura_label,
+        "motorista": motorista_label,
         "custeio": oficio.custeio,
     }
 

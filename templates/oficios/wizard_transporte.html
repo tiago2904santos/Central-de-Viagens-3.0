@@ -1,0 +1,107 @@
+{% extends "oficios/wizard_base.html" %}
+{% load static %}
+
+{% block wizard_content %}
+  <div
+    id="oficio-transporte-root"
+    class="oficio-transporte-root"
+    data-api-viatura-url="{{ api_viatura_placa_url }}"
+    data-oficio-motorista-mod-inicial="{{ form.motorista_modo.value|default:'SERVIDOR' }}"
+  >
+    <section class="form-section app-form-section oficio-transporte-card oficio-viatura-card">
+      <div class="oficio-equipe-section__header">
+        <div class="oficio-equipe-section__copy">
+          <h3>Viatura</h3>
+          <p>Busque pela placa ou preencha manualmente quando a viatura ainda não existir no cadastro.</p>
+        </div>
+        <div class="oficio-transporte-card__header-actions">
+          {% include "components/buttons/action_button.html" with href=viatura_create_url label="Cadastrar nova viatura" variant="secondary" only %}
+        </div>
+      </div>
+      <div class="app-form-grid-panel oficio-data-block" data-oficio-viatura-panel>
+        {{ form.viatura }}
+        <p class="oficio-viatura-localizada field-help form-field--hidden" data-oficio-viatura-found hidden>
+          Viatura localizada no cadastro. Os dados vinculados não serão alterados aqui.
+        </p>
+        <div class="oficio-data-grid oficio-data-grid--two">
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.transporte_placa_manual label="PLACA" help_text="Digite a placa para localizar a viatura ou preencha manualmente." only %}
+          </div>
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.transporte_modelo_manual label="MODELO" only %}
+          </div>
+        </div>
+        <div class="oficio-data-grid oficio-data-grid--three">
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.transporte_combustivel_manual label="COMBUSTÍVEL" only %}
+          </div>
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.transporte_tipo_manual label="TIPO DE VIATURA" only %}
+          </div>
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.porte_transporte_armas label="PORTE/TRANSPORTE DE ARMAS" only %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section app-form-section oficio-transporte-card oficio-motorista-card">
+      <div class="oficio-equipe-section__header">
+        <div class="oficio-equipe-section__copy">
+          <h3>Motorista</h3>
+          <p>Escolha um servidor cadastrado ou use o modo manual quando o motorista for externo à equipe.</p>
+        </div>
+        <div class="oficio-transporte-card__header-actions oficio-transporte-card__header-actions--split">
+          <button type="button" class="btn btn-secondary" data-oficio-motorista-modo-set="SERVIDOR">
+            Adicionar servidor
+          </button>
+          <button type="button" class="btn btn-secondary" data-oficio-motorista-modo-set="MANUAL">
+            Usar motorista manual
+          </button>
+        </div>
+      </div>
+      {{ form.motorista_modo }}
+      <div class="oficio-motorista-servidor" data-oficio-motorista-servidor>
+        <div class="form-grid">
+          <div class="field-span-12">
+            {% include "components/forms/form_field.html" with field=form.motorista label="MOTORISTA SERVIDOR" help_text="Busque e selecione um servidor; você pode trocar a qualquer momento." only %}
+          </div>
+        </div>
+      </div>
+      <div class="oficio-motorista-manual app-form-grid-panel oficio-data-block form-field--hidden" data-oficio-motorista-manual>
+        <div class="oficio-data-grid oficio-data-grid--two">
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.motorista_manual_nome label="NOME DO MOTORISTA" only %}
+          </div>
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.motorista_manual_cargo label="CARGO/FUNÇÃO" only %}
+          </div>
+        </div>
+        <div class="oficio-data-grid oficio-data-grid--two">
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.motorista_manual_rg label="RG" only %}
+          </div>
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.motorista_manual_cpf label="CPF" only %}
+          </div>
+        </div>
+        <div class="oficio-data-grid oficio-data-grid--full">
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.motorista_manual_unidade label="UNIDADE/SETOR" only %}
+          </div>
+        </div>
+        <div class="oficio-data-grid oficio-data-grid--full">
+          <div class="oficio-data-grid__field">
+            {% include "components/forms/form_field.html" with field=form.motorista_manual_observacao label="OBSERVAÇÃO" only %}
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script src="{% static 'js/components/app-motorista-picker.js' %}" defer></script>
+  <script src="{% static 'js/pages/oficios-transporte.js' %}" defer></script>
+{% endblock %}

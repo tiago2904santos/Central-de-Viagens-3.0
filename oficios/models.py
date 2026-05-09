@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+from cadastros.models import Combustivel
 from cadastros.models import Servidor
 from cadastros.models import TimeStampedModel
 from cadastros.models import Unidade
@@ -75,6 +76,44 @@ class Oficio(TimeStampedModel):
         blank=True,
         related_name="oficios_motorista",
     )
+
+    porte_transporte_armas = models.BooleanField(
+        default=True,
+        verbose_name="Porte/transporte de armas",
+    )
+    transporte_placa_manual = models.CharField(max_length=7, blank=True, default="")
+    transporte_modelo_manual = models.CharField(max_length=120, blank=True, default="")
+    transporte_combustivel_manual = models.ForeignKey(
+        Combustivel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    transporte_tipo_manual = models.CharField(
+        max_length=20,
+        choices=Viatura.TIPO_CHOICES,
+        blank=True,
+        default="",
+    )
+
+    MOTORISTA_MODO_SERVIDOR = "SERVIDOR"
+    MOTORISTA_MODO_MANUAL = "MANUAL"
+    MOTORISTA_MODO_CHOICES = [
+        (MOTORISTA_MODO_SERVIDOR, "Servidor"),
+        (MOTORISTA_MODO_MANUAL, "Manual"),
+    ]
+    motorista_modo = models.CharField(
+        max_length=10,
+        choices=MOTORISTA_MODO_CHOICES,
+        default=MOTORISTA_MODO_SERVIDOR,
+    )
+    motorista_manual_nome = models.CharField(max_length=255, blank=True, default="")
+    motorista_manual_rg = models.CharField(max_length=30, blank=True, default="")
+    motorista_manual_cpf = models.CharField(max_length=11, blank=True, default="")
+    motorista_manual_cargo = models.CharField(max_length=120, blank=True, default="")
+    motorista_manual_unidade = models.CharField(max_length=255, blank=True, default="")
+    motorista_manual_observacao = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ["-data_criacao", "-created_at"]

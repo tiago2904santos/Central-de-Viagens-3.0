@@ -1,11 +1,15 @@
 from django.contrib import messages
 from django.http import Http404
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.decorators.http import require_GET
 
+from cadastros.models import Combustivel
 from documentos.services.types import DocumentoFormato
 from .forms import OficioDadosViajantesForm
+from .forms import OficioTransporteForm
 from .forms import ModeloMotivoOficioForm
 from .presenters import apresentar_acoes_oficio
 from .presenters import apresentar_linha_lista_simples_modelo_motivo
@@ -16,13 +20,17 @@ from .presenters import apresentar_oficio_wizard_steps
 from .presenters import apresentar_pagina_detalhe_oficio
 from .selectors import get_oficio_by_id
 from .selectors import get_modelo_motivo_by_id
+from .selectors import get_viatura_por_placa_normalizada
 from .selectors import listar_modelos_motivo
 from .selectors import listar_oficios
 from .selectors import listar_servidores_para_oficio
+from .selectors import listar_viaturas_para_oficio
 from .services import atualizar_modelo_motivo
 from .services import OficioVinculadoError
 from .services import atualizar_oficio_dados_viajantes
+from .services import atualizar_oficio_transporte
 from .services import avaliar_oficio_dados_viajantes
+from .services import avaliar_oficio_transporte
 from .services import criar_modelo_motivo
 from .services import criar_oficio_rascunho
 from .services import excluir_modelo_motivo
@@ -35,8 +43,15 @@ def _prepare_dados_viajantes_form(form):
     form.fields["servidores"].queryset = listar_servidores_para_oficio()
 
 
+def _prepare_transporte_form(form):
+    form.fields["viatura"].queryset = listar_viaturas_para_oficio()
+    form.fields["motorista"].queryset = listar_servidores_para_oficio()
+    form.fields["transporte_combustivel_manual"].queryset = Combustivel.objects.order_by("nome")
+
+
 def _wizard_dados_viajantes_context(*, form, oficio, avaliacao=None, mostrar_pendencias_documento=False):
     avaliacao = avaliacao or avaliar_oficio_dados_viajantes(oficio=oficio, form=form)
+    transp_av = avaliar_oficio_transporte(oficio)
     pendencias = avaliacao["pendencias"]
     summary = apresentar_oficio_wizard_summary(oficio)
     custeio_value = ""
@@ -53,6 +68,7 @@ def _wizard_dados_viajantes_context(*, form, oficio, avaliacao=None, mostrar_pen
             oficio=oficio,
             etapa_atual="dados_viajantes",
             dados_viajantes_status=avaliacao["status"],
+            transporte_status=transp_av["status"],
         ),
         "pendencias": pendencias,
         "mostrar_pendencias_documento": mostrar_pendencias_documento,
@@ -64,7 +80,8 @@ def _wizard_dados_viajantes_context(*, form, oficio, avaliacao=None, mostrar_pen
         "servidor_create_url": reverse("cadastros:servidor_create"),
         "form": form,
         "oficio": oficio,
-        "back_url": reverse("oficios:index"),
+        "wizard_back_url": reverse("oficios:index"),
+        "wizard_back_label": "Voltar para lista",
     }
 
 
@@ -77,12 +94,65 @@ def _redirect_after_dados_viajantes_save(request, oficio, *, created=False):
             if created
             else "Dados e viajantes atualizados com sucesso.",
         )
-        return redirect("oficios:detalhe", pk=oficio.pk)
+        return redirect("oficios:transporte", pk=oficio.pk)
     messages.success(
         request,
         "Ofício cadastrado com sucesso." if created else "Dados e viajantes atualizados com sucesso.",
     )
     return redirect("oficios:dados_viajantes", pk=oficio.pk)
+
+
+def _wizard_transporte_context(*, form, oficio):
+    dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)
+    transp_av = avaliar_oficio_transporte(oficio)
+    summary = apresentar_oficio_wizard_summary(oficio)
+    return {
+        "page_title": "Cadastro de ofício",
+        "wizard_header": apresentar_oficio_wizard_header("transporte"),
+        "wizard_steps": apresentar_oficio_wizard_steps(
+            oficio=oficio,
+            etapa_atual="transporte",
+            dados_viajantes_status=dados_av["status"],
+            transporte_status=transp_av["status"],
+        ),
+        "wizard_summary": summary,
+        "form": form,
+        "oficio": oficio,
+        "viatura_create_url": reverse("cadastros:viatura_create"),
+        "api_viatura_placa_url": reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
+        "wizard_back_url": reverse("oficios:dados_viajantes", args=[oficio.pk]),
+        "wizard_back_label": "Voltar",
+    }
+
+
+def _redirect_after_transporte_save(request, oficio):
+    action = request.POST.get("action")
+    if action == "save_continue":
+        messages.success(request, "Transporte salvo. Continue para a próxima etapa quando estiver pronto.")
+        return redirect("oficios:wizard_roteiro", pk=oficio.pk)
+    messages.success(request, "Rascunho do transporte salvo.")
+    return redirect("oficios:transporte", pk=oficio.pk)
+
+
+def _wizard_roteiro_context(*, oficio):
+    dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)
+    transp_av = avaliar_oficio_transporte(oficio)
+    summary = apresentar_oficio_wizard_summary(oficio)
+    return {
+        "page_title": "Cadastro de ofício",
+        "wizard_header": apresentar_oficio_wizard_header("roteiro"),
+        "wizard_steps": apresentar_oficio_wizard_steps(
+            oficio=oficio,
+            etapa_atual="roteiro",
+            dados_viajantes_status=dados_av["status"],
+            transporte_status=transp_av["status"],
+            roteiro_status="incomplete",
+        ),
+        "wizard_summary": summary,
+        "oficio": oficio,
+        "wizard_back_url": reverse("oficios:transporte", args=[oficio.pk]),
+        "wizard_back_label": "Voltar",
+    }
 
 
 def index(request):
@@ -160,6 +230,58 @@ def dados_viajantes(request, pk):
             avaliacao=avaliacao,
             mostrar_pendencias_documento=mostrar_pendencias_documento,
         ),
+    )
+
+
+def transporte(request, pk):
+    oficio = get_oficio_by_id(pk)
+    form = OficioTransporteForm(request.POST or None, instance=oficio)
+    _prepare_transporte_form(form)
+    if request.method == "POST" and form.is_valid():
+        oficio = atualizar_oficio_transporte(
+            oficio,
+            form,
+            action=request.POST.get("action", "save_draft"),
+        )
+        return _redirect_after_transporte_save(request, oficio)
+    return render(
+        request,
+        "oficios/wizard_transporte.html",
+        _wizard_transporte_context(form=form, oficio=oficio),
+    )
+
+
+def wizard_roteiro(request, pk):
+    oficio = get_oficio_by_id(pk)
+    if request.method == "POST":
+        if request.POST.get("action") == "save_continue":
+            messages.success(request, "Etapa salva. O fluxo completo de roteiro será integrado em seguida.")
+            return redirect("oficios:detalhe", pk=oficio.pk)
+        messages.success(request, "Rascunho salvo.")
+        return redirect("oficios:wizard_roteiro", pk=oficio.pk)
+    return render(
+        request,
+        "oficios/wizard_roteiro.html",
+        _wizard_roteiro_context(oficio=oficio),
+    )
+
+
+@require_GET
+def api_viatura_por_placa(request, pk):
+    get_oficio_by_id(pk)
+    placa = request.GET.get("placa", "")
+    viatura = get_viatura_por_placa_normalizada(placa)
+    if viatura is None:
+        return JsonResponse({"found": False})
+    return JsonResponse(
+        {
+            "found": True,
+            "id": viatura.pk,
+            "placa_formatada": viatura.placa_formatada,
+            "modelo": viatura.modelo or "",
+            "combustivel_id": viatura.combustivel_id,
+            "tipo": viatura.tipo or "",
+        }
     )
 
 

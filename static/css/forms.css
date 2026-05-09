@@ -347,6 +347,21 @@
   width: 1px;
 }
 
+.app-motorista-picker__native {
+  height: 1px;
+  left: -9999px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  width: 1px;
+}
+
+.app-motorista-picker {
+  position: relative;
+  width: 100%;
+}
+
 .app-multiselect {
   position: relative;
   width: 100%;
@@ -1510,6 +1525,13 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.oficio-data-grid--two {
+  align-items: stretch;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .oficio-data-grid--three {
   align-items: stretch;
   display: grid;
@@ -1578,16 +1600,56 @@ html[data-theme="light-dark"] input[type="checkbox"] {
 
 @media (max-width: 1024px) {
   .oficio-data-grid--four,
-  .oficio-data-grid--three {
+  .oficio-data-grid--three,
+  .oficio-data-grid--two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 560px) {
   .oficio-data-grid--four,
-  .oficio-data-grid--three {
+  .oficio-data-grid--three,
+  .oficio-data-grid--two {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.oficio-transporte-card__header-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.oficio-transporte-card__header-actions--split {
+  flex-wrap: wrap;
+}
+
+.oficio-motorista-picker__status {
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-input-border);
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: var(--space-1) var(--space-3);
+  text-transform: uppercase;
+}
+
+.oficio-motorista-picker__status--ok {
+  border-color: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.form-shell .form-control.is-viatura-cadastro,
+.app-form-shell .form-control.is-viatura-cadastro {
+  opacity: 0.92;
+}
+
+.form-shell select.is-viatura-cadastro:disabled,
+.app-form-shell select.is-viatura-cadastro:disabled {
+  cursor: not-allowed;
+  opacity: 0.92;
 }
 
 .oficio-wizard-pendencias--inline {

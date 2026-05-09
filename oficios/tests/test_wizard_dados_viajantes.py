@@ -138,12 +138,12 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertEqual(oficio.status, Oficio.STATUS_RASCUNHO)
         self.assertEqual(list(oficio.servidores.all()), [self.servidor])
 
-    def test_post_novo_save_continue_cria_e_redireciona_para_detalhe(self):
+    def test_post_novo_save_continue_cria_e_redireciona_para_transporte(self):
         response = self.client.post(self._novo_rascunho_url(), data=self._payload(action="save_continue"))
 
         self.assertEqual(response.status_code, 302)
         oficio = Oficio.objects.get()
-        self.assertEqual(response.url, reverse("oficios:detalhe", args=[oficio.pk]))
+        self.assertEqual(response.url, reverse("oficios:transporte", args=[oficio.pk]))
         self.assertEqual(oficio.status, Oficio.STATUS_GERADO)
 
     def test_get_dados_viajantes_renderiza_oficio_existente(self):
@@ -281,6 +281,8 @@ class OficioWizardDadosViajantesTests(TestCase):
         template_paths = [
             Path("templates/oficios/wizard_base.html"),
             Path("templates/oficios/wizard_dados_viajantes.html"),
+            Path("templates/oficios/wizard_transporte.html"),
+            Path("templates/oficios/wizard_roteiro.html"),
             Path("templates/oficios/partials/wizard_stepper.html"),
             Path("templates/oficios/partials/wizard_actions.html"),
         ]

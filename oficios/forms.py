@@ -1,13 +1,51 @@
 from django import forms
 
+from core.normalizers import normalize_plate
 from core.normalizers import normalize_spaces
 from core.utils.masks import normalize_protocolo
+
+from cadastros.models import Viatura
 
 from .models import ModeloMotivoOficio
 from .models import Oficio
 
 
 class ServidorEquipeSelectMultiple(forms.SelectMultiple):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex=subindex, attrs=attrs)
+        servidor = getattr(value, "instance", None)
+        if servidor is None:
+            return option
+
+        cargo = servidor.cargo.nome if servidor.cargo_id and servidor.cargo else ""
+        unidade = str(servidor.unidade) if servidor.unidade_id and servidor.unidade else ""
+        rg = servidor.rg_formatado or ""
+        cpf = servidor.cpf_formatado or ""
+        main_parts = [
+            servidor.nome,
+            f"RG {rg}" if rg else "",
+            f"CPF {cpf}" if cpf else "",
+            cargo,
+        ]
+        main = " • ".join(part for part in main_parts if part)
+        search = " ".join(part for part in [servidor.nome, rg, cpf, cargo, unidade] if part)
+        option["attrs"].update(
+            {
+                "data-cargo": cargo,
+                "data-cpf": cpf,
+                "data-main": main,
+                "data-meta": unidade,
+                "data-rg": rg,
+                "data-search": search,
+                "data-unidade": unidade,
+            },
+        )
+        return option
+
+
+class ServidorMotoristaSelect(forms.Select):
+    """Select simples com metadados nos options (picker de busca no cliente)."""
+
     def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(name, value, label, selected, index, subindex=subindex, attrs=attrs)
         servidor = getattr(value, "instance", None)
@@ -151,6 +189,148 @@ class OficioDadosViajantesForm(OficioForm):
 
     def clean(self):
         return super().clean()
+
+
+class OficioTransporteForm(forms.ModelForm):
+    porte_transporte_armas = forms.TypedChoiceField(
+        label="Porte/transporte de armas",
+        coerce=lambda v: v == "sim",
+        choices=[("sim", "Sim"), ("nao", "Não")],
+        widget=forms.Select(attrs={"class": "form-select", "data-oficio-porte-armas": "true"}),
+    )
+
+    class Meta:
+        model = Oficio
+        fields = [
+            "viatura",
+            "porte_transporte_armas",
+            "transporte_placa_manual",
+            "transporte_modelo_manual",
+            "transporte_combustivel_manual",
+            "transporte_tipo_manual",
+            "motorista_modo",
+            "motorista",
+            "motorista_manual_nome",
+            "motorista_manual_rg",
+            "motorista_manual_cpf",
+            "motorista_manual_cargo",
+            "motorista_manual_unidade",
+            "motorista_manual_observacao",
+        ]
+        widgets = {
+            "viatura": forms.HiddenInput(attrs={"data-oficio-viatura-id": "true"}),
+            "motorista_modo": forms.HiddenInput(attrs={"data-oficio-motorista-modo": "true"}),
+            "transporte_placa_manual": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "data-mask": "upper",
+                    "data-oficio-placa": "true",
+                    "placeholder": "ABC-1234 ou ABC1D23",
+                    "autocomplete": "off",
+                },
+            ),
+            "transporte_modelo_manual": forms.TextInput(
+                attrs={"class": "form-control", "data-oficio-viatura-modelo": "true", "data-mask": "upper"},
+            ),
+            "transporte_combustivel_manual": forms.Select(
+                attrs={"class": "form-select", "data-oficio-viatura-combustivel": "true"},
+            ),
+            "transporte_tipo_manual": forms.Select(
+                attrs={"class": "form-select", "data-oficio-viatura-tipo": "true"},
+            ),
+            "motorista": ServidorMotoristaSelect(
+                attrs={
+                    "class": "form-select app-motorista-picker__native",
+                    "data-app-motorista-picker": "true",
+                    "data-empty-selected": "Nenhum servidor selecionado.",
+                    "data-empty-message": "Nenhum servidor encontrado.",
+                    "data-placeholder": "Digite nome, RG ou CPF",
+                    "data-panel-title": "MOTORISTA SELECIONADO",
+                    "data-status-waiting": "Aguardando seleção",
+                },
+            ),
+            "motorista_manual_nome": forms.TextInput(
+                attrs={"class": "form-control", "data-mask": "upper", "data-oficio-motorista-manual": "true"},
+            ),
+            "motorista_manual_rg": forms.TextInput(attrs={"class": "form-control", "data-oficio-motorista-manual": "true"}),
+            "motorista_manual_cpf": forms.TextInput(attrs={"class": "form-control", "data-oficio-motorista-manual": "true"}),
+            "motorista_manual_cargo": forms.TextInput(
+                attrs={"class": "form-control", "data-mask": "upper", "data-oficio-motorista-manual": "true"},
+            ),
+            "motorista_manual_unidade": forms.TextInput(
+                attrs={"class": "form-control", "data-mask": "upper", "data-oficio-motorista-manual": "true"},
+            ),
+            "motorista_manual_observacao": forms.Textarea(
+                attrs={"class": "form-control", "rows": 2, "data-oficio-motorista-manual": "true"},
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["viatura"].required = False
+        self.fields["viatura"].empty_label = ""
+        self.fields["motorista"].required = False
+        self.fields["motorista"].empty_label = ""
+        self.fields["transporte_combustivel_manual"].required = False
+        self.fields["transporte_tipo_manual"].required = False
+        self.fields["transporte_tipo_manual"].choices = [("", "---------")] + list(Viatura.TIPO_CHOICES)
+        if not self.is_bound and self.instance.pk:
+            self.initial.setdefault(
+                "porte_transporte_armas",
+                "sim" if self.instance.porte_transporte_armas else "nao",
+            )
+            if not self.instance.transporte_tipo_manual and not self.instance.viatura_id:
+                self.initial.setdefault("transporte_tipo_manual", Viatura.TIPO_DESCARACTERIZADA)
+        elif not self.is_bound:
+            self.initial.setdefault("porte_transporte_armas", "sim")
+            self.initial.setdefault("motorista_modo", Oficio.MOTORISTA_MODO_SERVIDOR)
+            self.initial.setdefault("transporte_tipo_manual", Viatura.TIPO_DESCARACTERIZADA)
+
+        if not self.is_bound and self.instance.pk:
+            modo = self.instance.motorista_modo or Oficio.MOTORISTA_MODO_SERVIDOR
+            self.initial.setdefault("motorista_modo", modo)
+            if self.instance.viatura_id and self.instance.viatura:
+                v = self.instance.viatura
+                self.initial["transporte_placa_manual"] = v.placa_formatada
+                self.initial["transporte_modelo_manual"] = v.modelo or ""
+                if v.combustivel_id:
+                    self.initial["transporte_combustivel_manual"] = v.combustivel_id
+                if v.tipo:
+                    self.initial["transporte_tipo_manual"] = v.tipo
+            if modo == Oficio.MOTORISTA_MODO_MANUAL:
+                self.initial.setdefault("motorista_manual_nome", self.instance.motorista_manual_nome)
+                self.initial.setdefault("motorista_manual_rg", self.instance.motorista_manual_rg)
+                self.initial.setdefault("motorista_manual_cpf", self.instance.motorista_manual_cpf)
+                self.initial.setdefault("motorista_manual_cargo", self.instance.motorista_manual_cargo)
+                self.initial.setdefault("motorista_manual_unidade", self.instance.motorista_manual_unidade)
+                self.initial.setdefault("motorista_manual_observacao", self.instance.motorista_manual_observacao)
+
+    def clean_transporte_placa_manual(self):
+        raw = self.cleaned_data.get("transporte_placa_manual", "") or ""
+        normalized = normalize_plate(raw)
+        if not normalized:
+            return ""
+        if len(normalized) != 7:
+            raise forms.ValidationError("Use o formato de placa Mercosul ou antiga (7 caracteres).")
+        return normalized
+
+    def clean(self):
+        data = super().clean()
+        modo = data.get("motorista_modo") or Oficio.MOTORISTA_MODO_SERVIDOR
+        if modo == Oficio.MOTORISTA_MODO_MANUAL:
+            data["motorista"] = None
+        else:
+            for name in [
+                "motorista_manual_nome",
+                "motorista_manual_rg",
+                "motorista_manual_cpf",
+                "motorista_manual_cargo",
+                "motorista_manual_unidade",
+                "motorista_manual_observacao",
+            ]:
+                data[name] = ""
+        data["motorista_manual_observacao"] = normalize_spaces(data.get("motorista_manual_observacao", "") or "")
+        return data
 
 
 class ModeloMotivoOficioForm(forms.ModelForm):
