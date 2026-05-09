@@ -7,97 +7,12 @@
    1. Shell principal
    -------------------------------------------------------------------------- */
 
-/* Superfície principal do formulário (página novo roteiro): entre o hero e os cards internos */
-.app-page__shell > .roteiro-form-shell {
-  background: var(--route-card-bg);
-  border: 1px solid var(--route-section-border);
-  border-radius: var(--radius-shell);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.65) inset,
-    0 20px 44px rgba(15, 34, 54, 0.1);
-  box-sizing: border-box;
-  padding: clamp(18px, 2.2vw, 26px) clamp(18px, 2.5vw, 28px);
-  width: 100%;
-}
-
-.roteiro-form--legacy-roteiro .oficio-wizard-footer-actions .btn,
-.oficio-roteiro-page .oficio-wizard-footer-actions .btn,
-.roteiro-editor__actions .btn {
-  border-radius: var(--radius-pill);
-  min-height: var(--control-height-md);
-  padding-left: var(--space-5);
-  padding-right: var(--space-5);
-}
+/* Superfície do shell e botões de formulário premium: static/css/forms.css
+   (.app-form-shell, .app-page__shell > .app-form-shell). */
 
 .roteiro-form--legacy-roteiro .btn-adicionar-destino,
 .oficio-roteiro-page #btn-adicionar-destino {
   border-radius: var(--radius-pill);
-}
-
-.roteiro-editor .btn-primary,
-.app-page--roteiros-form .btn-primary {
-  background: var(--route-button-primary-bg);
-  border-color: var(--route-button-primary-border);
-  color: var(--route-button-primary-text);
-}
-
-.roteiro-editor .btn-primary:hover,
-.roteiro-editor .btn-primary:focus-visible,
-.app-page--roteiros-form .btn-primary:hover,
-.app-page--roteiros-form .btn-primary:focus-visible {
-  background: var(--route-button-primary-hover-bg);
-  border-color: var(--route-button-primary-hover-border);
-  color: var(--route-button-primary-text);
-}
-
-.roteiro-editor .btn-secondary,
-.roteiro-editor .btn-outline-secondary,
-.roteiro-editor .btn-muted,
-.app-page--roteiros-form .btn-secondary,
-.app-page--roteiros-form .btn-outline-secondary,
-.app-page--roteiros-form .btn-muted {
-  background: var(--route-button-secondary-bg);
-  border-color: var(--route-button-secondary-border);
-  color: var(--route-button-secondary-text);
-}
-
-.roteiro-editor .btn-secondary:hover,
-.roteiro-editor .btn-secondary:focus-visible,
-.roteiro-editor .btn-outline-secondary:hover,
-.roteiro-editor .btn-outline-secondary:focus-visible,
-.roteiro-editor .btn-muted:hover,
-.roteiro-editor .btn-muted:focus-visible,
-.app-page--roteiros-form .btn-secondary:hover,
-.app-page--roteiros-form .btn-secondary:focus-visible,
-.app-page--roteiros-form .btn-outline-secondary:hover,
-.app-page--roteiros-form .btn-outline-secondary:focus-visible,
-.app-page--roteiros-form .btn-muted:hover,
-.app-page--roteiros-form .btn-muted:focus-visible {
-  background: var(--route-button-secondary-hover-bg);
-  border-color: var(--route-button-secondary-hover-border);
-  color: var(--route-button-secondary-text);
-}
-
-.roteiro-editor .btn-danger,
-.app-page--roteiros-form .btn-danger {
-  background: var(--route-button-danger-bg);
-  border-color: var(--route-button-danger-border);
-  color: var(--route-button-danger-text);
-}
-
-.roteiro-editor .btn-danger:hover,
-.roteiro-editor .btn-danger:focus-visible,
-.app-page--roteiros-form .btn-danger:hover,
-.app-page--roteiros-form .btn-danger:focus-visible {
-  background: var(--route-button-danger-hover-bg);
-  border-color: var(--route-button-danger-hover-border);
-  color: var(--route-button-danger-text);
-}
-
-.roteiro-editor .btn:focus-visible,
-.app-page--roteiros-form .btn:focus-visible {
-  box-shadow: 0 0 0 3px var(--route-focus-ring), var(--shadow-xs);
-  outline: none;
 }
 
 /* Shell do wizard: sem “buraco” visual; intro legível em todos os temas */
@@ -1548,120 +1463,7 @@
   padding: 0 !important;
 }
 
-/* Alertas do formulário */
-
-.roteiro-editor .alert {
-  border-radius: var(--radius-md);
-}
-
-
-/* --------------------------------------------------------------------------
-   9. Acoes do formulario
-   -------------------------------------------------------------------------- */
-
-/* Barra de ações */
-.roteiro-editor__actions {
-  align-items: center;
-  background: var(--route-card-bg);
-  border: 1px solid var(--route-section-border);
-  border-radius: var(--radius-md);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  justify-content: flex-end;
-  margin-top: var(--space-1);
-  padding: var(--space-3) var(--space-4);
-}
-
-.roteiro-editor__actions--avulso {
-  justify-content: space-between;
-}
-
-.roteiro-editor__actions .btn-primary {
-  background: var(--route-button-primary-bg);
-  border-color: var(--route-button-primary-border);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.12) inset,
-    0 8px 18px rgba(11, 58, 102, 0.28);
-  color: var(--route-button-primary-text);
-}
-
-.roteiro-editor__actions .btn-primary:hover,
-.roteiro-editor__actions .btn-primary:focus-visible {
-  background: var(--route-button-primary-hover-bg);
-  border-color: var(--route-button-primary-hover-border);
-  color: var(--route-button-primary-text);
-}
-
-.roteiro-editor__actions .btn-outline-secondary,
-.roteiro-editor__actions .btn-secondary {
-  background: var(--route-button-secondary-bg);
-  border-color: var(--route-button-secondary-border);
-  color: var(--route-button-secondary-text);
-}
-
-.roteiro-editor__actions .btn-outline-secondary:hover,
-.roteiro-editor__actions .btn-outline-secondary:focus-visible,
-.roteiro-editor__actions .btn-secondary:hover,
-.roteiro-editor__actions .btn-secondary:focus-visible {
-  background: var(--route-button-secondary-hover-bg);
-  border-color: var(--route-button-secondary-hover-border);
-  color: var(--route-button-secondary-text);
-}
-
-/* Inputs dentro do editor */
-.roteiro-editor .form-control,
-.roteiro-editor .form-select,
-.roteiro-editor select {
-  background: var(--color-card);
-  border-color: var(--route-field-border);
-  border-radius: var(--radius-sm);
-  color: var(--route-field-text);
-}
-
-.roteiro-editor input[type="text"],
-.roteiro-editor input[type="date"],
-.roteiro-editor input[type="time"],
-.roteiro-editor input[type="number"],
-.roteiro-editor input[type="search"],
-.roteiro-editor textarea,
-.oficio-roteiro-destinos-stack input,
-.oficio-roteiro-destinos-stack select,
-.oficio-roteiro-destinos-stack textarea,
-.oficio-roteiro-trecho-card input,
-.oficio-roteiro-trecho-card select,
-.oficio-roteiro-trecho-card textarea {
-  background: var(--color-card);
-  border-color: var(--route-field-border);
-  color: var(--route-field-text);
-}
-
-.roteiro-editor .form-control:focus,
-.roteiro-editor .form-select:focus,
-.roteiro-editor select:focus {
-  border-color: var(--route-button-primary-border);
-  box-shadow: 0 0 0 3px var(--route-focus-ring);
-  outline: none;
-}
-
-.roteiro-editor .form-control::placeholder,
-.roteiro-editor .form-select::placeholder,
-.roteiro-editor textarea::placeholder {
-  color: var(--route-field-placeholder);
-  opacity: 1;
-}
-
-.roteiro-editor input:disabled,
-.roteiro-editor select:disabled,
-.roteiro-editor textarea:disabled,
-.roteiro-editor input[readonly],
-.roteiro-editor select[readonly],
-.roteiro-editor textarea[readonly] {
-  background: var(--route-field-disabled-bg);
-  border-color: var(--route-field-border);
-  color: var(--route-field-disabled-text);
-  opacity: 1;
-}
+/* Alertas, barra de ações e controles premium: static/css/forms.css (.app-form-shell). */
 
 /* Roteiro avulso: sections internas com titulo real da etapa. */
 .roteiro-editor--avulso .roteiro-editor__section {
@@ -2748,18 +2550,7 @@ html[data-theme="light-dark"] .roteiro-mapa__action-btn--secondary:focus-visible
   color: var(--route-button-secondary-text);
 }
 
-html[data-theme="dark-dark"] .roteiro-editor select option,
-html[data-theme="light-dark"] .roteiro-editor select option {
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-
-html[data-theme="dark-dark"] .roteiro-editor select option:disabled,
-html[data-theme="light-dark"] .roteiro-editor select option:disabled,
-html[data-theme="dark-dark"] .roteiro-editor select optgroup,
-html[data-theme="light-dark"] .roteiro-editor select optgroup {
-  color: var(--color-text-muted);
-}
+/* Opções de <select> (dark-dark / light-dark): forms.css (.app-form-shell). */
 
 /* Hotfix de contraste: títulos e descrições internos de Sede/Destinos/Loop */
 html[data-theme="dark-dark"] .roteiro-editor--avulso .roteiro-editor__nest-block--sede .roteiro-editor__sede-card-header,
@@ -2804,14 +2595,7 @@ html[data-theme="dark"] .roteiro-mapa__canvas-shell {
   border-color: var(--route-card-inner-border);
 }
 
-html[data-theme="dark"] .roteiro-editor .form-control,
-html[data-theme="dark"] .roteiro-editor .form-select,
-html[data-theme="dark"] .roteiro-editor select,
-html[data-theme="dark"] .roteiro-editor textarea {
-  background: var(--color-card);
-  border-color: var(--route-field-border);
-  color: var(--route-field-text);
-}
+/* Controles em tema dark oficial: forms.css (.app-form-shell). */
 
 html[data-theme="dark"] .roteiro-editor__trecho-card .card-header,
 html[data-theme="dark"] .roteiro-editor--avulso .oficio-roteiro-trecho-card .card-header {

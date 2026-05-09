@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -20,7 +20,7 @@
       </header>
 
       <section class="app-page__form-card">
-        <form method="post" class="form-shell" novalidate>
+        <form method="post" class="app-form-shell form-shell" novalidate>
           {% csrf_token %}
           {% if form.is_padrao.value %}
             <input type="hidden" name="{{ form.is_padrao.html_name }}" value="on">

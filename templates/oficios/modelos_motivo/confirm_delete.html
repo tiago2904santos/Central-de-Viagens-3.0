@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -31,7 +31,7 @@
             <p>Esta ação remove o modelo da lista de sugestões, mas não altera ofícios já criados.</p>
           </div>
         </div>
-        <form method="post" class="form-shell">
+        <form method="post" class="app-form-shell form-shell">
           {% csrf_token %}
           {% include "components/forms/form_actions.html" with primary_label="Excluir modelo" primary_variant="danger" secondary_label="Cancelar" secondary_url=back_url only %}
         </form>

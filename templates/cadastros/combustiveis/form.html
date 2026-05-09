@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}{{ page_title }}{% endblock %}
 {% block content %}
   <div class="app-page">
@@ -18,7 +18,7 @@
       </header>
 
       <div class="app-page__form-card">
-        <form class="form-shell" method="post" novalidate>
+        <form class="app-form-shell form-shell" method="post" novalidate>
           {% csrf_token %}
           <div class="form-section">
             {% include "components/forms/form_section.html" with title="Dados do combustível" description="Nome único. Opcionalmente marque o padrão para novas viaturas." only %}

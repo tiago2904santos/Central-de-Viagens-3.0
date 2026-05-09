@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
@@ -20,7 +20,7 @@
 
         <div class="oficio-wizard__layout">
           <main class="oficio-wizard__main">
-            <form class="form-shell" method="post" novalidate>
+            <form class="app-form-shell app-form-shell--oficio form-shell" method="post" novalidate>
               {% csrf_token %}
               {% block wizard_content %}{% endblock %}
               {% include "oficios/partials/wizard_actions.html" with back_url=back_url oficio=oficio only %}
