@@ -946,17 +946,6 @@ export function initRoteirosEditor() {
     $('diarias-qtd').textContent = totais && totais.total_diarias ? totais.total_diarias : '-';
     $('diarias-valor').textContent = totais && totais.total_valor ? totais.total_valor : '-';
     $('diarias-extenso').textContent = totais && totais.valor_extenso ? totais.valor_extenso : 'Não informado';
-    var qsSrv = $('diarias-servidores');
-    if (qsSrv) {
-      qsSrv.textContent =
-        totais && totais.quantidade_servidores !== undefined && totais.quantidade_servidores !== null
-          ? String(totais.quantidade_servidores)
-          : '-';
-    }
-    var vps = $('diarias-valor-por-servidor');
-    if (vps) {
-      vps.textContent = totais && totais.valor_por_servidor ? totais.valor_por_servidor : '-';
-    }
     $('id_tipo_destino').value = result && result.tipo_destino ? result.tipo_destino : '';
     $('id_quantidade_diarias').value = totais && totais.total_diarias ? totais.total_diarias : '';
     $('id_valor_diarias').value = totais && totais.total_valor ? totais.total_valor : '';
