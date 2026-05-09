@@ -57,7 +57,10 @@
     const results = createElement("div", "oficio-equipe-picker__results");
     const listbox = createElement("div", "oficio-equipe-picker__results-list");
     const empty = createElement("div", "oficio-equipe-picker__empty", emptyMessage);
-    const selectedPanel = createElement("section", "oficio-equipe-picker__selected-panel");
+    const selectedPanel = createElement(
+      "section",
+      "oficio-equipe-picker__selected-panel app-inner-panel",
+    );
     const selectedHeader = createElement("div", "oficio-equipe-picker__selected-header");
     const selectedTitle = createElement("h4", "oficio-equipe-picker__selected-title", "VIAJANTES SELECIONADOS");
     const counter = createElement("span", "oficio-equipe-picker__counter", "0");

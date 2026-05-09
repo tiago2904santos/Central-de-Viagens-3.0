@@ -623,14 +623,19 @@
   padding: var(--space-4);
 }
 
+/* Painel interno premium (dados do ofício, motivo, viajantes selecionados) */
+.app-inner-panel,
 .oficio-equipe-picker__selected-panel {
   background: var(--color-card-muted);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-xs);
+  padding: var(--space-4);
+}
+
+.oficio-equipe-picker__selected-panel {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4);
 }
 
 .oficio-equipe-picker__selected-header {
