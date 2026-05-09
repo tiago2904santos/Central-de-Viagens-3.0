@@ -1,9 +1,10 @@
 from django.contrib import messages
+from django.http import Http404
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils import timezone
 
+from documentos.services.types import DocumentoFormato
 from .forms import OficioDadosViajantesForm
 from .forms import ModeloMotivoOficioForm
 from .presenters import apresentar_acoes_oficio
@@ -23,28 +24,21 @@ from .services import OficioVinculadoError
 from .services import atualizar_oficio_dados_viajantes
 from .services import avaliar_oficio_dados_viajantes
 from .services import criar_modelo_motivo
-from .services import criar_oficio_dados_viajantes
+from .services import criar_oficio_rascunho
 from .services import excluir_modelo_motivo
 from .services import excluir_oficio
-from .services import get_next_available_numero_oficio
+from .services import gerar_resposta_documento_oficio
+from .services import validar_oficio_para_documento
 
 
 def _prepare_dados_viajantes_form(form):
     form.fields["servidores"].queryset = listar_servidores_para_oficio()
 
 
-def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
+def _wizard_dados_viajantes_context(*, form, oficio, avaliacao=None, mostrar_pendencias_documento=False):
     avaliacao = avaliacao or avaliar_oficio_dados_viajantes(oficio=oficio, form=form)
     pendencias = avaliacao["pendencias"]
-    summary_kwargs = {}
-    if oficio is None:
-        ano_corrente = timezone.localdate().year
-        numero_preview = get_next_available_numero_oficio(ano_corrente)
-        summary_kwargs = {
-            "numero_preview": f"{numero_preview:02d}/{ano_corrente}",
-            "data_preview": timezone.localdate().strftime("%d/%m/%Y"),
-        }
-    summary = apresentar_oficio_wizard_summary(oficio, **summary_kwargs)
+    summary = apresentar_oficio_wizard_summary(oficio)
     custeio_value = ""
     if form.is_bound:
         custeio_value = form.data.get("custeio", "")
@@ -61,6 +55,7 @@ def _wizard_dados_viajantes_context(*, form, oficio=None, avaliacao=None):
             dados_viajantes_status=avaliacao["status"],
         ),
         "pendencias": pendencias,
+        "mostrar_pendencias_documento": mostrar_pendencias_documento,
         "wizard_summary": summary,
         "mostrar_custeio_observacao": mostrar_custeio_observacao,
         "modelos_motivo_url": reverse("oficios:modelos_motivo_index"),
@@ -119,17 +114,8 @@ def index(request):
 
 
 def novo(request):
-    form = OficioDadosViajantesForm(request.POST or None)
-    _prepare_dados_viajantes_form(form)
-    if request.method == "POST" and form.is_valid():
-        oficio = criar_oficio_dados_viajantes(form, action=request.POST.get("action", "save_draft"))
-        return _redirect_after_dados_viajantes_save(request, oficio, created=True)
-    avaliacao = avaliar_oficio_dados_viajantes(form=form) if request.method == "POST" else None
-    return render(
-        request,
-        "oficios/wizard_dados_viajantes.html",
-        _wizard_dados_viajantes_context(form=form, avaliacao=avaliacao),
-    )
+    oficio = criar_oficio_rascunho()
+    return redirect("oficios:dados_viajantes", pk=oficio.pk)
 
 
 def detalhe(request, pk):
@@ -163,11 +149,31 @@ def dados_viajantes(request, pk):
         oficio = atualizar_oficio_dados_viajantes(oficio, form, action=request.POST.get("action", "save_draft"))
         return _redirect_after_dados_viajantes_save(request, oficio)
     avaliacao = avaliar_oficio_dados_viajantes(form=form, oficio=oficio)
+    mostrar_pendencias_documento = request.GET.get("documento_incompleto") == "1"
     return render(
         request,
         "oficios/wizard_dados_viajantes.html",
-        _wizard_dados_viajantes_context(form=form, oficio=oficio, avaliacao=avaliacao),
+        _wizard_dados_viajantes_context(
+            form=form,
+            oficio=oficio,
+            avaliacao=avaliacao,
+            mostrar_pendencias_documento=mostrar_pendencias_documento,
+        ),
     )
+
+
+def baixar_documento(request, pk, formato):
+    oficio = get_oficio_by_id(pk)
+    try:
+        formato_documento = DocumentoFormato(formato)
+    except ValueError as exc:
+        raise Http404("Formato documental nao suportado.") from exc
+
+    avaliacao = validar_oficio_para_documento(oficio)
+    if avaliacao["pendencias"]:
+        messages.error(request, "Documento nao gerado porque o oficio esta incompleto.")
+        return redirect(f"{reverse('oficios:dados_viajantes', args=[oficio.pk])}?documento_incompleto=1")
+    return gerar_resposta_documento_oficio(oficio, formato_documento)
 
 
 def excluir(request, pk):

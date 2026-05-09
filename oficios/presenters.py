@@ -121,14 +121,9 @@ def apresentar_oficio_wizard_steps(oficio=None, etapa_atual="dados_viajantes", d
     return steps
 
 
-def apresentar_oficio_wizard_summary(oficio=None, *, numero_preview=None, data_preview=None):
+def apresentar_oficio_wizard_summary(oficio):
     if oficio is None:
-        return {
-            "numero_label": numero_preview or "Gerado automaticamente ao salvar.",
-            "data_criacao_label": data_preview or "será definida automaticamente ao salvar",
-            "status_label": "Rascunho",
-            "status_state": "rascunho",
-        }
+        raise ValueError("Cadastro de oficio exige um rascunho persistido.")
 
     return {
         "numero_label": oficio.numero_formatado,

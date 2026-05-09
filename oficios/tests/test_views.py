@@ -26,12 +26,25 @@ class OficioViewsTests(TestCase):
         response = self.client.get(reverse("oficios:index"))
         self.assertEqual(response.status_code, 200)
 
-    def test_get_novo_retorna_200(self):
+    def test_get_novo_cria_rascunho_e_redireciona(self):
         response = self.client.get(reverse("oficios:novo"))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        oficio = Oficio.objects.get()
+        self.assertEqual(response.url, reverse("oficios:dados_viajantes", args=[oficio.pk]))
+        self.assertEqual(oficio.status, Oficio.STATUS_RASCUNHO)
+        self.assertEqual(oficio.numero, 1)
+        self.assertEqual(oficio.ano, timezone.localdate().year)
+        self.assertEqual(oficio.data_criacao, timezone.localdate())
+
+        response = self.client.get(response.url)
         self.assertContains(response, "oficio-data-grid--four")
-        self.assertContains(response, "Gerado automaticamente ao salvar.")
-        self.assertContains(response, "será definida automaticamente ao salvar")
+        self.assertContains(response, oficio.numero_formatado)
+        self.assertContains(response, oficio.data_criacao.strftime("%d/%m/%Y"))
+        self.assertNotContains(response, "Gerado automaticamente ao salvar.")
+        self.assertNotContains(response, "será definida automaticamente ao salvar")
+        self.assertNotContains(response, "Pendências para concluir esta etapa")
+        self.assertNotContains(response, "status-chip")
+        self.assertNotContains(response, "Rascunho")
         self.assertContains(response, "motivo-card__header")
         self.assertContains(response, "Modelo de motivo")
         self.assertContains(response, reverse("oficios:modelos_motivo_index"))
@@ -40,9 +53,14 @@ class OficioViewsTests(TestCase):
             "Escolha um modelo para iniciar com texto pré-preenchido ou escreva manualmente o motivo.",
         )
 
-    def test_post_novo_valido_cria_oficio_e_redireciona(self):
+    def test_post_dados_viajantes_valido_atualiza_rascunho(self):
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=timezone.localdate().year,
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+        )
         response = self.client.post(
-            reverse("oficios:novo"),
+            reverse("oficios:dados_viajantes", args=[oficio.pk]),
             data={
                 "protocolo": "12.345.678-1",
                 "motivo": "Motivo",
@@ -53,9 +71,14 @@ class OficioViewsTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Oficio.objects.count(), 1)
-        oficio = Oficio.objects.order_by("pk").first()
+        oficio.refresh_from_db()
         self.assertEqual(oficio.numero, 1)
         self.assertEqual(oficio.ano, timezone.localdate().year)
+
+    def test_lista_continua_exibindo_status_rascunho(self):
+        Oficio.objects.create(numero=1, ano=timezone.localdate().year, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
+        response = self.client.get(reverse("oficios:index"))
+        self.assertContains(response, "Rascunho")
 
     def test_get_detalhe_retorna_200(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)

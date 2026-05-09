@@ -3,6 +3,9 @@ from django.db.models import ProtectedError
 from django.utils import timezone
 
 from core.utils.masks import format_protocolo
+from documentos.services.responses import build_download_response
+from documentos.services.types import DocumentoFormato
+from documentos.services.types import DocumentoTipo
 
 from .models import ModeloMotivoOficio
 from .models import Oficio
@@ -46,6 +49,7 @@ def atualizar_status_automatico_oficio(oficio, action="save_draft", form=None):
 def criar_oficio_dados_viajantes(form, action="save_draft"):
     oficio = form.save(commit=False)
     oficio.data_criacao = oficio.data_criacao or timezone.localdate()
+    oficio.custeio = oficio.custeio or Oficio.CUSTEIO_UNIDADE_DPC
     modelo_motivo = form.cleaned_data.get("modelo_motivo")
     aplicar_modelo_motivo_no_oficio(oficio, modelo_motivo, form.cleaned_data.get("motivo"))
     reservar_numero_oficio(oficio)
@@ -62,12 +66,24 @@ def atualizar_oficio_dados_viajantes(oficio, form, action="save_draft"):
     atualizado.numero = oficio.numero
     atualizado.ano = oficio.ano
     atualizado.data_criacao = data_criacao_original
+    atualizado.custeio = atualizado.custeio or Oficio.CUSTEIO_UNIDADE_DPC
     modelo_motivo = form.cleaned_data.get("modelo_motivo")
     aplicar_modelo_motivo_no_oficio(atualizado, modelo_motivo, form.cleaned_data.get("motivo"))
     atualizar_status_automatico_oficio(atualizado, action=action, form=form)
     atualizado.save()
     form.save_m2m()
     return atualizado
+
+
+@transaction.atomic
+def criar_oficio_rascunho():
+    oficio = Oficio.objects.create(
+        data_criacao=timezone.localdate(),
+        status=Oficio.STATUS_RASCUNHO,
+        custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+    )
+    reservar_numero_oficio(oficio, ano=oficio.data_criacao.year)
+    return oficio
 
 
 def get_next_available_numero_oficio(ano):
@@ -122,6 +138,26 @@ def avaliar_oficio_dados_viajantes(oficio=None, form=None):
     else:
         status = "complete"
     return {"status": status, "pendencias": pendencias}
+
+
+def validar_oficio_para_documento(oficio):
+    return avaliar_oficio_dados_viajantes(oficio=oficio)
+
+
+def gerar_resposta_documento_oficio(oficio, formato: DocumentoFormato):
+    payload = build_oficio_document_payload(oficio)
+    reference = oficio.numero_formatado.replace("/", "-")
+    content = (
+        f"Oficio {payload['numero_formatado']}\n"
+        f"Protocolo: {payload['protocolo']}\n"
+        f"Motivo: {payload['motivo']}\n"
+    ).encode("utf-8")
+    return build_download_response(
+        content=content,
+        tipo=DocumentoTipo.OFICIO,
+        formato=formato,
+        reference=reference,
+    )
 
 
 def _dados_viajantes_from_form(form):

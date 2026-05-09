@@ -23,7 +23,7 @@
             <form class="form-shell" method="post" novalidate>
               {% csrf_token %}
               {% block wizard_content %}{% endblock %}
-              {% include "oficios/partials/wizard_actions.html" with back_url=back_url only %}
+              {% include "oficios/partials/wizard_actions.html" with back_url=back_url oficio=oficio only %}
             </form>
           </main>
         </div>

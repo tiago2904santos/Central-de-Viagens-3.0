@@ -46,10 +46,23 @@ class OficioWizardDadosViajantesTests(TestCase):
         data.update(overrides)
         return data
 
+    def _novo_rascunho_url(self):
+        response = self.client.get(reverse("oficios:novo"))
+        self.assertEqual(response.status_code, 302)
+        return response.url
+
     def test_get_novo_renderiza_wizard(self):
         response = self.client.get(reverse("oficios:novo"))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        oficio = Oficio.objects.get()
+        self.assertEqual(response.url, reverse("oficios:dados_viajantes", args=[oficio.pk]))
+        self.assertEqual(oficio.status, Oficio.STATUS_RASCUNHO)
+        self.assertEqual(oficio.numero, 1)
+        self.assertEqual(oficio.ano, timezone.localdate().year)
+        self.assertEqual(oficio.data_criacao, timezone.localdate())
+
+        response = self.client.get(response.url)
         self.assertTemplateUsed(response, "oficios/wizard_dados_viajantes.html")
         self.assertContains(response, "Cadastro de ofício")
         self.assertContains(response, "Dados e viajantes")
@@ -58,12 +71,15 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Resumo do ofício")
         self.assertContains(response, "Documentos")
         self.assertContains(response, "N° do Ofício:")
-        self.assertContains(response, "Gerado automaticamente ao salvar.")
+        self.assertContains(response, oficio.numero_formatado)
         self.assertContains(response, "Data criação:")
-        self.assertContains(response, "será definida automaticamente ao salvar")
+        self.assertContains(response, oficio.data_criacao.strftime("%d/%m/%Y"))
         self.assertContains(response, "oficio-data-grid--four")
-        self.assertContains(response, "Status")
-        self.assertContains(response, "Rascunho")
+        self.assertNotContains(response, "Gerado automaticamente ao salvar.")
+        self.assertNotContains(response, "será definida automaticamente ao salvar")
+        self.assertNotContains(response, "Status:")
+        self.assertNotContains(response, "Rascunho")
+        self.assertNotContains(response, "Pendências para concluir esta etapa")
         self.assertContains(response, "Protocolo")
         self.assertContains(response, "Custeio")
         self.assertContains(response, "Motivo")
@@ -91,7 +107,7 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertNotContains(response, "oficio-wizard__aside")
 
     def test_post_novo_save_draft_cria_e_redireciona_para_etapa(self):
-        response = self.client.post(reverse("oficios:novo"), data=self._payload(action="save_draft"))
+        response = self.client.post(self._novo_rascunho_url(), data=self._payload(action="save_draft"))
 
         self.assertEqual(response.status_code, 302)
         oficio = Oficio.objects.get()
@@ -105,7 +121,7 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertEqual(list(oficio.servidores.all()), [self.servidor])
 
     def test_post_novo_save_continue_cria_e_redireciona_para_detalhe(self):
-        response = self.client.post(reverse("oficios:novo"), data=self._payload(action="save_continue"))
+        response = self.client.post(self._novo_rascunho_url(), data=self._payload(action="save_continue"))
 
         self.assertEqual(response.status_code, 302)
         oficio = Oficio.objects.get()
@@ -129,7 +145,7 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "oficio-stepper")
         self.assertContains(response, "01/2026")
         self.assertContains(response, oficio.data_criacao.strftime("%d/%m/%Y"))
-        self.assertContains(response, oficio.get_status_display())
+        self.assertNotContains(response, oficio.get_status_display())
 
     def test_post_dados_viajantes_atualiza_sem_apagar_transporte(self):
         oficio = Oficio.objects.create(
@@ -172,21 +188,29 @@ class OficioWizardDadosViajantesTests(TestCase):
 
     def test_numero_automatico_reaproveita_numero_excluido(self):
         ano = timezone.localdate().year
-        self.client.post(reverse("oficios:novo"), data=self._payload(action="save_draft"))
-        self.client.post(reverse("oficios:novo"), data=self._payload(protocolo="12.345.678-8", action="save_draft"))
+        self.client.post(self._novo_rascunho_url(), data=self._payload(action="save_draft"))
+        self.client.post(self._novo_rascunho_url(), data=self._payload(protocolo="12.345.678-8", action="save_draft"))
         primeiro = Oficio.objects.get(numero=1, ano=ano)
         primeiro.delete()
 
-        self.client.post(reverse("oficios:novo"), data=self._payload(protocolo="12.345.678-7", action="save_draft"))
+        self.client.post(self._novo_rascunho_url(), data=self._payload(protocolo="12.345.678-7", action="save_draft"))
 
         self.assertTrue(Oficio.objects.filter(numero=1, ano=ano, protocolo="123456787").exists())
 
-    def test_completude_e_pendencias_aparecem_no_fluxo(self):
-        oficio = Oficio.objects.create(custeio=Oficio.CUSTEIO_UNIDADE_DPC)
+    def test_pendencias_aparecem_apenas_apos_tentativa_documental(self):
+        oficio = Oficio.objects.create(numero=1, ano=timezone.localdate().year, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
 
         response = self.client.get(reverse("oficios:dados_viajantes", args=[oficio.pk]))
 
         self.assertContains(response, "Incompleta")
+        self.assertNotContains(response, "Informe o motivo.")
+        self.assertNotContains(response, "Selecione ao menos um viajante.")
+
+        download_response = self.client.get(reverse("oficios:baixar_documento", args=[oficio.pk, "pdf"]))
+        self.assertEqual(download_response.status_code, 302)
+        self.assertIn("documento_incompleto=1", download_response.url)
+
+        response = self.client.get(download_response.url)
         self.assertContains(response, "Informe o motivo.")
         self.assertContains(response, "Selecione ao menos um viajante.")
 
@@ -224,18 +248,18 @@ class OficioWizardDadosViajantesTests(TestCase):
             self.assertIsNone(re.search(r"<script(?![^>]+src=)", content))
 
     def test_modelos_motivo_aparecem_no_select(self):
-        response = self.client.get(reverse("oficios:novo"))
+        response = self.client.get(self._novo_rascunho_url())
         self.assertContains(response, "PADRAO")
         self.assertContains(response, "INATIVO")
 
     def test_protocolo_invalido_retorna_erro_amigavel(self):
         payload = self._payload(protocolo="12345")
-        response = self.client.post(reverse("oficios:novo"), data=payload)
+        response = self.client.post(self._novo_rascunho_url(), data=payload)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Informe um protocolo válido com 9 dígitos.")
 
     def test_custeio_observacao_inicia_oculto_quando_nao_e_outra_instituicao(self):
-        response = self.client.get(reverse("oficios:novo"))
+        response = self.client.get(self._novo_rascunho_url())
         self.assertContains(
             response,
             'class="oficio-data-observacao form-field--hidden" data-custeio-observacao-wrapper',
@@ -255,23 +279,24 @@ class OficioWizardDadosViajantesTests(TestCase):
             'class="oficio-data-observacao form-field--hidden" data-custeio-observacao-wrapper',
         )
 
-    def test_post_custeio_outra_instituicao_sem_observacao_retorna_erro(self):
+    def test_post_custeio_outra_instituicao_sem_observacao_salva_rascunho(self):
         payload = self._payload(custeio=Oficio.CUSTEIO_OUTRA_INSTITUICAO, custeio_observacao="")
-        response = self.client.post(reverse("oficios:novo"), data=payload)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Informe a observação quando o custeio for de outra instituição.")
-        self.assertContains(response, 'class="oficio-data-observacao" data-custeio-observacao-wrapper')
-        self.assertNotContains(
-            response,
-            'class="oficio-data-observacao form-field--hidden" data-custeio-observacao-wrapper',
-        )
+        response = self.client.post(self._novo_rascunho_url(), data=payload)
+        self.assertEqual(response.status_code, 302)
+        oficio = Oficio.objects.get()
+        self.assertEqual(oficio.custeio, Oficio.CUSTEIO_OUTRA_INSTITUICAO)
+
+        response = self.client.get(reverse("oficios:baixar_documento", args=[oficio.pk, "docx"]))
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get(response.url)
+        self.assertContains(response, "Informe a observação de custeio.")
 
     def test_post_custeio_outra_instituicao_com_observacao_valido(self):
         payload = self._payload(custeio=Oficio.CUSTEIO_OUTRA_INSTITUICAO, custeio_observacao="Convênio externo")
-        response = self.client.post(reverse("oficios:novo"), data=payload)
+        response = self.client.post(self._novo_rascunho_url(), data=payload)
         self.assertEqual(response.status_code, 302)
 
     def test_post_custeio_normal_sem_observacao_valido(self):
         payload = self._payload(custeio=Oficio.CUSTEIO_UNIDADE_DPC, custeio_observacao="")
-        response = self.client.post(reverse("oficios:novo"), data=payload)
+        response = self.client.post(self._novo_rascunho_url(), data=payload)
         self.assertEqual(response.status_code, 302)

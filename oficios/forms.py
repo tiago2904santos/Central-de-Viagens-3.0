@@ -62,15 +62,7 @@ class OficioForm(forms.ModelForm):
         return normalize_spaces(self.cleaned_data.get("custeio_observacao", ""))
 
     def clean(self):
-        cleaned_data = super().clean()
-        custeio = cleaned_data.get("custeio")
-        observacao = cleaned_data.get("custeio_observacao", "")
-        if custeio == Oficio.CUSTEIO_OUTRA_INSTITUICAO and not observacao:
-            self.add_error(
-                "custeio_observacao",
-                "Informe a observação quando o custeio for de outra instituição.",
-            )
-        return cleaned_data
+        return super().clean()
 
 
 class OficioDadosViajantesForm(OficioForm):
@@ -105,6 +97,8 @@ class OficioDadosViajantesForm(OficioForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["modelo_motivo"].queryset = ModeloMotivoOficio.objects.order_by("ordem", "nome")
+        self.fields["custeio"].required = False
+        self.fields["servidores"].required = False
 
     def clean_protocolo(self):
         protocolo = normalize_protocolo(self.cleaned_data.get("protocolo", ""))
@@ -113,17 +107,10 @@ class OficioDadosViajantesForm(OficioForm):
         return protocolo
 
     def clean_motivo(self):
-        motivo = normalize_spaces(self.cleaned_data.get("motivo", ""))
-        if not motivo:
-            raise forms.ValidationError("Informe o motivo.")
-        return motivo
+        return normalize_spaces(self.cleaned_data.get("motivo", ""))
 
     def clean(self):
-        cleaned_data = super().clean()
-        servidores = cleaned_data.get("servidores")
-        if not servidores:
-            self.add_error("servidores", "Selecione ao menos um viajante.")
-        return cleaned_data
+        return super().clean()
 
 
 class ModeloMotivoOficioForm(forms.ModelForm):
