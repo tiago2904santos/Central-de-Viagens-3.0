@@ -53,30 +53,49 @@
     return new Date().getFullYear();
   }
 
-  /**
-   * NUMERO/ANO — só dígitos contam como número do ofício (até 3).
-   * Com "/" no valor, usa apenas o trecho antes da barra (evita misturar com o ano fixo).
-   * Sem "/", remove sufixo numérico igual ao ano quando o usuário cola "022026".
-   */
-  function maskOficioMotoristaValue(input) {
-    const yearFinal = resolveOficioMotoristaYear(input);
-    const yStr = String(yearFinal);
-    const raw = String(input.value ?? "");
-    const slashIdx = raw.indexOf("/");
-    let officeDigits = "";
-    if (slashIdx !== -1) {
-      officeDigits = onlyDigits(raw.slice(0, slashIdx)).slice(0, 3);
-    } else {
-      let all = onlyDigits(raw);
-      if (all.length >= 4 && all.slice(-4) === yStr) {
-        all = all.slice(0, -4);
+  function setupOficioMotoristaMask(input) {
+    const year = resolveOficioMotoristaYear(input);
+    input.placeholder = `__/${year}`;
+    if ((input.value || "").trim() !== "") {
+      applyOficioMotoristaMask(input);
+    }
+  }
+
+  function applyOficioMotoristaMask(input) {
+    if (input.dataset.maskApplying === "1") {
+      return;
+    }
+    input.dataset.maskApplying = "1";
+    try {
+      const year = resolveOficioMotoristaYear(input);
+      const yearDigits = String(year);
+      input.placeholder = `__/${year}`;
+
+      let raw = String(input.value ?? "");
+
+      let digitsBeforeSlash = "";
+
+      if (raw.includes("/")) {
+        digitsBeforeSlash = raw.split("/")[0].replace(/\D/g, "");
+      } else {
+        digitsBeforeSlash = raw.replace(/\D/g, "");
+
+        if (digitsBeforeSlash.endsWith(yearDigits)) {
+          digitsBeforeSlash = digitsBeforeSlash.slice(0, -yearDigits.length);
+        }
       }
-      officeDigits = all.slice(0, 3);
+
+      const numero = digitsBeforeSlash.slice(0, 3);
+
+      const next = numero ? `${numero}/${year}` : "";
+
+      if (input.value !== next) {
+        input.value = next;
+        dispatchMaskEvents(input);
+      }
+    } finally {
+      delete input.dataset.maskApplying;
     }
-    if (!officeDigits) {
-      return "";
-    }
-    return `${officeDigits}/${yearFinal}`;
   }
 
   function maskTelefone(value) {
@@ -108,21 +127,18 @@
     if (mask === "telefone") input.value = maskTelefone(input.value);
     if (mask === "protocolo") input.value = maskProtocolo(input.value);
     if (mask === "oficio_motorista") {
-      const next = maskOficioMotoristaValue(input);
-      if (input.value !== next) {
-        input.value = next;
-        dispatchMaskEvents(input);
-      }
+      applyOficioMotoristaMask(input);
     }
   }
 
   function initMasks() {
     document.querySelectorAll("input[data-mask]").forEach((input) => {
-      applyMask(input);
       if (input.dataset.mask === "oficio_motorista") {
-        input.addEventListener("input", () => applyMask(input));
-        input.addEventListener("blur", () => applyMask(input));
+        setupOficioMotoristaMask(input);
+        input.addEventListener("input", () => applyOficioMotoristaMask(input));
+        input.addEventListener("blur", () => applyOficioMotoristaMask(input));
       } else {
+        applyMask(input);
         input.addEventListener("input", () => applyMask(input));
       }
     });
