@@ -1,12 +1,14 @@
+import re
+
 from django.db import transaction
 from django.db.models import ProtectedError
 from django.utils import timezone
 
-from core.normalizers import normalize_digits
 from core.normalizers import normalize_spaces
 from core.normalizers import normalize_upper
 from core.utils.masks import format_placa
 from core.utils.masks import format_protocolo
+from core.utils.masks import normalize_protocolo
 from documentos.services.responses import build_download_response
 from documentos.services.types import DocumentoFormato
 from documentos.services.types import DocumentoTipo
@@ -87,6 +89,7 @@ def atualizar_oficio_transporte(oficio, form, action="save_draft"):
     atualizado.numero = oficio.numero
     atualizado.ano = oficio.ano
     atualizado.data_criacao = data_criacao_original
+    equipe_ids = set(oficio.servidores.values_list("pk", flat=True))
     if atualizado.viatura_id:
         atualizado.transporte_placa_manual = ""
         atualizado.transporte_modelo_manual = ""
@@ -97,10 +100,12 @@ def atualizar_oficio_transporte(oficio, form, action="save_draft"):
     if atualizado.motorista_modo == Oficio.MOTORISTA_MODO_MANUAL:
         atualizado.motorista_id = None
         atualizado.motorista_manual_nome = normalize_upper(atualizado.motorista_manual_nome or "")
-        atualizado.motorista_manual_cargo = normalize_upper(atualizado.motorista_manual_cargo or "")
-        atualizado.motorista_manual_unidade = normalize_upper(atualizado.motorista_manual_unidade or "")
-        atualizado.motorista_manual_cpf = normalize_digits(atualizado.motorista_manual_cpf or "")
-        atualizado.motorista_manual_observacao = normalize_spaces(atualizado.motorista_manual_observacao or "")
+        atualizado.motorista_manual_rg = ""
+        atualizado.motorista_manual_cpf = ""
+        atualizado.motorista_manual_cargo = ""
+        atualizado.motorista_manual_unidade = ""
+        atualizado.motorista_manual_observacao = ""
+        atualizado.motorista_protocolo_ref = normalize_protocolo(atualizado.motorista_protocolo_ref or "")
     else:
         atualizado.motorista_manual_nome = ""
         atualizado.motorista_manual_rg = ""
@@ -108,6 +113,14 @@ def atualizar_oficio_transporte(oficio, form, action="save_draft"):
         atualizado.motorista_manual_cargo = ""
         atualizado.motorista_manual_unidade = ""
         atualizado.motorista_manual_observacao = ""
+        if not atualizado.motorista_id:
+            atualizado.motorista_oficio_referencia = ""
+            atualizado.motorista_protocolo_ref = ""
+        elif atualizado.motorista_id in equipe_ids:
+            atualizado.motorista_oficio_referencia = ""
+            atualizado.motorista_protocolo_ref = ""
+        else:
+            atualizado.motorista_protocolo_ref = normalize_protocolo(atualizado.motorista_protocolo_ref or "")
     atualizado.save()
     return atualizado
 
@@ -193,8 +206,42 @@ def avaliar_oficio_dados_viajantes(oficio=None, form=None):
     return {"status": status, "pendencias": pendencias}
 
 
+def pendencias_motorista_documento(oficio):
+    pendencias = []
+    modo = oficio.motorista_modo or Oficio.MOTORISTA_MODO_SERVIDOR
+    if modo == Oficio.MOTORISTA_MODO_MANUAL:
+        nome = (oficio.motorista_manual_nome or "").strip()
+        if not nome:
+            pendencias.append("Informe o nome do motorista.")
+            return pendencias
+        pendencias.extend(_pendencias_oficio_protocolo_motorista(oficio))
+        return pendencias
+    if oficio.motorista_id:
+        equipe = set(oficio.servidores.values_list("pk", flat=True))
+        if oficio.motorista_id not in equipe:
+            pendencias.extend(_pendencias_oficio_protocolo_motorista(oficio))
+    return pendencias
+
+
+def _pendencias_oficio_protocolo_motorista(oficio):
+    pendencias = []
+    ref = (oficio.motorista_oficio_referencia or "").strip()
+    if not ref or not re.match(r"^\d{1,3}/\d{4}$", ref):
+        pendencias.append("Informe o ofício do motorista no formato número/ano.")
+    proto = normalize_protocolo(oficio.motorista_protocolo_ref or "")
+    if len(proto) != 9:
+        pendencias.append("Informe o protocolo do motorista com 9 dígitos.")
+    return pendencias
+
+
 def validar_oficio_para_documento(oficio):
-    return avaliar_oficio_dados_viajantes(oficio=oficio)
+    base = avaliar_oficio_dados_viajantes(oficio=oficio)
+    pendencias = list(base["pendencias"])
+    pendencias.extend(pendencias_motorista_documento(oficio))
+    status = base["status"]
+    if pendencias:
+        status = "incomplete"
+    return {"status": status, "pendencias": pendencias}
 
 
 def gerar_resposta_documento_oficio(oficio, formato: DocumentoFormato):

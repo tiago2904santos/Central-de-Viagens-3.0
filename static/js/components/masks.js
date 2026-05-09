@@ -41,6 +41,18 @@
     return `${v.slice(0, 2)}.${v.slice(2, 5)}.${v.slice(5, 8)}-${v.slice(8)}`;
   }
 
+  function maskOficioMotorista(input) {
+    const yearStr = String(input.dataset.maskYear || new Date().getFullYear());
+    const yearFinal = onlyDigits(yearStr).slice(0, 4) || String(new Date().getFullYear());
+    const raw = input.value || "";
+    const head = (raw.split("/")[0] || raw).trim();
+    const prefixDigits = onlyDigits(head).slice(0, 3);
+    if (!prefixDigits) {
+      return "";
+    }
+    return `${prefixDigits}/${yearFinal}`;
+  }
+
   function maskTelefone(value) {
     const v = onlyDigits(value).slice(0, 11);
     if (!v) return "";
@@ -54,6 +66,12 @@
     return (value || "").toUpperCase();
   }
 
+  function dispatchMaskEvents(element) {
+    if (!element) return;
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+    element.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
   function applyMask(input) {
     const mask = input.dataset.mask;
     if (mask === "upper") input.value = maskUpper(input.value);
@@ -63,6 +81,13 @@
     if (mask === "cep") input.value = maskCep(input.value);
     if (mask === "telefone") input.value = maskTelefone(input.value);
     if (mask === "protocolo") input.value = maskProtocolo(input.value);
+    if (mask === "oficio_motorista") {
+      const next = maskOficioMotorista(input);
+      if (input.value !== next) {
+        input.value = next;
+        dispatchMaskEvents(input);
+      }
+    }
   }
 
   function initMasks() {

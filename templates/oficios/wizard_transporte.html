@@ -7,6 +7,7 @@
     class="oficio-transporte-root"
     data-api-viatura-url="{{ api_viatura_placa_url }}"
     data-oficio-motorista-mod-inicial="{{ form.motorista_modo.value|default:'SERVIDOR' }}"
+    data-equipe-servidor-ids="{{ equipe_servidor_ids_csv }}"
   >
     <section class="form-section app-form-section oficio-transporte-card oficio-viatura-card">
       <div class="oficio-equipe-section__header">
@@ -65,11 +66,9 @@
           <p>Escolha um servidor cadastrado ou use o modo manual quando o motorista for externo à equipe.</p>
         </div>
         <div class="oficio-transporte-card__header-actions oficio-transporte-card__header-actions--split">
-          <button type="button" class="btn btn-secondary" data-oficio-motorista-modo-set="SERVIDOR">
-            Adicionar servidor
-          </button>
-          <button type="button" class="btn btn-secondary" data-oficio-motorista-modo-set="MANUAL">
-            Usar motorista manual
+          {% include "components/buttons/action_button.html" with href=servidor_create_url label="Adicionar servidor" variant="secondary" only %}
+          <button type="button" class="btn btn-secondary" data-oficio-motorista-toggle>
+            {% if form.motorista_modo.value == "MANUAL" %}Usar motorista cadastrado{% else %}Usar motorista manual{% endif %}
           </button>
         </div>
       </div>
@@ -82,30 +81,34 @@
         </div>
       </div>
       <div class="oficio-motorista-manual app-form-grid-panel oficio-data-block form-field--hidden" data-oficio-motorista-manual>
-        <div class="oficio-data-grid oficio-data-grid--two">
+        <div class="oficio-data-grid oficio-data-grid--full">
           <div class="oficio-data-grid__field">
             {% include "components/forms/form_field.html" with field=form.motorista_manual_nome label="NOME DO MOTORISTA" only %}
           </div>
-          <div class="oficio-data-grid__field">
-            {% include "components/forms/form_field.html" with field=form.motorista_manual_cargo label="CARGO/FUNÇÃO" only %}
-          </div>
         </div>
+      </div>
+      <div class="oficio-motorista-helpers" data-oficio-motorista-helpers>
+        <p class="field-help form-field--hidden" data-oficio-motorista-helper-in>
+          Motorista selecionado faz parte da equipe do ofício.
+        </p>
+        <p class="field-help form-field--hidden" data-oficio-motorista-helper-out>
+          Motorista fora da equipe do ofício. Informe o ofício e o protocolo do motorista.
+        </p>
+        <p class="field-help form-field--hidden" data-oficio-motorista-helper-manual>
+          Motorista informado manualmente. Informe também o ofício e o protocolo do motorista.
+        </p>
+      </div>
+      <div
+        class="app-form-grid-panel oficio-data-block oficio-motorista-extras{% if not motorista_extras_visivel %} form-field--hidden{% endif %}"
+        data-oficio-motorista-extras
+        {% if not motorista_extras_visivel %}aria-hidden="true"{% else %}aria-hidden="false"{% endif %}
+      >
         <div class="oficio-data-grid oficio-data-grid--two">
           <div class="oficio-data-grid__field">
-            {% include "components/forms/form_field.html" with field=form.motorista_manual_rg label="RG" only %}
+            {% include "components/forms/form_field.html" with field=form.motorista_oficio_referencia label="OFÍCIO DO MOTORISTA" only %}
           </div>
           <div class="oficio-data-grid__field">
-            {% include "components/forms/form_field.html" with field=form.motorista_manual_cpf label="CPF" only %}
-          </div>
-        </div>
-        <div class="oficio-data-grid oficio-data-grid--full">
-          <div class="oficio-data-grid__field">
-            {% include "components/forms/form_field.html" with field=form.motorista_manual_unidade label="UNIDADE/SETOR" only %}
-          </div>
-        </div>
-        <div class="oficio-data-grid oficio-data-grid--full">
-          <div class="oficio-data-grid__field">
-            {% include "components/forms/form_field.html" with field=form.motorista_manual_observacao label="OBSERVAÇÃO" only %}
+            {% include "components/forms/form_field.html" with field=form.motorista_protocolo_ref label="PROTOCOLO DO MOTORISTA" only %}
           </div>
         </div>
       </div>

@@ -11,6 +11,7 @@ from documentos.services.types import DocumentoFormato
 from .forms import OficioDadosViajantesForm
 from .forms import OficioTransporteForm
 from .forms import ModeloMotivoOficioForm
+from .models import Oficio
 from .presenters import apresentar_acoes_oficio
 from .presenters import apresentar_linha_lista_simples_modelo_motivo
 from .presenters import apresentar_oficio_card
@@ -108,6 +109,11 @@ def _wizard_transporte_context(*, form, oficio):
     dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)
     transp_av = avaliar_oficio_transporte(oficio)
     summary = apresentar_oficio_wizard_summary(oficio)
+    equipe_ids = list(oficio.servidores.values_list("pk", flat=True))
+    modo_motorista = oficio.motorista_modo or Oficio.MOTORISTA_MODO_SERVIDOR
+    motorista_extras_visivel = modo_motorista == Oficio.MOTORISTA_MODO_MANUAL or (
+        bool(oficio.motorista_id) and oficio.motorista_id not in equipe_ids
+    )
     return {
         "page_title": "Cadastro de ofício",
         "wizard_header": apresentar_oficio_wizard_header("transporte"),
@@ -121,6 +127,9 @@ def _wizard_transporte_context(*, form, oficio):
         "form": form,
         "oficio": oficio,
         "viatura_create_url": reverse("cadastros:viatura_create"),
+        "servidor_create_url": reverse("cadastros:servidor_create"),
+        "equipe_servidor_ids_csv": ",".join(str(pk) for pk in equipe_ids),
+        "motorista_extras_visivel": motorista_extras_visivel,
         "api_viatura_placa_url": reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
         "wizard_back_url": reverse("oficios:dados_viajantes", args=[oficio.pk]),
         "wizard_back_label": "Voltar",

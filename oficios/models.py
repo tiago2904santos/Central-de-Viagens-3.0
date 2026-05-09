@@ -114,6 +114,19 @@ class Oficio(TimeStampedModel):
     motorista_manual_cargo = models.CharField(max_length=120, blank=True, default="")
     motorista_manual_unidade = models.CharField(max_length=255, blank=True, default="")
     motorista_manual_observacao = models.TextField(blank=True, default="")
+    motorista_oficio_referencia = models.CharField(
+        max_length=16,
+        blank=True,
+        default="",
+        verbose_name="Ofício do motorista",
+        help_text="Referência no formato número/ano (ex.: 15/2026).",
+    )
+    motorista_protocolo_ref = models.CharField(
+        max_length=30,
+        blank=True,
+        default="",
+        verbose_name="Protocolo do motorista",
+    )
 
     class Meta:
         ordering = ["-data_criacao", "-created_at"]

@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 
 from core.normalizers import normalize_plate
@@ -9,6 +11,8 @@ from cadastros.models import Viatura
 
 from .models import ModeloMotivoOficio
 from .models import Oficio
+
+REG_MOTORISTA_OFICIO_REF = re.compile(r"^(\d{1,3})/(\d{4})$")
 
 
 class ServidorEquipeSelectMultiple(forms.SelectMultiple):
@@ -225,11 +229,8 @@ class OficioTransporteForm(forms.ModelForm):
             "motorista_modo",
             "motorista",
             "motorista_manual_nome",
-            "motorista_manual_rg",
-            "motorista_manual_cpf",
-            "motorista_manual_cargo",
-            "motorista_manual_unidade",
-            "motorista_manual_observacao",
+            "motorista_oficio_referencia",
+            "motorista_protocolo_ref",
         ]
         widgets = {
             "viatura": forms.HiddenInput(attrs={"data-oficio-viatura-id": "true"}),
@@ -256,18 +257,28 @@ class OficioTransporteForm(forms.ModelForm):
                 },
             ),
             "motorista_manual_nome": forms.TextInput(
-                attrs={"class": "form-control", "data-mask": "upper", "data-oficio-motorista-manual": "true"},
+                attrs={
+                    "class": "form-control",
+                    "data-mask": "upper",
+                    "data-oficio-motorista-manual": "true",
+                    "placeholder": "Digite o nome do motorista",
+                },
             ),
-            "motorista_manual_rg": forms.TextInput(attrs={"class": "form-control", "data-oficio-motorista-manual": "true"}),
-            "motorista_manual_cpf": forms.TextInput(attrs={"class": "form-control", "data-oficio-motorista-manual": "true"}),
-            "motorista_manual_cargo": forms.TextInput(
-                attrs={"class": "form-control", "data-mask": "upper", "data-oficio-motorista-manual": "true"},
+            "motorista_oficio_referencia": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "data-mask": "oficio_motorista",
+                    "inputmode": "numeric",
+                    "autocomplete": "off",
+                },
             ),
-            "motorista_manual_unidade": forms.TextInput(
-                attrs={"class": "form-control", "data-mask": "upper", "data-oficio-motorista-manual": "true"},
-            ),
-            "motorista_manual_observacao": forms.Textarea(
-                attrs={"class": "form-control", "rows": 2, "data-oficio-motorista-manual": "true"},
+            "motorista_protocolo_ref": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "data-mask": "protocolo",
+                    "inputmode": "numeric",
+                    "autocomplete": "off",
+                },
             ),
         }
 
@@ -292,6 +303,16 @@ class OficioTransporteForm(forms.ModelForm):
             self.initial.setdefault("motorista_modo", Oficio.MOTORISTA_MODO_SERVIDOR)
             self.initial.setdefault("transporte_tipo_manual", Viatura.TIPO_DESCARACTERIZADA)
 
+        from django.utils import timezone as tz
+
+        ano_motorista = None
+        if self.instance and self.instance.pk and self.instance.ano:
+            ano_motorista = self.instance.ano
+        if not ano_motorista:
+            ano_motorista = tz.localdate().year
+        self.fields["motorista_oficio_referencia"].widget.attrs["data-mask-year"] = str(ano_motorista)
+        self.fields["motorista_oficio_referencia"].widget.attrs["placeholder"] = f"__/{ano_motorista}"
+
         if not self.is_bound and self.instance.pk:
             modo = self.instance.motorista_modo or Oficio.MOTORISTA_MODO_SERVIDOR
             self.initial.setdefault("motorista_modo", modo)
@@ -308,11 +329,20 @@ class OficioTransporteForm(forms.ModelForm):
                 self.initial["transporte_busca_ui"] = format_placa(self.instance.transporte_placa_manual)
             if modo == Oficio.MOTORISTA_MODO_MANUAL:
                 self.initial.setdefault("motorista_manual_nome", self.instance.motorista_manual_nome)
-                self.initial.setdefault("motorista_manual_rg", self.instance.motorista_manual_rg)
-                self.initial.setdefault("motorista_manual_cpf", self.instance.motorista_manual_cpf)
-                self.initial.setdefault("motorista_manual_cargo", self.instance.motorista_manual_cargo)
-                self.initial.setdefault("motorista_manual_unidade", self.instance.motorista_manual_unidade)
-                self.initial.setdefault("motorista_manual_observacao", self.instance.motorista_manual_observacao)
+            self.initial.setdefault("motorista_oficio_referencia", self.instance.motorista_oficio_referencia)
+            self.initial.setdefault("motorista_protocolo_ref", self.instance.motorista_protocolo_ref)
+
+    def clean_motorista_oficio_referencia(self):
+        raw = (self.cleaned_data.get("motorista_oficio_referencia") or "").strip()
+        if not raw:
+            return ""
+        m = REG_MOTORISTA_OFICIO_REF.match(raw)
+        if m:
+            return f"{m.group(1)}/{m.group(2)}"
+        return raw[: self.fields["motorista_oficio_referencia"].max_length]
+
+    def clean_motorista_protocolo_ref(self):
+        return normalize_protocolo(self.cleaned_data.get("motorista_protocolo_ref", "") or "")
 
     def clean_transporte_placa_manual(self):
         raw = self.cleaned_data.get("transporte_placa_manual", "") or ""
@@ -332,16 +362,13 @@ class OficioTransporteForm(forms.ModelForm):
         if modo == Oficio.MOTORISTA_MODO_MANUAL:
             data["motorista"] = None
         else:
-            for name in [
-                "motorista_manual_nome",
-                "motorista_manual_rg",
-                "motorista_manual_cpf",
-                "motorista_manual_cargo",
-                "motorista_manual_unidade",
-                "motorista_manual_observacao",
-            ]:
-                data[name] = ""
-        data["motorista_manual_observacao"] = normalize_spaces(data.get("motorista_manual_observacao", "") or "")
+            data["motorista_manual_nome"] = ""
+        motorista = data.get("motorista")
+        if modo != Oficio.MOTORISTA_MODO_MANUAL and motorista and self.instance.pk:
+            equipe = set(self.instance.servidores.values_list("pk", flat=True))
+            if motorista.pk in equipe:
+                data["motorista_oficio_referencia"] = ""
+                data["motorista_protocolo_ref"] = ""
         return data
 
 

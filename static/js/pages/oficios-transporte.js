@@ -39,9 +39,17 @@
     this.modHidden = root.querySelector("[data-oficio-motorista-modo]");
     this.servidorPanel = root.querySelector("[data-oficio-motorista-servidor]");
     this.manualPanel = root.querySelector("[data-oficio-motorista-manual]");
+    this.extrasPanel = root.querySelector("[data-oficio-motorista-extras]");
+    this.helperIn = root.querySelector("[data-oficio-motorista-helper-in]");
+    this.helperOut = root.querySelector("[data-oficio-motorista-helper-out]");
+    this.helperManual = root.querySelector("[data-oficio-motorista-helper-manual]");
+    this.toggleBtn = root.querySelector("[data-oficio-motorista-toggle]");
+    this.motoristaSelect = root.querySelector("select[name='motorista']");
     this.bindViaturaBusca();
-    this.bindMotoristaModoButtons();
+    this.bindMotoristaToggle();
+    this.bindMotoristaSelectWatch();
     this.applyInitialMotoristaModo();
+    this.updateMotoristaExtrasVisibility();
     this.syncViaturaLockFromDom();
     document.addEventListener("click", this.handleDocClick.bind(this));
   }
@@ -191,24 +199,74 @@
     if (this.dropdown) this.dropdown.hidden = true;
   };
 
-  OficioTransporte.prototype.bindMotoristaModoButtons = function () {
+  OficioTransporte.prototype.bindMotoristaToggle = function () {
     const self = this;
-    this.root.querySelectorAll("[data-oficio-motorista-modo-set]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        const next = btn.getAttribute("data-oficio-motorista-modo-set") || "SERVIDOR";
-        if (self.modHidden) {
-          self.modHidden.value = next;
-          dispatchFieldEvents(self.modHidden);
-        }
-        self.toggleMotoristaModo(next, false);
-      });
+    if (!this.toggleBtn || !this.modHidden) return;
+    this.toggleBtn.addEventListener("click", function () {
+      const cur = (self.modHidden.value || "SERVIDOR").trim();
+      const next = cur === "MANUAL" ? "SERVIDOR" : "MANUAL";
+      self.modHidden.value = next;
+      dispatchFieldEvents(self.modHidden);
+      self.toggleMotoristaModo(next, false);
+      self.updateToggleButtonLabel();
+      self.updateMotoristaExtrasVisibility();
     });
+  };
+
+  OficioTransporte.prototype.bindMotoristaSelectWatch = function () {
+    const self = this;
+    if (!this.motoristaSelect) return;
+    this.motoristaSelect.addEventListener("change", function () {
+      self.updateMotoristaExtrasVisibility();
+    });
+  };
+
+  OficioTransporte.prototype.updateToggleButtonLabel = function () {
+    if (!this.toggleBtn || !this.modHidden) return;
+    const manual = (this.modHidden.value || "").trim() === "MANUAL";
+    this.toggleBtn.textContent = manual ? "Usar motorista cadastrado" : "Usar motorista manual";
+  };
+
+  OficioTransporte.prototype.updateMotoristaExtrasVisibility = function () {
+    const modo = (this.modHidden && this.modHidden.value) || "SERVIDOR";
+    const manual = modo === "MANUAL";
+    const rawIds = (this.root.dataset.equipeServidorIds || "").split(",").filter(Boolean);
+    const equipeIds = rawIds.map(function (id) {
+      return parseInt(id, 10);
+    });
+    let motoristaId = 0;
+    const sel = this.root.querySelector("select[name='motorista']");
+    if (sel && sel.value) {
+      motoristaId = parseInt(sel.value, 10) || 0;
+    }
+    let showExtras = manual;
+    if (!manual && motoristaId && equipeIds.indexOf(motoristaId) === -1) {
+      showExtras = true;
+    }
+    if (this.extrasPanel) {
+      this.extrasPanel.classList.toggle("form-field--hidden", !showExtras);
+      this.extrasPanel.setAttribute("aria-hidden", showExtras ? "false" : "true");
+    }
+    const showIn = !manual && Boolean(motoristaId) && equipeIds.indexOf(motoristaId) !== -1;
+    const showOut = !manual && Boolean(motoristaId) && equipeIds.indexOf(motoristaId) === -1;
+    const showMan = manual;
+    [this.helperIn, this.helperOut, this.helperManual].forEach(function (el) {
+      if (!el) return;
+      el.classList.add("form-field--hidden");
+    });
+    if (showIn && this.helperIn) this.helperIn.classList.remove("form-field--hidden");
+    if (showOut && this.helperOut) this.helperOut.classList.remove("form-field--hidden");
+    if (showMan && this.helperManual) this.helperManual.classList.remove("form-field--hidden");
   };
 
   OficioTransporte.prototype.applyInitialMotoristaModo = function () {
     const initial = this.root.dataset.oficioMotoristaModInicial || "SERVIDOR";
     const current = (this.modHidden && this.modHidden.value) || initial;
+    if (this.modHidden && !this.modHidden.value) {
+      this.modHidden.value = current;
+    }
     this.toggleMotoristaModo(current, true);
+    this.updateToggleButtonLabel();
   };
 
   OficioTransporte.prototype.toggleMotoristaModo = function (modo, isInitial) {
@@ -221,7 +279,7 @@
           dispatchFieldEvents(motoristaSelect);
         }
       } else if (this.manualPanel) {
-        this.manualPanel.querySelectorAll("input, textarea").forEach(function (field) {
+        this.manualPanel.querySelectorAll("[data-oficio-motorista-manual]").forEach(function (field) {
           if (field.type === "hidden") return;
           field.value = "";
           dispatchFieldEvents(field);
