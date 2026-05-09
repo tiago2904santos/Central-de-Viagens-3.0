@@ -85,6 +85,13 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Custeio")
         self.assertContains(response, "Motivo")
         self.assertContains(response, "Viajantes")
+        self.assertContains(response, 'data-app-multiselect="true"')
+        self.assertContains(response, "app-multiselect__native")
+        self.assertContains(response, "data-placeholder=")
+        self.assertContains(response, "Pesquisar por nome do servidor")
+        self.assertContains(response, "js/components/app-multiselect.js")
+        self.assertNotContains(response, "data-filterable-multiselect-input")
+        self.assertNotContains(response, "js/components/filterable-multiselect.js")
         self.assertContains(response, "Gerenciar modelos")
         self.assertContains(response, reverse("oficios:modelos_motivo_index"))
         self.assertContains(response, "Use um modelo salvo ou descreva o motivo da viagem.")
@@ -178,6 +185,31 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertEqual(list(oficio.servidores.all()), [self.outro_servidor])
         self.assertEqual(oficio.viatura, self.viatura)
         self.assertEqual(oficio.motorista, self.servidor)
+
+    def test_post_dados_viajantes_salva_multiplos_servidores(self):
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            assunto="Antigo",
+            motivo="Antigo",
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+        )
+
+        response = self.client.post(
+            reverse("oficios:dados_viajantes", args=[oficio.pk]),
+            data=self._payload(
+                servidores=[str(self.servidor.pk), str(self.outro_servidor.pk)],
+                action="save_draft",
+            ),
+        )
+
+        self.assertEqual(response.status_code, 302)
+        oficio.refresh_from_db()
+        self.assertEqual(set(oficio.servidores.all()), {self.servidor, self.outro_servidor})
+
+        response = self.client.get(reverse("oficios:dados_viajantes", args=[oficio.pk]))
+        self.assertContains(response, f'<option value="{self.servidor.pk}" selected>')
+        self.assertContains(response, f'<option value="{self.outro_servidor.pk}" selected>')
 
     def test_get_editar_redireciona_para_dados_viajantes(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)

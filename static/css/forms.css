@@ -131,6 +131,222 @@
   margin-bottom: 0;
 }
 
+.app-multiselect__native {
+  height: 1px;
+  left: -9999px;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  width: 1px;
+}
+
+.app-multiselect {
+  position: relative;
+  width: 100%;
+}
+
+.app-multiselect__control {
+  align-items: center;
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-inner-light);
+  cursor: text;
+  display: flex;
+  gap: var(--space-2);
+  min-height: var(--control-height-md);
+  padding: var(--space-2) calc(var(--space-4) + 18px) var(--space-2) var(--space-3);
+  position: relative;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  width: 100%;
+}
+
+.app-multiselect--open .app-multiselect__control,
+.app-multiselect__control:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(216, 162, 27, 0.22), var(--shadow-inner-light);
+}
+
+.app-multiselect__chips {
+  align-items: center;
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.app-multiselect__chip {
+  align-items: center;
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border-soft);
+  border-radius: 999px;
+  color: var(--color-heading);
+  display: inline-flex;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  gap: var(--space-1);
+  line-height: 1.2;
+  max-width: 100%;
+  min-height: 30px;
+  padding: 0 var(--space-2) 0 var(--space-3);
+}
+
+.app-multiselect__chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-multiselect__chip-remove {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--color-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 18px;
+  font-weight: 700;
+  height: 22px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 22px;
+}
+
+.app-multiselect__chip-remove:hover,
+.app-multiselect__chip-remove:focus {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  outline: 0;
+}
+
+.app-multiselect__search {
+  background: transparent;
+  border: 0;
+  color: var(--color-input-text);
+  flex: 1 1 180px;
+  font: inherit;
+  min-height: 30px;
+  min-width: 160px;
+  outline: 0;
+  padding: 0;
+}
+
+.app-multiselect__search::placeholder {
+  color: var(--color-input-placeholder);
+}
+
+.app-multiselect__indicator {
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  pointer-events: none;
+  position: absolute;
+  right: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.app-multiselect__dropdown {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  display: none;
+  left: 0;
+  margin-top: var(--space-2);
+  max-height: 300px;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  z-index: 40;
+}
+
+.app-multiselect--open .app-multiselect__dropdown {
+  display: block;
+}
+
+.app-multiselect__listbox {
+  display: grid;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: var(--space-2);
+}
+
+.app-multiselect__option {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: var(--space-3);
+  grid-template-columns: 18px minmax(0, 1fr);
+  min-height: 40px;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  width: 100%;
+}
+
+.app-multiselect__option:hover,
+.app-multiselect__option--active {
+  background: var(--color-card-muted);
+}
+
+.app-multiselect__option--selected {
+  color: var(--color-heading);
+  font-weight: 700;
+}
+
+.app-multiselect__option-marker {
+  align-items: center;
+  border: 1px solid var(--color-input-border);
+  border-radius: 5px;
+  display: inline-flex;
+  height: 18px;
+  justify-content: center;
+  width: 18px;
+}
+
+.app-multiselect__option--selected .app-multiselect__option-marker {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.app-multiselect__option--selected .app-multiselect__option-marker::after {
+  color: var(--color-white);
+  content: "";
+  font-size: 12px;
+  font-weight: 800;
+  height: 8px;
+  width: 8px;
+  background: var(--color-white);
+  border-radius: 50%;
+}
+
+.app-multiselect__option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-multiselect__empty,
+.app-multiselect__count {
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+  padding: var(--space-3) var(--space-4);
+}
+
+.app-multiselect__count {
+  border-top: 1px solid var(--color-border-soft);
+  text-align: right;
+}
+
 .form-actions {
   align-items: center;
   border-top: 1px solid var(--color-border-soft);

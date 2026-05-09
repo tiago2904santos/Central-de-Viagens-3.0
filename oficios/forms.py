@@ -90,7 +90,13 @@ class OficioDadosViajantesForm(OficioForm):
             "custeio": forms.Select(attrs={"class": "form-select"}),
             "custeio_observacao": forms.TextInput(attrs={"class": "form-control"}),
             "servidores": forms.SelectMultiple(
-                attrs={"class": "form-select", "size": "8", "data-filterable-multiselect-native": "true"},
+                attrs={
+                    "class": "form-select app-multiselect__native",
+                    "data-app-multiselect": "true",
+                    "data-placeholder": "Selecione os servidores vinculados ao ofício",
+                    "data-search-placeholder": "Pesquisar por nome do servidor",
+                    "data-empty-message": "Nenhum servidor encontrado.",
+                },
             ),
         }
 
