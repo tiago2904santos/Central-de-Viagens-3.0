@@ -2,6 +2,7 @@ from django import forms
 
 from core.normalizers import normalize_plate
 from core.normalizers import normalize_spaces
+from core.utils.masks import format_placa
 from core.utils.masks import normalize_protocolo
 
 from cadastros.models import Viatura
@@ -192,6 +193,19 @@ class OficioDadosViajantesForm(OficioForm):
 
 
 class OficioTransporteForm(forms.ModelForm):
+    transporte_busca_ui = forms.CharField(
+        label="BUSCAR VIATURA",
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "data-oficio-viatura-busca": "true",
+                "placeholder": "Digite placa, modelo, unidade ou motorista",
+                "autocomplete": "off",
+            },
+        ),
+    )
+
     porte_transporte_armas = forms.TypedChoiceField(
         label="Porte/transporte de armas",
         coerce=lambda v: v == "sim",
@@ -220,15 +234,7 @@ class OficioTransporteForm(forms.ModelForm):
         widgets = {
             "viatura": forms.HiddenInput(attrs={"data-oficio-viatura-id": "true"}),
             "motorista_modo": forms.HiddenInput(attrs={"data-oficio-motorista-modo": "true"}),
-            "transporte_placa_manual": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "data-mask": "upper",
-                    "data-oficio-placa": "true",
-                    "placeholder": "ABC-1234 ou ABC1D23",
-                    "autocomplete": "off",
-                },
-            ),
+            "transporte_placa_manual": forms.HiddenInput(attrs={"data-oficio-placa-hidden": "true"}),
             "transporte_modelo_manual": forms.TextInput(
                 attrs={"class": "form-control", "data-oficio-viatura-modelo": "true", "data-mask": "upper"},
             ),
@@ -291,12 +297,15 @@ class OficioTransporteForm(forms.ModelForm):
             self.initial.setdefault("motorista_modo", modo)
             if self.instance.viatura_id and self.instance.viatura:
                 v = self.instance.viatura
-                self.initial["transporte_placa_manual"] = v.placa_formatada
+                self.initial["transporte_placa_manual"] = v.placa
+                self.initial["transporte_busca_ui"] = v.placa_formatada
                 self.initial["transporte_modelo_manual"] = v.modelo or ""
                 if v.combustivel_id:
                     self.initial["transporte_combustivel_manual"] = v.combustivel_id
                 if v.tipo:
                     self.initial["transporte_tipo_manual"] = v.tipo
+            elif (self.instance.transporte_placa_manual or "").strip():
+                self.initial["transporte_busca_ui"] = format_placa(self.instance.transporte_placa_manual)
             if modo == Oficio.MOTORISTA_MODO_MANUAL:
                 self.initial.setdefault("motorista_manual_nome", self.instance.motorista_manual_nome)
                 self.initial.setdefault("motorista_manual_rg", self.instance.motorista_manual_rg)
@@ -308,6 +317,9 @@ class OficioTransporteForm(forms.ModelForm):
     def clean_transporte_placa_manual(self):
         raw = self.cleaned_data.get("transporte_placa_manual", "") or ""
         normalized = normalize_plate(raw)
+        viatura = self.cleaned_data.get("viatura")
+        if viatura is not None:
+            return normalized if normalized else ""
         if not normalized:
             return ""
         if len(normalized) != 7:

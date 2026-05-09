@@ -1652,6 +1652,71 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   opacity: 0.92;
 }
 
+.oficio-viatura-busca__wrap {
+  position: relative;
+  width: 100%;
+}
+
+.oficio-viatura-busca__dropdown {
+  background: var(--color-surface);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-md);
+  left: 0;
+  margin-top: var(--space-1);
+  max-height: 280px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 25;
+}
+
+.oficio-viatura-busca__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: var(--space-1) 0;
+}
+
+.oficio-viatura-busca__result {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--color-text);
+  cursor: pointer;
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  width: 100%;
+}
+
+.oficio-viatura-busca__result:hover,
+.oficio-viatura-busca__result:focus {
+  background: var(--color-bg-subtle);
+  outline: none;
+}
+
+.oficio-viatura-busca__result-main {
+  display: block;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.oficio-viatura-busca__result-meta {
+  color: var(--color-muted);
+  display: block;
+  font-size: var(--font-size-sm);
+  line-height: 1.35;
+}
+
+.oficio-viatura-busca__empty {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
 .oficio-wizard-pendencias--inline {
   background: var(--color-danger-soft);
   border: 1px solid var(--color-danger-border-soft);

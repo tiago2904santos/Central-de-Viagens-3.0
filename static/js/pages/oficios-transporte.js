@@ -25,20 +25,171 @@
   function OficioTransporte(root) {
     this.root = root;
     this.apiUrl = root.dataset.apiViaturaUrl || "";
-    this.placaInput = root.querySelector("[data-oficio-placa]");
+    this.buscaInput = root.querySelector("[data-oficio-viatura-busca]");
+    this.placaHidden = root.querySelector("[data-oficio-placa-hidden]");
     this.viaturaInput = root.querySelector("[data-oficio-viatura-id]");
     this.modeloInput = root.querySelector("[data-oficio-viatura-modelo]");
     this.combustivelSelect = root.querySelector("[data-oficio-viatura-combustivel]");
     this.tipoSelect = root.querySelector("[data-oficio-viatura-tipo]");
     this.foundBanner = root.querySelector("[data-oficio-viatura-found]");
+    this.dropdown = root.querySelector("[data-oficio-viatura-dropdown]");
+    this.resultsEl = root.querySelector("[data-oficio-viatura-results]");
+    this.emptyEl = root.querySelector("[data-oficio-viatura-empty]");
+    this.selectedViaturaId = (this.viaturaInput && this.viaturaInput.value) || "";
     this.modHidden = root.querySelector("[data-oficio-motorista-modo]");
     this.servidorPanel = root.querySelector("[data-oficio-motorista-servidor]");
     this.manualPanel = root.querySelector("[data-oficio-motorista-manual]");
-    this.bindPlaca();
+    this.bindViaturaBusca();
     this.bindMotoristaModoButtons();
     this.applyInitialMotoristaModo();
     this.syncViaturaLockFromDom();
+    document.addEventListener("click", this.handleDocClick.bind(this));
   }
+
+  OficioTransporte.prototype.handleDocClick = function (event) {
+    const wrap = this.root.querySelector(".oficio-viatura-busca__wrap");
+    if (!wrap || !this.dropdown) return;
+    if (!wrap.contains(event.target)) {
+      this.dropdown.hidden = true;
+    }
+  };
+
+  OficioTransporte.prototype.bindViaturaBusca = function () {
+    const self = this;
+    if (!this.buscaInput || !this.apiUrl) return;
+
+    const runSearch = debounce(function () {
+      self.runViaturaSearch();
+    }, 380);
+
+    this.buscaInput.addEventListener("input", function () {
+      const term = (self.buscaInput.value || "").trim();
+      const selLabel = self.buscaInput.dataset.selectedLabel || "";
+      if (self.selectedViaturaId && selLabel && term !== selLabel) {
+        if (self.viaturaInput) {
+          self.viaturaInput.value = "";
+          dispatchFieldEvents(self.viaturaInput);
+        }
+        if (self.placaHidden) {
+          self.placaHidden.value = "";
+          dispatchFieldEvents(self.placaHidden);
+        }
+        self.selectedViaturaId = "";
+        self.setViaturaLocked(false);
+        delete self.buscaInput.dataset.selectedLabel;
+      }
+      runSearch();
+    });
+
+    this.buscaInput.addEventListener("change", function () {
+      self.syncPlacaHiddenFromBusca();
+    });
+  };
+
+  OficioTransporte.prototype.syncPlacaHiddenFromBusca = function () {
+    const norm = normalizePlate(this.buscaInput.value);
+    if (norm.length === 7 && !(this.viaturaInput && this.viaturaInput.value)) {
+      if (this.placaHidden) {
+        this.placaHidden.value = norm;
+        dispatchFieldEvents(this.placaHidden);
+      }
+    }
+  };
+
+  OficioTransporte.prototype.runViaturaSearch = function () {
+    const self = this;
+    const term = (this.buscaInput.value || "").trim();
+    if (!this.dropdown || !this.resultsEl) return;
+
+    if (term.length < 2) {
+      this.dropdown.hidden = true;
+      if (this.emptyEl) this.emptyEl.hidden = true;
+      return;
+    }
+
+    const url = `${this.apiUrl}?q=${encodeURIComponent(term)}`;
+    window
+      .fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } })
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        const results = (data && data.results) || [];
+        self.resultsEl.innerHTML = "";
+        if (!results.length) {
+          self.dropdown.hidden = false;
+          if (self.emptyEl) self.emptyEl.hidden = false;
+          return;
+        }
+        if (self.emptyEl) self.emptyEl.hidden = true;
+        results.forEach(function (item) {
+          self.resultsEl.appendChild(self.buildResultButton(item));
+        });
+        self.dropdown.hidden = false;
+      })
+      .catch(function () {
+        self.dropdown.hidden = true;
+      });
+  };
+
+  OficioTransporte.prototype.buildResultButton = function (item) {
+    const self = this;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "oficio-viatura-busca__result";
+    btn.setAttribute("role", "option");
+    const main = document.createElement("span");
+    main.className = "oficio-viatura-busca__result-main";
+    main.textContent = [item.placa_formatada, item.modelo].filter(Boolean).join(" • ") || "Viatura";
+    const sub = document.createElement("span");
+    sub.className = "oficio-viatura-busca__result-meta";
+    sub.textContent =
+      "Unidade: " +
+      (item.unidade_resumo || "—") +
+      " • Motorista: " +
+      (item.motoristas_resumo || "—");
+    btn.appendChild(main);
+    btn.appendChild(sub);
+    btn.addEventListener("mousedown", function (event) {
+      event.preventDefault();
+    });
+    btn.addEventListener("click", function () {
+      self.applyViaturaFromResult(item);
+    });
+    return btn;
+  };
+
+  OficioTransporte.prototype.applyViaturaFromResult = function (item) {
+    if (this.viaturaInput) {
+      this.viaturaInput.value = String(item.id);
+      dispatchFieldEvents(this.viaturaInput);
+    }
+    if (this.placaHidden) {
+      const plateNorm = item.placa ? String(item.placa) : normalizePlate(item.placa_formatada || "");
+      this.placaHidden.value = plateNorm.length === 7 ? plateNorm : "";
+      dispatchFieldEvents(this.placaHidden);
+    }
+    if (this.buscaInput) {
+      this.buscaInput.value = item.placa_formatada || "";
+      this.buscaInput.dataset.selectedLabel = item.placa_formatada || "";
+      dispatchFieldEvents(this.buscaInput);
+    }
+    if (this.modeloInput) {
+      this.modeloInput.value = item.modelo || "";
+      dispatchFieldEvents(this.modeloInput);
+    }
+    if (this.combustivelSelect && item.combustivel_id) {
+      this.combustivelSelect.value = String(item.combustivel_id);
+      dispatchFieldEvents(this.combustivelSelect);
+    }
+    if (this.tipoSelect && item.tipo) {
+      this.tipoSelect.value = item.tipo;
+      dispatchFieldEvents(this.tipoSelect);
+    }
+    this.selectedViaturaId = String(item.id);
+    this.setViaturaLocked(true);
+    if (this.dropdown) this.dropdown.hidden = true;
+  };
 
   OficioTransporte.prototype.bindMotoristaModoButtons = function () {
     const self = this;
@@ -106,65 +257,9 @@
   OficioTransporte.prototype.syncViaturaLockFromDom = function () {
     const id = this.viaturaInput && this.viaturaInput.value;
     if (id) {
+      this.selectedViaturaId = String(id);
       this.setViaturaLocked(true);
     }
-  };
-
-  OficioTransporte.prototype.bindPlaca = function () {
-    const self = this;
-    if (!this.placaInput || !this.apiUrl) return;
-    const runLookup = debounce(function () {
-      self.lookupPlate();
-    }, 420);
-    this.placaInput.addEventListener("input", runLookup);
-    this.placaInput.addEventListener("change", runLookup);
-  };
-
-  OficioTransporte.prototype.lookupPlate = function () {
-    const self = this;
-    const normalized = normalizePlate(this.placaInput.value);
-    if (normalized.length !== 7) {
-      if (this.viaturaInput) this.viaturaInput.value = "";
-      dispatchFieldEvents(this.viaturaInput);
-      this.setViaturaLocked(false);
-      return;
-    }
-    const url = `${this.apiUrl}?placa=${encodeURIComponent(normalized)}`;
-    window
-      .fetch(url, { credentials: "same-origin", headers: { Accept: "application/json" } })
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (data) {
-        if (!data || !data.found) {
-          if (self.viaturaInput) self.viaturaInput.value = "";
-          dispatchFieldEvents(self.viaturaInput);
-          self.setViaturaLocked(false);
-          return;
-        }
-        if (self.viaturaInput) {
-          self.viaturaInput.value = String(data.id);
-          dispatchFieldEvents(self.viaturaInput);
-        }
-        if (self.modeloInput) {
-          self.modeloInput.value = data.modelo || "";
-          dispatchFieldEvents(self.modeloInput);
-        }
-        if (self.combustivelSelect && data.combustivel_id) {
-          self.combustivelSelect.value = String(data.combustivel_id);
-          dispatchFieldEvents(self.combustivelSelect);
-        }
-        if (self.tipoSelect && data.tipo) {
-          self.tipoSelect.value = data.tipo;
-          dispatchFieldEvents(self.tipoSelect);
-        }
-        self.setViaturaLocked(true);
-      })
-      .catch(function () {
-        if (self.viaturaInput) self.viaturaInput.value = "";
-        dispatchFieldEvents(self.viaturaInput);
-        self.setViaturaLocked(false);
-      });
   };
 
   function boot() {

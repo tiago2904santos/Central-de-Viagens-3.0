@@ -5,6 +5,7 @@ from django.urls import reverse
 from cadastros.models import Cargo
 from cadastros.models import Combustivel
 from cadastros.models import Servidor
+from cadastros.models import Unidade
 from cadastros.models import Viatura
 from oficios.models import Oficio
 
@@ -19,12 +20,20 @@ class OficioWizardTransporteTests(TestCase):
         self.cargo = Cargo.objects.create(nome="Motorista Cargo")
         self.comb = Combustivel.objects.create(nome="Flex")
         self.servidor = Servidor.objects.create(nome="Motorista Servidor", cargo=self.cargo, cpf="11122233344")
+        self.unidade_m = Unidade.objects.create(nome="ASCOM Central", sigla="ASCOM")
+        self.motorista_viatura = Servidor.objects.create(
+            nome="João da Silva",
+            cargo=self.cargo,
+            cpf="22233344455",
+            unidade=self.unidade_m,
+        )
         self.viatura = Viatura.objects.create(
             placa="ABC1234",
-            modelo="MODELO X",
+            modelo="Renault Duster",
             combustivel=self.comb,
             tipo=Viatura.TIPO_DESCARACTERIZADA,
         )
+        self.viatura.motoristas.add(self.motorista_viatura)
 
     def _oficio_com_etapa1_minima(self):
         url_novo = self.client.get(reverse("oficios:novo")).url
@@ -71,6 +80,8 @@ class OficioWizardTransporteTests(TestCase):
         self.assertContains(response, "Motorista")
         self.assertContains(response, "Cadastrar nova viatura")
         self.assertContains(response, reverse("cadastros:viatura_create"))
+        self.assertContains(response, "Digite placa, modelo, unidade ou motorista")
+        self.assertContains(response, "BUSCAR VIATURA")
 
     def test_post_save_draft_viatura_cadastrada(self):
         oficio = self._oficio_com_etapa1_minima()
@@ -144,7 +155,7 @@ class OficioWizardTransporteTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("oficios:wizard_roteiro", args=[oficio.pk]))
 
-    def test_api_viatura_por_placa(self):
+    def test_api_viatura_legacy_apenas_placa(self):
         oficio = self._oficio_com_etapa1_minima()
         response = self.client.get(
             reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
@@ -154,6 +165,55 @@ class OficioWizardTransporteTests(TestCase):
         payload = response.json()
         self.assertTrue(payload["found"])
         self.assertEqual(payload["id"], self.viatura.pk)
+
+    def test_api_busca_q_retorna_por_placa(self):
+        oficio = self._oficio_com_etapa1_minima()
+        response = self.client.get(
+            reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
+            data={"q": "ABC1"},
+        )
+        self.assertEqual(response.status_code, 200)
+        ids = [row["id"] for row in response.json()["results"]]
+        self.assertIn(self.viatura.pk, ids)
+
+    def test_api_busca_q_retorna_por_modelo(self):
+        oficio = self._oficio_com_etapa1_minima()
+        response = self.client.get(
+            reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
+            data={"q": "Duster"},
+        )
+        self.assertEqual(response.status_code, 200)
+        ids = [row["id"] for row in response.json()["results"]]
+        self.assertIn(self.viatura.pk, ids)
+
+    def test_api_busca_q_retorna_por_unidade(self):
+        oficio = self._oficio_com_etapa1_minima()
+        response = self.client.get(
+            reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
+            data={"q": "ASCOM"},
+        )
+        self.assertEqual(response.status_code, 200)
+        ids = [row["id"] for row in response.json()["results"]]
+        self.assertIn(self.viatura.pk, ids)
+
+    def test_api_busca_q_retorna_por_motorista(self):
+        oficio = self._oficio_com_etapa1_minima()
+        response = self.client.get(
+            reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
+            data={"q": "Silva"},
+        )
+        self.assertEqual(response.status_code, 200)
+        ids = [row["id"] for row in response.json()["results"]]
+        self.assertIn(self.viatura.pk, ids)
+
+    def test_api_busca_q_curto_retorna_vazio(self):
+        oficio = self._oficio_com_etapa1_minima()
+        response = self.client.get(
+            reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
+            data={"q": "A"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["results"], [])
 
     def test_post_transporte_nao_apaga_dados_viajantes(self):
         oficio = self._oficio_com_etapa1_minima()

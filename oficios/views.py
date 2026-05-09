@@ -20,7 +20,9 @@ from .presenters import apresentar_oficio_wizard_steps
 from .presenters import apresentar_pagina_detalhe_oficio
 from .selectors import get_oficio_by_id
 from .selectors import get_modelo_motivo_by_id
+from .selectors import buscar_viaturas_para_oficio
 from .selectors import get_viatura_por_placa_normalizada
+from .selectors import viatura_para_resultado_busca
 from .selectors import listar_modelos_motivo
 from .selectors import listar_oficios
 from .selectors import listar_servidores_para_oficio
@@ -268,21 +270,31 @@ def wizard_roteiro(request, pk):
 
 @require_GET
 def api_viatura_por_placa(request, pk):
+    """Busca viaturas por texto (`q`) ou compatível com consulta só por placa (`placa`)."""
     get_oficio_by_id(pk)
-    placa = request.GET.get("placa", "")
-    viatura = get_viatura_por_placa_normalizada(placa)
-    if viatura is None:
-        return JsonResponse({"found": False})
-    return JsonResponse(
-        {
-            "found": True,
-            "id": viatura.pk,
-            "placa_formatada": viatura.placa_formatada,
-            "modelo": viatura.modelo or "",
-            "combustivel_id": viatura.combustivel_id,
-            "tipo": viatura.tipo or "",
-        }
-    )
+    legado_placa = request.GET.get("placa", "").strip()
+    q = request.GET.get("q", "").strip()
+
+    if legado_placa and not q:
+        viatura = get_viatura_por_placa_normalizada(legado_placa)
+        if viatura is None:
+            return JsonResponse({"found": False})
+        return JsonResponse(
+            {
+                "found": True,
+                "id": viatura.pk,
+                "placa_formatada": viatura.placa_formatada,
+                "modelo": viatura.modelo or "",
+                "combustivel_id": viatura.combustivel_id,
+                "tipo": viatura.tipo or "",
+            }
+        )
+
+    if len(q) < 2:
+        return JsonResponse({"results": []})
+
+    encontradas = buscar_viaturas_para_oficio(q)
+    return JsonResponse({"results": [viatura_para_resultado_busca(v) for v in encontradas]})
 
 
 def baixar_documento(request, pk, formato):

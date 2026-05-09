@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
@@ -70,6 +71,58 @@ def get_viatura_por_placa_normalizada(placa_bruta: str):
         return Viatura.objects.select_related("combustivel").get(placa=placa)
     except Viatura.DoesNotExist:
         return None
+
+
+def buscar_viaturas_para_oficio(termo: str, *, limit: int = 25):
+    """Busca viaturas por placa, modelo, unidade (via motoristas) ou nome de motorista cadastrado."""
+    termo = (termo or "").strip()
+    if len(termo) < 2:
+        return Viatura.objects.none()
+
+    plate_key = normalize_plate(termo)
+    filters = (
+        Q(modelo__icontains=termo)
+        | Q(motoristas__nome__icontains=termo)
+        | Q(motoristas__unidade__nome__icontains=termo)
+        | Q(motoristas__unidade__sigla__icontains=termo)
+    )
+    if plate_key:
+        filters |= Q(placa__icontains=plate_key)
+
+    return (
+        Viatura.objects.filter(filters)
+        .select_related("combustivel")
+        .prefetch_related(
+            Prefetch(
+                "motoristas",
+                queryset=Servidor.objects.select_related("unidade", "cargo").order_by("nome"),
+            ),
+        )
+        .distinct()
+        .order_by("placa")[:limit]
+    )
+
+
+def viatura_para_resultado_busca(v: Viatura) -> dict:
+    motoristas = list(v.motoristas.all())
+    nomes = ", ".join(m.nome for m in motoristas[:5])
+    if len(motoristas) > 5:
+        nomes += "…"
+    unidade_txt = "—"
+    for m in motoristas:
+        if m.unidade_id:
+            unidade_txt = str(m.unidade)
+            break
+    return {
+        "id": v.pk,
+        "placa": v.placa,
+        "placa_formatada": v.placa_formatada,
+        "modelo": v.modelo or "",
+        "combustivel_id": v.combustivel_id,
+        "tipo": v.tipo or "",
+        "unidade_resumo": unidade_txt,
+        "motoristas_resumo": nomes or "—",
+    }
 
 
 def listar_unidades_para_oficio():
