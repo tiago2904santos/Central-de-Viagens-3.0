@@ -7,6 +7,39 @@ from .models import ModeloMotivoOficio
 from .models import Oficio
 
 
+class ServidorEquipeSelectMultiple(forms.SelectMultiple):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex=subindex, attrs=attrs)
+        servidor = getattr(value, "instance", None)
+        if servidor is None:
+            return option
+
+        cargo = servidor.cargo.nome if servidor.cargo_id and servidor.cargo else ""
+        unidade = str(servidor.unidade) if servidor.unidade_id and servidor.unidade else ""
+        rg = servidor.rg_formatado or ""
+        cpf = servidor.cpf_formatado or ""
+        main_parts = [
+            servidor.nome,
+            f"RG {rg}" if rg else "",
+            f"CPF {cpf}" if cpf else "",
+            cargo,
+        ]
+        main = " • ".join(part for part in main_parts if part)
+        search = " ".join(part for part in [servidor.nome, rg, cpf, cargo, unidade] if part)
+        option["attrs"].update(
+            {
+                "data-cargo": cargo,
+                "data-cpf": cpf,
+                "data-main": main,
+                "data-meta": unidade,
+                "data-rg": rg,
+                "data-search": search,
+                "data-unidade": unidade,
+            },
+        )
+        return option
+
+
 class OficioForm(forms.ModelForm):
     class Meta:
         model = Oficio
@@ -89,13 +122,14 @@ class OficioDadosViajantesForm(OficioForm):
             ),
             "custeio": forms.Select(attrs={"class": "form-select"}),
             "custeio_observacao": forms.TextInput(attrs={"class": "form-control"}),
-            "servidores": forms.SelectMultiple(
+            "servidores": ServidorEquipeSelectMultiple(
                 attrs={
                     "class": "form-select app-multiselect__native",
                     "data-app-multiselect": "true",
-                    "data-placeholder": "Selecione os servidores vinculados ao ofício",
-                    "data-search-placeholder": "Pesquisar por nome do servidor",
+                    "data-empty-selected": "Nenhum viajante selecionado.",
                     "data-empty-message": "Nenhum servidor encontrado.",
+                    "data-placeholder": "Digite nome, RG ou CPF",
+                    "data-search-placeholder": "Digite nome, RG ou CPF",
                 },
             ),
         }

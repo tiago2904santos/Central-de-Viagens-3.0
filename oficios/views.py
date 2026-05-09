@@ -61,6 +61,7 @@ def _wizard_dados_viajantes_context(*, form, oficio, avaliacao=None, mostrar_pen
         "modelos_motivo_url": reverse("oficios:modelos_motivo_index"),
         "tem_modelos_motivo": modelos_queryset.exists(),
         "modelo_motivo_selecionado": bool(form["modelo_motivo"].value()),
+        "servidor_create_url": reverse("cadastros:servidor_create"),
         "form": form,
         "oficio": oficio,
         "back_url": reverse("oficios:index"),

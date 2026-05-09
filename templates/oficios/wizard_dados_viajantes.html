@@ -77,11 +77,17 @@
     </div>
   </div>
 
-  <div class="form-section">
-    {% include "components/forms/form_section.html" with title="Viajantes" description="Servidores vinculados ao ofício nesta etapa inicial." only %}
+  <div class="form-section oficio-equipe-section">
+    <div class="oficio-equipe-section__header">
+      <div class="oficio-equipe-section__copy">
+        <h3>Equipe do ofício</h3>
+        <p>Busque servidores finalizados e mantenha a seleção visível enquanto monta o ofício.</p>
+      </div>
+      {% include "components/buttons/action_button.html" with href=servidor_create_url label="Cadastrar novo viajante" variant="secondary" only %}
+    </div>
     <div class="form-grid">
       <div class="field-span-12">
-        {% include "components/forms/form_field.html" with field=form.servidores label="Servidores" help_text="Selecione um ou mais viajantes para vincular ao ofício." only %}
+        {% include "components/forms/form_field.html" with field=form.servidores label="BUSCAR VIAJANTE" help_text="A busca mostra apenas viajantes finalizados e continua disponível após cada seleção." only %}
       </div>
     </div>
   </div>
