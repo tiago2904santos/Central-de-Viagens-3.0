@@ -387,6 +387,7 @@
 .oficio-equipe-picker {
   display: grid;
   gap: var(--space-4);
+  position: relative;
   width: 100%;
 }
 
@@ -422,11 +423,13 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-  margin-top: var(--space-2);
+  left: 0;
+  margin-top: 0;
   max-height: 320px;
   overflow: hidden;
   position: absolute;
-  width: 100%;
+  right: 0;
+  top: calc(var(--control-height-lg) + var(--space-2));
   z-index: 45;
 }
 
