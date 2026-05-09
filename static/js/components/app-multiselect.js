@@ -59,7 +59,7 @@
     const empty = createElement("div", "oficio-equipe-picker__empty", emptyMessage);
     const selectedPanel = createElement(
       "section",
-      "oficio-equipe-picker__selected-panel app-inner-panel",
+      "oficio-equipe-picker__selected-panel app-form-grid-panel",
     );
     const selectedHeader = createElement("div", "oficio-equipe-picker__selected-header");
     const selectedTitle = createElement("h4", "oficio-equipe-picker__selected-title", "VIAJANTES SELECIONADOS");

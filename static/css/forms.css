@@ -134,6 +134,67 @@
   grid-column: span 2;
 }
 
+/* ============================================================
+   Painel grid (design system) — base visual de .roteiro-editor__grid
+   Tokens de rota; caixa extra só em .app-form-grid-panel.
+   ============================================================ */
+
+.app-form-grid-panel,
+.roteiro-editor__grid {
+  background: var(--route-card-inner-bg);
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  min-width: 0;
+}
+
+.app-form-grid-panel {
+  border: 1px solid var(--route-card-inner-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.app-form-grid-panel.align-items-end,
+.roteiro-editor__grid.align-items-end {
+  align-items: end;
+}
+
+.app-form-grid-panel > .field-span-6,
+.roteiro-editor__grid > .field-span-6 {
+  grid-column: span 6;
+}
+
+.app-form-grid-panel > .field-span-4,
+.roteiro-editor__grid > .field-span-4 {
+  grid-column: span 4;
+}
+
+.app-form-grid-panel > .field-span-12,
+.roteiro-editor__grid > .field-span-12 {
+  grid-column: span 12;
+}
+
+@media (max-width: 720px) {
+  .app-form-grid-panel > .field-span-6,
+  .app-form-grid-panel > .field-span-4,
+  .roteiro-editor__grid > .field-span-6,
+  .roteiro-editor__grid > .field-span-4 {
+    grid-column: span 12;
+  }
+}
+
+/* Wizard Ofício: wrappers empilham linhas internas, não field-span no container */
+.oficio-data-block.app-form-grid-panel,
+.motivo-card__body.app-form-grid-panel {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.oficio-equipe-picker__selected-panel.app-form-grid-panel {
+  gap: var(--space-3);
+  grid-template-columns: minmax(0, 1fr);
+}
+
 /* --------------------------------------------------------------------------
    2. Campos e controles
    -------------------------------------------------------------------------- */
@@ -621,21 +682,6 @@
   color: var(--color-muted);
   font-size: var(--font-size-sm);
   padding: var(--space-4);
-}
-
-/* Painel interno premium (dados do ofício, motivo, viajantes selecionados) */
-.app-inner-panel,
-.oficio-equipe-picker__selected-panel {
-  background: var(--color-card-muted);
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs);
-  padding: var(--space-4);
-}
-
-.oficio-equipe-picker__selected-panel {
-  display: grid;
-  gap: var(--space-3);
 }
 
 .oficio-equipe-picker__selected-header {
@@ -1443,12 +1489,7 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   min-width: 0;
 }
 
-/* Bloco "Dados do ofício" — grid responsivo (wizard etapa 1). */
-.oficio-data-block {
-  display: grid;
-  gap: var(--space-4);
-}
-
+/* Bloco "Dados do ofício" — layout interno (painel: .app-form-grid-panel) */
 .oficio-data-status {
   align-items: center;
   display: flex;
@@ -1600,12 +1641,6 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   flex-shrink: 0;
   gap: var(--space-2);
   margin-left: auto;
-}
-
-.motivo-card__body {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: minmax(0, 1fr);
 }
 
 .motivo-card__model {

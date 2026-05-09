@@ -15,7 +15,7 @@
 
   <div class="form-section">
     {% include "components/forms/form_section.html" with title="Dados do ofício" description="Identificação administrativa, protocolo e custeio." only %}
-    <div class="oficio-data-block app-inner-panel">
+    <div class="oficio-data-block app-form-grid-panel">
       <div class="oficio-data-grid oficio-data-grid--three">
         <div class="oficio-data-info">
           <span class="oficio-data-info__label">N° do Ofício:</span>
@@ -54,7 +54,7 @@
         {% include "components/buttons/action_button.html" with href=modelos_motivo_url label="Gerenciar modelos" variant="secondary" only %}
       </div>
     </div>
-    <div class="motivo-card__body app-inner-panel">
+    <div class="motivo-card__body app-form-grid-panel">
       <div class="motivo-card__model field">
         <label for="{{ form.modelo_motivo.id_for_label }}">{{ form.modelo_motivo.label }}</label>
         <select name="{{ form.modelo_motivo.html_name }}" id="{{ form.modelo_motivo.id_for_label }}" class="form-select" data-modelo-motivo-select="true">

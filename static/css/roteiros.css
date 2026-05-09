@@ -302,36 +302,7 @@
    3. Fonte do roteiro e estrutura de campos
    -------------------------------------------------------------------------- */
 
-/* Grid de campos */
-.roteiro-editor__grid {
-  background: var(--route-card-inner-bg);
-  display: grid;
-  gap: var(--space-4);
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-}
-
-.roteiro-editor__grid.align-items-end {
-  align-items: end;
-}
-
-.roteiro-editor__grid > .field-span-6 {
-  grid-column: span 6;
-}
-
-.roteiro-editor__grid > .field-span-4 {
-  grid-column: span 4;
-}
-
-.roteiro-editor__grid > .field-span-12 {
-  grid-column: span 12;
-}
-
-@media (max-width: 720px) {
-  .roteiro-editor__grid > .field-span-6,
-  .roteiro-editor__grid > .field-span-4 {
-    grid-column: span 12;
-  }
-}
+/* Grid de campos — ver forms.css (.app-form-grid-panel + .roteiro-editor__grid). */
 
 .roteiro-editor__field-label {
   color: var(--theme-text-muted-strong);
