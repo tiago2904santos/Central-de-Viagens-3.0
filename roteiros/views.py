@@ -245,8 +245,10 @@ def calcular_diarias(request):
             {"ok": False, "error": "Revise os dados do roteiro antes de calcular as diárias."},
             status=400,
         )
-    payload = {"ok": True, "quantidade_servidores_fixo": 1, "roteiros_disponiveis": 0}
+    payload = {"ok": True, "roteiros_disponiveis": 0}
     payload.update(resultado)
+    if resultado and resultado.get("totais"):
+        payload["quantidade_servidores"] = resultado["totais"].get("quantidade_servidores")
     return JsonResponse(payload)
 
 

@@ -183,6 +183,7 @@ def montar_contexto_editor_roteiro(
     is_avulso,
     roteiro_state,
     route_options,
+    diarias_quantidade_servidores=1,
 ):
     return roteiro_logic._build_roteiro_form_context(
         evento=evento,
@@ -193,6 +194,7 @@ def montar_contexto_editor_roteiro(
         is_avulso=is_avulso,
         roteiro_state=roteiro_state,
         route_options=route_options,
+        diarias_quantidade_servidores=diarias_quantidade_servidores,
     )
 
 

@@ -15,10 +15,25 @@ from documentos.services.types import DocumentoTipo
 
 from .models import ModeloMotivoOficio
 from .models import Oficio
+from roteiros.models import Roteiro
 
 
 class OficioVinculadoError(Exception):
     """Exclusão bloqueada porque o ofício possui vínculos protegidos."""
+
+
+@transaction.atomic
+def garantir_roteiro_vinculado_ao_oficio(oficio: Oficio) -> Oficio:
+    """Garante um roteiro em rascunho vinculado ao ofício para edição na etapa 3."""
+    if oficio.roteiro_id:
+        return oficio
+    roteiro = Roteiro.objects.create(
+        tipo=Roteiro.TIPO_AVULSO,
+        status=Roteiro.STATUS_RASCUNHO,
+    )
+    oficio.roteiro = roteiro
+    oficio.save(update_fields=["roteiro", "updated_at"])
+    return oficio
 
 
 @transaction.atomic

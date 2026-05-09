@@ -14,23 +14,34 @@
                 </div>
 
                 <div id="diarias-error" class="alert alert-danger py-2 d-none" role="alert"></div>
+                {% if roteiro_editor_oficio and diarias_quantidade_servidores == 0 %}
+                <p class="field-help text-muted mb-2" id="diarias-aviso-sem-viajantes" role="status">Selecione ao menos um viajante na Etapa 1 para calcular o valor total das diárias.</p>
+                {% endif %}
 
                 <div class="roteiro-editor__diarias-finance-grid">
                   <div class="roteiro-editor__summary-item roteiro-editor__summary-item--principal">
                     <span class="roteiro-editor__summary-label">Valor total</span>
-                    <span class="roteiro-editor__summary-value roteiro-editor__summary-value--principal" id="diarias-valor">{{ roteiro_diarias_resultado.totais.total_valor|default:"â€”" }}</span>
+                    <span class="roteiro-editor__summary-value roteiro-editor__summary-value--principal" id="diarias-valor">{{ roteiro_diarias_resultado.totais.total_valor|default:"—" }}</span>
                     <span class="roteiro-editor__summary-label">Valor por extenso</span>
                     <span id="diarias-extenso">{{ roteiro_diarias_resultado.totais.valor_extenso|default:"Não informado" }}</span>
                   </div>
 
                   <div class="roteiro-editor__summary-stack">
                     <div class="roteiro-editor__summary-item roteiro-editor__summary-item--secondary">
+                      <span class="roteiro-editor__summary-label">Servidores</span>
+                      <span class="roteiro-editor__summary-value" id="diarias-servidores">{{ roteiro_diarias_resultado.totais.quantidade_servidores|default:"—" }}</span>
+                    </div>
+                    <div class="roteiro-editor__summary-item roteiro-editor__summary-item--secondary">
+                      <span class="roteiro-editor__summary-label">Valor por servidor</span>
+                      <span class="roteiro-editor__summary-value" id="diarias-valor-por-servidor">{{ roteiro_diarias_resultado.totais.valor_por_servidor|default:"—" }}</span>
+                    </div>
+                    <div class="roteiro-editor__summary-item roteiro-editor__summary-item--secondary">
                       <span class="roteiro-editor__summary-label">Tipo destino</span>
-                      <span class="roteiro-editor__summary-value" id="diarias-tipo">{{ roteiro_diarias_resultado.tipo_destino|default:"â€”" }}</span>
+                      <span class="roteiro-editor__summary-value" id="diarias-tipo">{{ roteiro_diarias_resultado.tipo_destino|default:"—" }}</span>
                     </div>
                     <div class="roteiro-editor__summary-item roteiro-editor__summary-item--secondary">
                       <span class="roteiro-editor__summary-label">Quantidade de diárias</span>
-                      <span class="roteiro-editor__summary-value" id="diarias-qtd">{{ roteiro_diarias_resultado.totais.total_diarias|default:"â€”" }}</span>
+                      <span class="roteiro-editor__summary-value" id="diarias-qtd">{{ roteiro_diarias_resultado.totais.total_diarias|default:"—" }}</span>
                     </div>
                   </div>
                 </div>

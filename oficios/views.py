@@ -9,6 +9,17 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
+from roteiros.forms import RoteiroForm
+from roteiros.services import (
+    atualizar_roteiro,
+    carregar_opcoes_rotas_avulsas_salvas,
+    montar_contexto_editor_roteiro,
+    normalizar_destinos_e_trechos_apos_erro_post,
+    preparar_estado_editor_roteiro_para_get,
+    preparar_querysets_formulario_roteiro,
+    validar_submissao_editor_roteiro,
+)
+
 from cadastros.models import Combustivel
 from documentos.services.types import DocumentoFormato
 from .forms import OficioDadosViajantesForm
@@ -42,6 +53,7 @@ from .services import criar_oficio_rascunho
 from .services import excluir_modelo_motivo
 from .services import excluir_oficio
 from .services import gerar_resposta_documento_oficio
+from .services import garantir_roteiro_vinculado_ao_oficio
 from .services import validar_oficio_para_documento
 
 
@@ -163,27 +175,6 @@ def _redirect_after_transporte_save(request, oficio):
     return redirect("oficios:transporte", pk=oficio.pk)
 
 
-def _wizard_roteiro_context(*, oficio):
-    dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)
-    transp_av = avaliar_oficio_transporte(oficio)
-    summary = apresentar_oficio_wizard_summary(oficio)
-    return {
-        "page_title": "Cadastro de ofício",
-        "wizard_header": apresentar_oficio_wizard_header("roteiro"),
-        "wizard_steps": apresentar_oficio_wizard_steps(
-            oficio=oficio,
-            etapa_atual="roteiro",
-            dados_viajantes_status=dados_av["status"],
-            transporte_status=transp_av["status"],
-            roteiro_status="incomplete",
-        ),
-        "wizard_summary": summary,
-        "oficio": oficio,
-        "wizard_back_url": reverse("oficios:transporte", args=[oficio.pk]),
-        "wizard_back_label": "Voltar",
-    }
-
-
 def index(request):
     q = request.GET.get("q", "").strip()
     status = request.GET.get("status", "").strip()
@@ -282,16 +273,118 @@ def transporte(request, pk):
 
 def wizard_roteiro(request, pk):
     oficio = get_oficio_by_id(pk)
+    oficio = garantir_roteiro_vinculado_ao_oficio(oficio)
+    roteiro = oficio.roteiro
+    qtd_viajantes = oficio.servidores.count()
+
+    form = RoteiroForm(request.POST or None, instance=roteiro)
+    preparar_querysets_formulario_roteiro(
+        form, method=request.method, post=request.POST, instance=roteiro
+    )
+    route_options, route_state_map = carregar_opcoes_rotas_avulsas_salvas()
+
     if request.method == "POST":
-        if request.POST.get("action") == "save_continue":
-            messages.success(request, "Etapa salva. O fluxo completo de roteiro será integrado em seguida.")
+        roteiro_state, validated, diarias_resultado = validar_submissao_editor_roteiro(
+            request.POST, route_state_map, roteiro=roteiro
+        )
+        if form.is_valid() and validated["ok"]:
+            atualizar_roteiro(roteiro, form, roteiro_state, validated, diarias_resultado)
+            action = request.POST.get("action") or "save_draft"
+            if action == "save_continue":
+                messages.success(
+                    request,
+                    "Roteiro e diárias salvos. Continue para o resumo quando estiver pronto.",
+                )
+                return redirect("oficios:wizard_resumo", pk=oficio.pk)
+            messages.success(request, "Rascunho do roteiro salvo.")
+            return redirect("oficios:wizard_roteiro", pk=oficio.pk)
+        for error in validated.get("errors", []):
+            form.add_error(None, error)
+        destinos_atuais, trechos_list = normalizar_destinos_e_trechos_apos_erro_post(roteiro_state)
+    else:
+        destinos_atuais, trechos_list, roteiro_state = preparar_estado_editor_roteiro_para_get(
+            roteiro=roteiro
+        )
+
+    dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)
+    transp_av = avaliar_oficio_transporte(oficio)
+    roteiro_status = (
+        "complete"
+        if (roteiro.origem_cidade_id or roteiro.origem_estado_id)
+        else "incomplete"
+    )
+    context = montar_contexto_editor_roteiro(
+        evento=None,
+        form=form,
+        obj=roteiro,
+        destinos_atuais=destinos_atuais,
+        trechos_list=trechos_list,
+        is_avulso=True,
+        roteiro_state=roteiro_state,
+        route_options=route_options,
+        diarias_quantidade_servidores=qtd_viajantes,
+    )
+    context.update(
+        {
+            "page_title": "Cadastro de ofício",
+            "wizard_header": apresentar_oficio_wizard_header("roteiro"),
+            "wizard_steps": apresentar_oficio_wizard_steps(
+                oficio=oficio,
+                etapa_atual="roteiro",
+                dados_viajantes_status=dados_av["status"],
+                transporte_status=transp_av["status"],
+                roteiro_status=roteiro_status,
+            ),
+            "wizard_summary": apresentar_oficio_wizard_summary(oficio),
+            "oficio": oficio,
+            "wizard_back_url": reverse("oficios:transporte", args=[oficio.pk]),
+            "wizard_back_label": "Voltar",
+            "roteiro_editor_oficio": True,
+        }
+    )
+    return render(request, "oficios/wizard_roteiro.html", context)
+
+
+def wizard_resumo(request, pk):
+    oficio = get_oficio_by_id(pk)
+    if request.method == "POST":
+        action = request.POST.get("action") or "save_draft"
+        if action == "save_continue":
+            messages.success(request, "Dados do ofício atualizados.")
             return redirect("oficios:detalhe", pk=oficio.pk)
         messages.success(request, "Rascunho salvo.")
-        return redirect("oficios:wizard_roteiro", pk=oficio.pk)
+        return redirect("oficios:wizard_resumo", pk=oficio.pk)
+
+    dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)
+    transp_av = avaliar_oficio_transporte(oficio)
+    roteiro_av = (
+        "complete"
+        if oficio.roteiro_id
+        and (
+            oficio.roteiro.origem_cidade_id is not None
+            or oficio.roteiro.origem_estado_id is not None
+        )
+        else "incomplete"
+    )
     return render(
         request,
-        "oficios/wizard_roteiro.html",
-        _wizard_roteiro_context(oficio=oficio),
+        "oficios/wizard_resumo.html",
+        {
+            "page_title": "Cadastro de ofício",
+            "wizard_header": apresentar_oficio_wizard_header("resumo"),
+            "wizard_steps": apresentar_oficio_wizard_steps(
+                oficio=oficio,
+                etapa_atual="resumo",
+                dados_viajantes_status=dados_av["status"],
+                transporte_status=transp_av["status"],
+                roteiro_status=roteiro_av,
+                resumo_status="incomplete",
+            ),
+            "wizard_summary": apresentar_oficio_wizard_summary(oficio),
+            "oficio": oficio,
+            "wizard_back_url": reverse("oficios:wizard_roteiro", args=[oficio.pk]),
+            "wizard_back_label": "Voltar",
+        },
     )
 
 

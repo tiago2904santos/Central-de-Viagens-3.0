@@ -6,7 +6,9 @@ import json
 import re
 from copy import deepcopy
 from datetime import datetime
-from decimal import Decimal, InvalidOperation
+from decimal import ROUND_HALF_UP
+from decimal import Decimal
+from decimal import InvalidOperation
 from types import SimpleNamespace
 
 from django.db.models import Q
@@ -1371,13 +1373,27 @@ def _build_avulso_roteiro_state_from_post(request, route_state_map=None):
     )
 
 
-def _calculate_avulso_diarias_from_state(state):
-    """Calculates roteiro avulso diarias using official service with fixed one-server rule."""
+def _parse_quantidade_servidores_diarias_post(request) -> int:
+    raw = (getattr(request, "POST", None) or {}).get("quantidade_servidores")
+    if raw is None:
+        raw = ""
+    raw = str(raw).strip()
+    if raw == "":
+        return 1
+    try:
+        n = int(raw)
+    except (TypeError, ValueError):
+        return 1
+    return max(0, n)
+
+
+def _calculate_avulso_diarias_from_state(state, *, quantidade_servidores: int = 1):
+    """Calcula diárias avulsas; quantidade_servidores costuma ser 1 fora do fluxo de ofício."""
     markers, paradas, chegada_final, sede_cidade, sede_uf = _collect_roteiro_markers_payload(state)
     resultado = calculate_periodized_diarias(
         markers,
         chegada_final,
-        quantidade_servidores=1,
+        quantidade_servidores=quantidade_servidores,
         sede_cidade=sede_cidade,
         sede_uf=sede_uf,
     )
@@ -1409,7 +1425,13 @@ def _build_roteiro_diarias_from_request(request, *, roteiro=None, evento=None):
     validated = _validate_roteiro_state(roteiro_state, oficio=route_context)
     if not validated['ok']:
         return route_options, roteiro_state, validated, None
-    return route_options, roteiro_state, validated, _calculate_avulso_diarias_from_state(roteiro_state)
+    qs_diarias = _parse_quantidade_servidores_diarias_post(fake_request)
+    return (
+        route_options,
+        roteiro_state,
+        validated,
+        _calculate_avulso_diarias_from_state(roteiro_state, quantidade_servidores=qs_diarias),
+    )
 
 
 def _persistir_diarias_roteiro(roteiro, diarias_resultado):
@@ -1419,7 +1441,7 @@ def _persistir_diarias_roteiro(roteiro, diarias_resultado):
     roteiro.save(update_fields=['quantidade_diarias', 'valor_diarias', 'valor_diarias_extenso'])
 
 
-def _build_roteiro_diarias_fallback(roteiro):
+def _build_roteiro_diarias_fallback(roteiro, *, quantidade_servidores: int = 1):
     if not roteiro:
         return None
     if roteiro.valor_diarias is None and not roteiro.quantidade_diarias and not roteiro.valor_diarias_extenso:
@@ -1428,6 +1450,18 @@ def _build_roteiro_diarias_fallback(roteiro):
     if total_valor_decimal is None:
         return None
     total_valor = formatar_valor_diarias(total_valor_decimal)
+    qs = max(0, int(quantidade_servidores or 0))
+    if qs == 0:
+        valor_por_servidor_decimal = Decimal('0.00')
+        valor_por_servidor_txt = formatar_valor_diarias(valor_por_servidor_decimal)
+    elif qs == 1:
+        valor_por_servidor_decimal = total_valor_decimal
+        valor_por_servidor_txt = total_valor
+    else:
+        valor_por_servidor_decimal = (
+            total_valor_decimal / Decimal(qs)
+        ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        valor_por_servidor_txt = formatar_valor_diarias(valor_por_servidor_decimal)
     return {
         'periodos': [],
         'totais': {
@@ -1436,10 +1470,10 @@ def _build_roteiro_diarias_fallback(roteiro):
             'total_valor': total_valor,
             'total_valor_decimal': total_valor_decimal,
             'valor_extenso': roteiro.valor_diarias_extenso or '',
-            'quantidade_servidores': 1,
+            'quantidade_servidores': qs,
             'diarias_por_servidor': roteiro.quantidade_diarias or '',
-            'valor_por_servidor': total_valor,
-            'valor_por_servidor_decimal': total_valor_decimal,
+            'valor_por_servidor': valor_por_servidor_txt,
+            'valor_por_servidor_decimal': valor_por_servidor_decimal,
             'valor_unitario_referencia': '',
         },
         'tipo_destino': '',
@@ -1576,7 +1610,19 @@ def _salvar_roteiro_avulso_from_roteiro_state(roteiro, roteiro_state, validated,
     mark_stale_when_signature_changed(roteiro)
 
 
-def _build_roteiro_form_context(*, evento, form, obj, destinos_atuais, trechos_list, is_avulso=False, roteiro_state=None, route_options=None, seed_source_label=''):
+def _build_roteiro_form_context(
+    *,
+    evento,
+    form,
+    obj,
+    destinos_atuais,
+    trechos_list,
+    is_avulso=False,
+    roteiro_state=None,
+    route_options=None,
+    seed_source_label='',
+    diarias_quantidade_servidores=1,
+):
     """
     Monta contexto completo para o formulÃ¡rio de roteiro (guiado e avulso).
     Quando roteiro_state Ã© fornecido, usa diretamente; caso contrÃ¡rio, constrÃ³i
@@ -1601,13 +1647,23 @@ def _build_roteiro_form_context(*, evento, form, obj, destinos_atuais, trechos_l
     sede_cidade_id = roteiro_state.get("sede_cidade_id")
     estados_qs = selectors.listar_estados_para_select()
     sede_cidades_qs = selectors.listar_cidades_para_select(estado_id=sede_estado_id)
+    qs_ctx = max(0, int(diarias_quantidade_servidores or 0))
     diarias_resultado = None
     try:
-        diarias_resultado = _calculate_avulso_diarias_from_state(roteiro_state)
+        diarias_resultado = _calculate_avulso_diarias_from_state(
+            roteiro_state,
+            quantidade_servidores=qs_ctx,
+        )
     except ValueError:
-        diarias_resultado = _build_roteiro_diarias_fallback(obj or form.instance)
+        diarias_resultado = _build_roteiro_diarias_fallback(
+            obj or form.instance,
+            quantidade_servidores=qs_ctx,
+        )
     if diarias_resultado is None:
-        diarias_resultado = _build_roteiro_diarias_fallback(obj or form.instance)
+        diarias_resultado = _build_roteiro_diarias_fallback(
+            obj or form.instance,
+            quantidade_servidores=qs_ctx,
+        )
     destino_estado_fixo = _get_parana_estado()
     rows_src = list(trechos_list or [])
     if not rows_src:
@@ -1665,4 +1721,5 @@ def _build_roteiro_form_context(*, evento, form, obj, destinos_atuais, trechos_l
             if destino_estado_fixo
             else 'Paraná (PR)'
         ),
+        'diarias_quantidade_servidores': qs_ctx,
     }

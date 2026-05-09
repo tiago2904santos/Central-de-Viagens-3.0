@@ -300,10 +300,13 @@ def calculate_periodized_diarias(
     )
     total_horas = sum(float(item.get('total_horas_periodo', 0) or 0) for item in periodos)
     resumo_diarias = _total_diarias_resumo(periodos)
-    servidores = max(1, int(quantidade_servidores or 1))
-    valor_por_servidor = (
-        total_valor_decimal / Decimal(servidores)
-    ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+    servidores = max(0, int(quantidade_servidores or 0))
+    if servidores <= 0:
+        valor_por_servidor = Decimal('0.00')
+    else:
+        valor_por_servidor = (
+            total_valor_decimal / Decimal(servidores)
+        ).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
     valores_unitarios = [str(item.get('valor_diaria', '') or '').strip() for item in periodos]
     valores_unitarios = [item for item in valores_unitarios if item]

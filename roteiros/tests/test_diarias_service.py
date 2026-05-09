@@ -83,6 +83,37 @@ class DiariasServiceTests(TestCase):
 
         self.assertEqual(resultado["totais"]["total_diarias"], "2 x 100%")
 
+    def test_total_valor_multiplica_servidores(self):
+        markers = [
+            PeriodMarker(
+                saida=datetime(2026, 5, 1, 8, 0),
+                destino_cidade="FLORIANOPOLIS",
+                destino_uf="SC",
+            ),
+            PeriodMarker(
+                saida=datetime(2026, 5, 3, 8, 0),
+                destino_cidade="CURITIBA",
+                destino_uf="PR",
+            ),
+        ]
+        chegada = datetime(2026, 5, 3, 12, 0)
+        r1 = calculate_periodized_diarias(
+            markers,
+            chegada,
+            quantidade_servidores=1,
+            sede_cidade="CURITIBA",
+            sede_uf="PR",
+        )
+        r3 = calculate_periodized_diarias(
+            markers,
+            chegada,
+            quantidade_servidores=3,
+            sede_cidade="CURITIBA",
+            sede_uf="PR",
+        )
+        self.assertEqual(r3["totais"]["total_valor_decimal"], r1["totais"]["total_valor_decimal"] * 3)
+        self.assertEqual(r3["totais"]["quantidade_servidores"], 3)
+
     def test_calculo_avulso_considera_retorno_final_manual(self):
         state = {
             "roteiro_modo": roteiro_logic.ROTEIRO_MODO_PROPRIO,

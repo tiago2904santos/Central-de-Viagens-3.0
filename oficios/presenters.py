@@ -115,10 +115,14 @@ def apresentar_oficio_wizard_steps(
     dados_viajantes_status=None,
     transporte_status=None,
     roteiro_status=None,
+    resumo_status=None,
+    documentos_status=None,
 ):
     dados_viajantes_status = dados_viajantes_status or "not_started"
     transporte_status = transporte_status or "not_started"
     roteiro_status = roteiro_status or "not_started"
+    resumo_status = resumo_status or "not_started"
+    documentos_status = documentos_status or "not_started"
     steps = [
         {"key": "dados_viajantes", "number": 1, "title": "Dados e viajantes"},
         {"key": "transporte", "number": 2, "title": "Transporte"},
@@ -140,6 +144,14 @@ def apresentar_oficio_wizard_steps(
             step["url"] = reverse("oficios:wizard_roteiro", args=[oficio.pk]) if oficio else ""
             step["state"] = "current" if etapa_atual == key else roteiro_status
             step["completion_state"] = roteiro_status
+        elif key == "resumo":
+            step["url"] = reverse("oficios:wizard_resumo", args=[oficio.pk]) if oficio else ""
+            step["state"] = "current" if etapa_atual == key else resumo_status
+            step["completion_state"] = resumo_status
+        elif key == "documentos":
+            step["url"] = reverse("oficios:detalhe", args=[oficio.pk]) if oficio else ""
+            step["state"] = "current" if etapa_atual == key else documentos_status
+            step["completion_state"] = documentos_status
         else:
             step["url"] = ""
             step["state"] = "locked"
