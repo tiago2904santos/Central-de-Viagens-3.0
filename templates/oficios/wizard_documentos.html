@@ -88,23 +88,19 @@
         </span>
       </header>
       <div class="oficio-documentos-card__body">
-        <div class="oficio-documentos-travellers-lines">
+        {% with n=documentos_ctx.viajantes_cards|length %}
+        <div class="oficio-documentos-travellers-lines oficio-documentos-travellers-lines--n{{ n }}">
           {% for viajante in documentos_ctx.viajantes_cards %}
             <article class="oficio-documentos-traveller-line">
-              <div class="oficio-documentos-traveller-line__person">
-                <div class="oficio-documentos-traveller-line__name-row">
-                  <strong class="oficio-documentos-traveller-line__name">{{ viajante.nome }}</strong>
-                  {% if viajante.is_motorista %}
-                    <span class="oficio-documentos-traveller-line__badge">Motorista</span>
-                  {% endif %}
-                </div>
-                {% if viajante.unidade %}
-                  <span class="oficio-documentos-traveller-line__role">{{ viajante.unidade }}</span>
+              <div class="oficio-documentos-traveller-line__name-row">
+                <strong class="oficio-documentos-traveller-line__name">{{ viajante.nome }}</strong>
+                {% if viajante.is_motorista %}
+                  <span class="oficio-documentos-traveller-line__badge">Motorista</span>
                 {% endif %}
               </div>
-              {% if viajante.cargo or viajante.funcao %}
+              {% if viajante.cargo or viajante.funcao or viajante.unidade %}
                 <span class="oficio-documentos-traveller-line__cargo">
-                  {% if viajante.cargo %}{{ viajante.cargo }}{% else %}{{ viajante.funcao }}{% endif %}
+                  {% if viajante.cargo %}{{ viajante.cargo }}{% elif viajante.funcao %}{{ viajante.funcao }}{% endif %}{% if viajante.unidade and viajante.cargo %} · {{ viajante.unidade }}{% elif viajante.unidade and viajante.funcao %} · {{ viajante.unidade }}{% elif viajante.unidade %}{{ viajante.unidade }}{% endif %}
                 </span>
               {% endif %}
             </article>
@@ -112,6 +108,7 @@
             <div class="oficio-documentos-travellers-empty">Nenhum viajante vinculado a este ofício.</div>
           {% endfor %}
         </div>
+        {% endwith %}
       </div>
     </article>
 

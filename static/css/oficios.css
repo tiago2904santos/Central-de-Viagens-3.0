@@ -1521,69 +1521,53 @@
   min-width: 0;
 }
 
-/* ── Viajantes — linhas compactas ──────────────────────────────────── */
+/* ── Viajantes — grid dinâmico por quantidade ──────────────────────── */
 .oficio-documentos-travellers-lines {
   display: grid;
   gap: var(--space-2);
+  grid-template-columns: repeat(3, 1fr); /* padrão: 5+ servidores */
 }
 
+.oficio-documentos-travellers-lines--n1 { grid-template-columns: 1fr; }
+.oficio-documentos-travellers-lines--n2 { grid-template-columns: repeat(2, 1fr); }
+.oficio-documentos-travellers-lines--n3 { grid-template-columns: repeat(3, 1fr); }
+.oficio-documentos-travellers-lines--n4 { grid-template-columns: repeat(2, 1fr); }
+
+/* ── Viajantes — card compacto ─────────────────────────────────────── */
 .oficio-documentos-traveller-line {
-  align-items: center;
   background: var(--color-card-muted);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-control);
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: minmax(200px, 1.2fr) 1fr;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   min-width: 0;
   padding: var(--space-3) var(--space-4);
-}
-
-.oficio-documentos-traveller-line__person {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
 }
 
 .oficio-documentos-traveller-line__name-row {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   min-width: 0;
 }
 
 .oficio-documentos-traveller-line__name {
   color: var(--color-heading);
-  flex-shrink: 1;
   font-size: var(--font-size-sm);
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.25;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.oficio-documentos-traveller-line__role {
-  color: var(--color-muted);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .oficio-documentos-traveller-line__cargo {
   color: var(--color-muted);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 500;
   line-height: 1.3;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .oficio-documentos-traveller-line__badge {
@@ -1605,6 +1589,7 @@
   font-size: var(--font-size-sm);
   font-style: italic;
   font-weight: 500;
+  grid-column: 1 / -1;
   line-height: 1.45;
   margin: 0;
 }
@@ -1711,29 +1696,21 @@
 }
 
 /* ── Responsividade — viajantes ────────────────────────────────────── */
-@media (max-width: 799px) {
-  .oficio-documentos-traveller-line {
-    grid-template-columns: 1fr auto;
-    row-gap: var(--space-2);
-  }
-
-  .oficio-documentos-traveller-line__details {
-    grid-column: 1 / 2;
-  }
-
-  .oficio-documentos-traveller-line__name,
-  .oficio-documentos-traveller-line__role {
-    white-space: normal;
+@media (max-width: 599px) {
+  .oficio-documentos-travellers-lines,
+  .oficio-documentos-travellers-lines--n1,
+  .oficio-documentos-travellers-lines--n2,
+  .oficio-documentos-travellers-lines--n3,
+  .oficio-documentos-travellers-lines--n4 {
+    grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 479px) {
-  .oficio-documentos-traveller-line {
-    grid-template-columns: 1fr;
-  }
-
-  .oficio-documentos-traveller-line__badge {
-    justify-self: start;
+@media (min-width: 600px) and (max-width: 799px) {
+  .oficio-documentos-travellers-lines,
+  .oficio-documentos-travellers-lines--n3,
+  .oficio-documentos-travellers-lines--n4 {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
