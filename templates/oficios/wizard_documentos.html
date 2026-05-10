@@ -47,25 +47,6 @@
     </div>
   </section>
 
-  <section class="oficio-documentos-kpis" aria-label="Indicadores do ofício">
-    <article class="oficio-documentos-kpi">
-      <span class="oficio-documentos-kpi__label">Viajantes</span>
-      <strong class="oficio-documentos-kpi__value">{{ documentos_ctx.detalhe.servidores|length }}</strong>
-    </article>
-    <article class="oficio-documentos-kpi">
-      <span class="oficio-documentos-kpi__label">Destino principal</span>
-      <strong class="oficio-documentos-kpi__value oficio-documentos-kpi__value--compact">{{ documentos_ctx.destino_principal_label }}</strong>
-    </article>
-    <article class="oficio-documentos-kpi">
-      <span class="oficio-documentos-kpi__label">Diárias</span>
-      <strong class="oficio-documentos-kpi__value oficio-documentos-money">{{ documentos_ctx.valor_diarias_display }}</strong>
-    </article>
-    <article class="oficio-documentos-kpi">
-      <span class="oficio-documentos-kpi__label">Status</span>
-      <strong class="oficio-documentos-kpi__value">{{ documentos_ctx.detalhe.status }}</strong>
-    </article>
-  </section>
-
   <div class="oficio-documentos-grid">
     <article class="oficio-documentos-card oficio-documentos-card--admin">
       <header class="oficio-documentos-card__header">
@@ -74,7 +55,7 @@
       </header>
       <div class="oficio-documentos-card__body">
         <dl class="oficio-documentos-facts">
-          <div class="oficio-documentos-fact oficio-documentos-fact--numero">
+          <div class="oficio-documentos-fact">
             <dt>Número do ofício</dt>
             <dd>{{ documentos_ctx.detalhe.numero_formatado }}</dd>
           </div>
@@ -85,10 +66,6 @@
           <div class="oficio-documentos-fact">
             <dt>Data de criação</dt>
             <dd>{{ documentos_ctx.detalhe.data_criacao }}</dd>
-          </div>
-          <div class="oficio-documentos-fact">
-            <dt>Status</dt>
-            <dd>{{ documentos_ctx.detalhe.status }}</dd>
           </div>
           <div class="oficio-documentos-fact">
             <dt>Custeio</dt>
@@ -139,17 +116,15 @@
       </article>
     </section>
 
-    <article class="oficio-documentos-card oficio-documentos-card--route">
-      <header class="oficio-documentos-card__header">
-        <h4 class="oficio-documentos-card__title">Roteiro e diárias</h4>
-        <p class="oficio-documentos-card__subtitle">Trajeto, tempos e valores</p>
-      </header>
-      <div class="oficio-documentos-card__body">
-        {% if documentos_ctx.roteiro_card %}
-          {% with card=documentos_ctx.roteiro_card %}
-            <article
-              class="oficio-documentos-route-card oficio-documentos-route-card--status-{{ card.status_variant|default:'outro' }} oficio-documentos-route-card--trechos-{{ card.trechos_count|default:0 }} oficio-documentos-route-card--layout-{{ card.roteiro_card_layout|default:'compact' }}"
-            >
+    {% if documentos_ctx.roteiro_card %}
+      {% with card=documentos_ctx.roteiro_card %}
+        <article
+          class="oficio-documentos-route-card oficio-documentos-route-card--status-{{ card.status_variant|default:'outro' }} oficio-documentos-route-card--trechos-{{ card.trechos_count|default:0 }} oficio-documentos-route-card--layout-{{ card.roteiro_card_layout|default:'compact' }}"
+        >
+          <header class="oficio-documentos-route-card__wizard-head">
+            <h4 class="oficio-documentos-route-card__wizard-title">Roteiro e diárias</h4>
+            <p class="oficio-documentos-route-card__wizard-subtitle">Trajeto, tempos e valores</p>
+          </header>
               <div class="oficio-documentos-route-card__top">
                 <div class="oficio-documentos-route-card__title-row">
                   <h3 class="oficio-documentos-route-card__title">{{ card.title|default:"Roteiro" }}</h3>
@@ -282,10 +257,14 @@
                   </div>
                 </aside>
               </div>
-            </article>
-          {% endwith %}
-        {% else %}
-          <article class="oficio-documentos-route-card oficio-documentos-route-card--fallback oficio-documentos-route-card--status-outro">
+        </article>
+      {% endwith %}
+    {% else %}
+      <article class="oficio-documentos-route-card oficio-documentos-route-card--fallback oficio-documentos-route-card--status-outro">
+        <header class="oficio-documentos-route-card__wizard-head">
+          <h4 class="oficio-documentos-route-card__wizard-title">Roteiro e diárias</h4>
+          <p class="oficio-documentos-route-card__wizard-subtitle">Trajeto, tempos e valores</p>
+        </header>
             <div class="oficio-documentos-route-card__top">
               <div class="oficio-documentos-route-card__title-row">
                 <h3 class="oficio-documentos-route-card__title">{{ documentos_ctx.sede_label }} → {{ documentos_ctx.destino_principal_label }}</h3>
@@ -350,10 +329,8 @@
                 </div>
               </aside>
             </div>
-          </article>
-        {% endif %}
-      </div>
-    </article>
+      </article>
+    {% endif %}
 
     <article class="oficio-documentos-card oficio-documentos-card--justification">
       <header class="oficio-documentos-card__header">

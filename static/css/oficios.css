@@ -1471,57 +1471,6 @@
   color: var(--color-danger);
 }
 
-.oficio-documentos-kpis {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  margin-bottom: var(--space-5);
-}
-
-@media (min-width: 880px) {
-  .oficio-documentos-kpis {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-.oficio-documentos-kpi {
-  background: var(--color-card-muted);
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-control);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-height: 4.5rem;
-  padding: var(--space-3);
-}
-
-.oficio-documentos-kpi__label {
-  color: var(--color-muted);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.oficio-documentos-kpi__value {
-  color: var(--color-heading);
-  font-size: var(--font-size-lg);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  word-break: break-word;
-}
-
-.oficio-documentos-kpi__value--compact {
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-}
-
-.oficio-documentos-kpi .oficio-documentos-money {
-  color: var(--color-primary);
-  font-size: var(--font-size-md);
-}
-
 .oficio-documentos-grid {
   display: grid;
   gap: var(--space-5);
@@ -1598,10 +1547,6 @@
   overflow: hidden;
 }
 
-.oficio-documentos-card--route {
-  border-left: 4px solid var(--color-primary);
-}
-
 .oficio-documentos-card--justification {
   border-left: 4px solid var(--color-accent);
 }
@@ -1666,13 +1611,6 @@
   font-weight: 700;
   margin: 0;
   word-break: break-word;
-}
-
-.oficio-documentos-fact--numero dd {
-  color: var(--color-primary);
-  font-size: var(--font-size-lg);
-  font-weight: 800;
-  letter-spacing: -0.02em;
 }
 
 .oficio-documentos-card__label {
@@ -1762,6 +1700,29 @@
 
 .oficio-documentos-route-card--fallback {
   border-left-color: var(--route-status-muted-border);
+}
+
+.oficio-documentos-route-card__wizard-head {
+  border-bottom: 1px solid var(--route-card-inner-border);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.oficio-documentos-route-card__wizard-title {
+  color: var(--color-heading);
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-1);
+}
+
+.oficio-documentos-route-card__wizard-subtitle {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-transform: uppercase;
 }
 
 .oficio-documentos-route-card__top {
