@@ -1521,17 +1521,12 @@
   min-width: 0;
 }
 
-/* ── Viajantes — grid dinâmico por quantidade ──────────────────────── */
+/* ── Viajantes — flex dinâmico por quantidade ──────────────────────── */
 .oficio-documentos-travellers-lines {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
-  grid-template-columns: repeat(3, 1fr); /* padrão: 5+ servidores */
 }
-
-.oficio-documentos-travellers-lines--n1 { grid-template-columns: 1fr; }
-.oficio-documentos-travellers-lines--n2 { grid-template-columns: repeat(2, 1fr); }
-.oficio-documentos-travellers-lines--n3 { grid-template-columns: repeat(3, 1fr); }
-.oficio-documentos-travellers-lines--n4 { grid-template-columns: repeat(2, 1fr); }
 
 /* ── Viajantes — card compacto ─────────────────────────────────────── */
 .oficio-documentos-traveller-line {
@@ -1539,11 +1534,23 @@
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-control);
   display: flex;
+  flex-basis: 30%;   /* padrão: 3 por linha, n5+ */
   flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 0;
   gap: 3px;
   min-width: 0;
   padding: var(--space-3) var(--space-4);
 }
+
+/* flex-basis de 30% → cabe exatamente 3 por linha (3×30%=90%<100%, 4×30%=120%>100%) */
+/* flex-basis de 45% → cabe exatamente 2 por linha (2×45%=90%<100%, 3×45%=135%>100%) */
+/* flex-grow: 1 → última linha preenche a largura restante automaticamente         */
+
+.oficio-documentos-travellers-lines--n1 .oficio-documentos-traveller-line { flex-basis: 100%; }
+.oficio-documentos-travellers-lines--n2 .oficio-documentos-traveller-line { flex-basis: 45%; }
+.oficio-documentos-travellers-lines--n3 .oficio-documentos-traveller-line { flex-basis: 30%; }
+.oficio-documentos-travellers-lines--n4 .oficio-documentos-traveller-line { flex-basis: 45%; }
 
 .oficio-documentos-traveller-line__name-row {
   align-items: center;
@@ -1697,28 +1704,22 @@
 
 /* ── Responsividade — viajantes ────────────────────────────────────── */
 @media (max-width: 599px) {
-  .oficio-documentos-travellers-lines,
-  .oficio-documentos-travellers-lines--n1,
-  .oficio-documentos-travellers-lines--n2,
-  .oficio-documentos-travellers-lines--n3,
-  .oficio-documentos-travellers-lines--n4 {
-    grid-template-columns: 1fr;
+  .oficio-documentos-traveller-line {
+    flex-basis: 100%;
   }
 }
 
 @media (min-width: 600px) and (max-width: 799px) {
-  .oficio-documentos-travellers-lines,
-  .oficio-documentos-travellers-lines--n3,
-  .oficio-documentos-travellers-lines--n4 {
-    grid-template-columns: repeat(2, 1fr);
+  .oficio-documentos-traveller-line {
+    flex-basis: 45%;
   }
 }
 
 /* ── Responsividade — transporte ───────────────────────────────────── */
-@media (min-width: 720px) {
+@media (min-width: 820px) {
   .oficio-documentos-vehicle-executive {
     align-items: stretch;
-    grid-template-columns: minmax(200px, 280px) 1fr minmax(200px, 280px);
+    grid-template-columns: minmax(160px, 220px) 1fr minmax(160px, 220px);
   }
 }
 
