@@ -1960,6 +1960,7 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   gap: var(--space-field-gap);
 }
 
+.app-form-label,
 .app-form-field label,
 .field label {
   color: var(--color-label);
@@ -1975,7 +1976,8 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   margin-bottom: 0;
 }
 
-.app-form-error {
+.app-form-error,
+.field-error {
   color: var(--color-danger);
   font-size: var(--font-size-sm);
   margin-top: var(--space-1);

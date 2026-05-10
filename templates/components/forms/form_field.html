@@ -3,13 +3,13 @@
 {% else %}
 <div class="field app-form-field">
   {% if field.field.widget.input_type == 'select' %}
-    <label for="{{ field.id_for_label }}">{{ label|default:field.label }}</label>
+    <label class="app-form-label" for="{{ field.id_for_label }}">{{ label|default:field.label }}</label>
     {{ field.as_widget }}
   {% else %}
-  <label for="{{ field.id_for_label }}">{{ label|default:field.label }}</label>
+  <label class="app-form-label" for="{{ field.id_for_label }}">{{ label|default:field.label }}</label>
   {{ field.as_widget }}
   {% endif %}
-  {% if help_text %}<p class="field-help">{{ help_text }}</p>{% endif %}
-  {% if field.errors %}<p class="field-error">{{ field.errors|striptags }}</p>{% endif %}
+  {% if help_text %}<p class="field-help app-form-help">{{ help_text }}</p>{% endif %}
+  {% if field.errors %}<p class="field-error app-form-error">{{ field.errors|striptags }}</p>{% endif %}
 </div>
 {% endif %}
