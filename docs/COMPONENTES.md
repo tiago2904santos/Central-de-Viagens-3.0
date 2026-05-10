@@ -13,12 +13,13 @@ O app `cadastros` usa listagens globais (`list_page` ou `list_page_simple`), `do
 
 `Motorista` nao possui templates ativos.
 
-## Page header
+## Header de pagina (canônico)
 
-- Component: `templates/components/layout/page_header.html`.
-- Objetivo: titulo forte, descricao clara e acao principal alinhada a direita.
-- CSS principal: `static/css/layout.css`.
-- Eyebrow e detalhes visuais usam destaque amarelo/dourado do design system.
+- Componente oficial: `app-page-hero` (inline nos templates — nao existe arquivo separado de componente).
+- Estrutura: `.app-page-hero__stage` (eyebrow + titulo) + `.app-page-hero__body > .app-page__hero-top > .app-page__brand + .app-page__hero-actions` + `.app-page-hero__ribbon`.
+- CSS: `static/css/app-ui.css`.
+- `templates/components/layout/page_header.html` foi **removido** (sem uso). `templates/components/cards/page_header.html` foi **removido** (sem uso).
+- Referência: `templates/cadastros/servidores/index.html` como modelo canônico.
 
 ## Listagem simples vs cards
 
@@ -49,9 +50,10 @@ O app `cadastros` usa listagens globais (`list_page` ou `list_page_simple`), `do
 
 ## Forms
 
-- Components: `form_page`, `form_section`, `form_field`, `form_actions`.
+- Components: `form_section`, `form_field`, `form_actions` (componente `form_page.html` foi removido).
+- `form_field.html`: emite `field app-form-field` (raiz), `app-form-label` (label), `field-help app-form-help` (help), `field-error app-form-error` (erro).
 - Regras: foco azul consistente, labels legiveis, erros visiveis e grid reutilizavel.
-- CSS principal: `static/css/forms.css`.
+- CSS principal: `static/css/forms.css`. CSS de dominio Oficios: `static/css/oficios.css`.
 
 ## Buttons
 
