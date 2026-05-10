@@ -17,6 +17,7 @@ urlpatterns = [
     path("<int:pk>/dados-viajantes/", views.dados_viajantes, name="dados_viajantes"),
     path("<int:pk>/transporte/", views.transporte, name="transporte"),
     path("<int:pk>/roteiro/", views.wizard_roteiro, name="wizard_roteiro"),
+    path("<int:pk>/justificativa/", views.wizard_justificativa, name="wizard_justificativa"),
     path("<int:pk>/resumo/", views.wizard_resumo, name="wizard_resumo"),
     path("<int:pk>/api/viatura-por-placa/", views.api_viatura_por_placa, name="api_viatura_por_placa"),
     path("<int:pk>/documentos/<str:formato>/", views.baixar_documento, name="baixar_documento"),

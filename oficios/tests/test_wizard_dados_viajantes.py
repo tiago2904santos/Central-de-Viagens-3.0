@@ -68,7 +68,7 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Dados e viajantes")
         self.assertContains(response, "Transporte")
         self.assertContains(response, "Roteiro e diárias")
-        self.assertContains(response, "Resumo do ofício")
+        self.assertContains(response, "Justificativa")
         self.assertContains(response, "Documentos")
         self.assertContains(response, "N° do Ofício:")
         self.assertContains(response, oficio.numero_formatado)
@@ -283,6 +283,8 @@ class OficioWizardDadosViajantesTests(TestCase):
             Path("templates/oficios/wizard_dados_viajantes.html"),
             Path("templates/oficios/wizard_transporte.html"),
             Path("templates/oficios/wizard_roteiro.html"),
+            Path("templates/oficios/wizard_justificativa.html"),
+            Path("templates/oficios/wizard_resumo.html"),
             Path("templates/oficios/partials/wizard_stepper.html"),
             Path("templates/oficios/partials/wizard_actions.html"),
         ]

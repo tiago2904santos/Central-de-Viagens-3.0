@@ -1,0 +1,34 @@
+{% extends "oficios/wizard_base.html" %}
+{% load static %}
+
+{% block wizard_content %}
+  <section class="form-section app-form-section">
+    <div class="oficio-equipe-section__copy">
+      <h3>Justificativa</h3>
+      <p>{{ justificativa_ctx.alerta_regra }}</p>
+      <p class="field-help">
+        Criação do ofício: {{ justificativa_ctx.data_criacao_label }} ·
+        Primeira saída: {{ justificativa_ctx.primeira_saida_label }} ·
+        Prazo mínimo: {{ justificativa_ctx.prazo_dias_label }} dias
+      </p>
+    </div>
+    {% if justificativa_obrigatoria %}
+      <p class="field-help"><strong>Esta justificativa é obrigatória.</strong></p>
+    {% else %}
+      <p class="field-help">Justificativa não exigida pela regra de prazo; o preenchimento é opcional.</p>
+    {% endif %}
+
+    <div class="app-form-grid-panel oficio-data-block">
+      <div class="app-form-field">
+        <label class="app-form-label" for="{{ form.modelo.id_for_label }}">{{ form.modelo.label }}</label>
+        {{ form.modelo }}
+        {% if form.modelo.errors %}<p class="errorlist">{{ form.modelo.errors }}</p>{% endif %}
+      </div>
+      <div class="app-form-field">
+        <label class="app-form-label" for="{{ form.texto.id_for_label }}">{{ form.texto.label }}</label>
+        {{ form.texto }}
+        {% if form.texto.errors %}<p class="errorlist">{{ form.texto.errors }}</p>{% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

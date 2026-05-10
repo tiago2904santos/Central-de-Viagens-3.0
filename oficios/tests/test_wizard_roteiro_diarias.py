@@ -106,4 +106,4 @@ class OficioWizardRoteiroDiariasTests(TestCase):
         self.client.get(reverse("oficios:wizard_roteiro", args=[oficio.pk]))
         response = self.client.get(reverse("oficios:wizard_resumo", args=[oficio.pk]))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Resumo do ofício")
+        self.assertContains(response, "Documentos")

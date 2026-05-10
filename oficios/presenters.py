@@ -86,13 +86,27 @@ def apresentar_oficio_wizard_header(etapa_atual):
         "dados_viajantes": "Dados e viajantes",
         "transporte": "Transporte",
         "roteiro": "Roteiro e diárias",
-        "resumo": "Resumo do ofício",
+        "justificativa": "Justificativa",
         "documentos": "Documentos",
+        "resumo": "Documentos",
     }
     return {
         "title": "Cadastro de ofício",
         "subtitle": titles.get(etapa_atual, "Dados e viajantes"),
     }
+
+
+def _map_justificativa_etapa_para_completion(etapa: dict) -> str:
+    st = etapa.get("status") or ""
+    if st == "not_required":
+        return "complete"
+    if st == "not_started":
+        return "not_started"
+    if st == "incomplete":
+        return "incomplete"
+    if st == "complete":
+        return "complete"
+    return "not_started"
 
 
 def apresentar_status_etapa_oficio(status):
@@ -115,19 +129,26 @@ def apresentar_oficio_wizard_steps(
     dados_viajantes_status=None,
     transporte_status=None,
     roteiro_status=None,
-    resumo_status=None,
+    justificativa_status=None,
     documentos_status=None,
 ):
     dados_viajantes_status = dados_viajantes_status or "not_started"
     transporte_status = transporte_status or "not_started"
     roteiro_status = roteiro_status or "not_started"
-    resumo_status = resumo_status or "not_started"
+    if oficio is not None and justificativa_status is None:
+        from justificativas.services import avaliar_etapa_justificativa_oficio
+
+        justificativa_status = _map_justificativa_etapa_para_completion(
+            avaliar_etapa_justificativa_oficio(oficio)
+        )
+    else:
+        justificativa_status = justificativa_status or "not_started"
     documentos_status = documentos_status or "not_started"
     steps = [
         {"key": "dados_viajantes", "number": 1, "title": "Dados e viajantes"},
         {"key": "transporte", "number": 2, "title": "Transporte"},
         {"key": "roteiro", "number": 3, "title": "Roteiro e diárias"},
-        {"key": "resumo", "number": 4, "title": "Resumo do ofício"},
+        {"key": "justificativa", "number": 4, "title": "Justificativa"},
         {"key": "documentos", "number": 5, "title": "Documentos"},
     ]
     for step in steps:
@@ -144,12 +165,12 @@ def apresentar_oficio_wizard_steps(
             step["url"] = reverse("oficios:wizard_roteiro", args=[oficio.pk]) if oficio else ""
             step["state"] = "current" if etapa_atual == key else roteiro_status
             step["completion_state"] = roteiro_status
-        elif key == "resumo":
-            step["url"] = reverse("oficios:wizard_resumo", args=[oficio.pk]) if oficio else ""
-            step["state"] = "current" if etapa_atual == key else resumo_status
-            step["completion_state"] = resumo_status
+        elif key == "justificativa":
+            step["url"] = reverse("oficios:wizard_justificativa", args=[oficio.pk]) if oficio else ""
+            step["state"] = "current" if etapa_atual == key else justificativa_status
+            step["completion_state"] = justificativa_status
         elif key == "documentos":
-            step["url"] = reverse("oficios:detalhe", args=[oficio.pk]) if oficio else ""
+            step["url"] = reverse("oficios:wizard_resumo", args=[oficio.pk]) if oficio else ""
             step["state"] = "current" if etapa_atual == key else documentos_status
             step["completion_state"] = documentos_status
         else:
