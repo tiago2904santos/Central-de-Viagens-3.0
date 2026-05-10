@@ -180,3 +180,9 @@ Antecedência em dias (inteiro):
 - **Validação:** `validar_oficio_para_documento` com `checks` (dados, motorista, transporte, roteiro, justificativa); `redirect_para_corrigir_documento_oficio` para downloads incompletos; finalização na etapa 5 (`action=finalizar`).
 - **Testes:** cobertura em `oficios/tests`, `justificativas/tests`.
 - **Pendências futuras:** CRUD global de justificativas; DOCX específico de justificativa; Termos/PT/OS conforme outros planos.
+
+---
+
+## 17. Refino visual da etapa 5 (Documentos / resumo)
+
+Refino incremental **somente de apresentação** (templates `wizard_documentos.html`, `static/css/oficios.css`, helpers em `oficios/presenters.py`): KPIs e dados administrativos sem duplicar o número do ofício; equipe e transporte em duas colunas com motorista no cartão de transporte; bloco de roteiro alinhado ao cartão da lista de roteiros (`apresentar_roteiro_card`, sem ações); justificativa como factos compactos (`justificativa_resumo`) sem repetir o texto integral nem o parágrafo explicativo da regra (`motivo_regra`). CSS novo usa o prefixo `oficio-documentos-*`; alterações não mudam validação, downloads nem geração de documentos.

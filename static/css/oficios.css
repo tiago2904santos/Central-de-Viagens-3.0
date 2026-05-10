@@ -1524,7 +1524,7 @@
 
 .oficio-documentos-grid {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .oficio-documentos-two-col {
@@ -1600,6 +1600,10 @@
 
 .oficio-documentos-card--route {
   border-left: 4px solid var(--color-primary);
+}
+
+.oficio-documentos-card--justification {
+  border-left: 4px solid var(--color-accent);
 }
 
 .oficio-documentos-card__header {
@@ -2217,149 +2221,6 @@
   }
 }
 
-.oficio-documentos-route__grid {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  margin-bottom: var(--space-4);
-}
-
-.oficio-documentos-route__cell--wide {
-  grid-column: 1 / -1;
-}
-
-.oficio-documentos-route__label {
-  color: var(--color-muted);
-  display: block;
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-1);
-  text-transform: uppercase;
-}
-
-.oficio-documentos-route__value {
-  color: var(--color-heading);
-  display: block;
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  line-height: 1.45;
-  word-break: break-word;
-}
-
-.oficio-documentos-route__money {
-  border-top: 1px solid var(--color-border-soft);
-  padding-top: var(--space-4);
-}
-
-.oficio-documentos-money-block {
-  align-items: baseline;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  justify-content: space-between;
-  margin-bottom: var(--space-3);
-}
-
-.oficio-documentos-money-block__label {
-  color: var(--color-muted);
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.oficio-documentos-money-block__amount {
-  color: var(--color-primary);
-  font-size: clamp(1.25rem, 2.5vw, 1.85rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-
-.oficio-documentos-money-block__extenso {
-  color: var(--color-muted);
-  font-size: var(--font-size-sm);
-  line-height: 1.5;
-  margin: 0;
-  max-width: 48rem;
-}
-
-.oficio-documentos-money-block__extenso-label {
-  color: var(--color-heading);
-  display: block;
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-1);
-  text-transform: uppercase;
-}
-
-.oficio-documentos-callout {
-  border-radius: var(--radius-control);
-  padding: var(--space-4);
-}
-
-.oficio-documentos-callout--ok {
-  background: var(--color-success-soft);
-  border: 1px solid var(--color-success);
-}
-
-.oficio-documentos-callout--alert {
-  background: var(--color-danger-soft);
-  border: 1px solid var(--color-danger);
-}
-
-.oficio-documentos-callout--muted {
-  background: var(--color-card-muted);
-  border: 1px solid var(--color-border-soft);
-}
-
-.oficio-documentos-callout__badge {
-  border-radius: var(--radius-pill);
-  display: inline-block;
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  margin-bottom: var(--space-3);
-  padding: var(--space-1) var(--space-3);
-  text-transform: uppercase;
-}
-
-.oficio-documentos-callout--ok .oficio-documentos-callout__badge {
-  background: var(--color-success-soft);
-  border: 1px solid var(--color-success);
-  color: var(--color-success);
-}
-
-.oficio-documentos-callout--alert .oficio-documentos-callout__badge {
-  background: var(--color-danger-soft);
-  border: 1px solid var(--color-danger);
-  color: var(--color-danger);
-}
-
-.oficio-documentos-callout--muted .oficio-documentos-callout__badge {
-  background: var(--color-card);
-  border: 1px solid var(--color-border-soft);
-  color: var(--color-muted);
-}
-
-.oficio-documentos-callout__text {
-  color: var(--color-heading);
-  font-size: var(--font-size-sm);
-  line-height: 1.55;
-  margin: 0;
-  word-break: break-word;
-}
-
-.oficio-documentos-callout__lead {
-  color: var(--color-heading);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  line-height: 1.5;
-  margin: 0;
-}
-
 .oficio-documentos-justification-compact {
   display: grid;
   gap: var(--space-4);
@@ -2454,8 +2315,7 @@
     flex-direction: column;
   }
 
-  .oficio-documentos-money-block {
-    align-items: flex-start;
-    flex-direction: column;
+  .oficio-documentos-justification-facts {
+    grid-template-columns: 1fr;
   }
 }
