@@ -35,6 +35,7 @@ from .models import Oficio
 from .presenters import apresentar_acoes_oficio
 from .presenters import apresentar_linha_lista_simples_modelo_motivo
 from .presenters import apresentar_oficio_card
+from .presenters import apresentar_oficio_wizard_documentos_context
 from .presenters import apresentar_oficio_wizard_header
 from .presenters import apresentar_oficio_wizard_summary
 from .presenters import apresentar_oficio_wizard_steps
@@ -60,6 +61,7 @@ from .services import excluir_modelo_motivo
 from .services import excluir_oficio
 from .services import gerar_resposta_documento_oficio
 from .services import garantir_roteiro_vinculado_ao_oficio
+from .services import redirect_para_corrigir_documento_oficio
 from .services import validar_oficio_para_documento
 
 
@@ -314,7 +316,7 @@ def wizard_roteiro(request, pk):
                 )
                 if oficio_exige_justificativa(oficio):
                     return redirect("oficios:wizard_justificativa", pk=oficio.pk)
-                return redirect("oficios:wizard_resumo", pk=oficio.pk)
+                return redirect("oficios:wizard_documentos", pk=oficio.pk)
             messages.success(request, "Rascunho do roteiro salvo.")
             return redirect("oficios:wizard_roteiro", pk=oficio.pk)
         for error in validated.get("errors", []):
@@ -382,7 +384,7 @@ def wizard_justificativa(request, pk):
                 request,
                 "Justificativa salva. Continue para documentos quando estiver pronto.",
             )
-            return redirect("oficios:wizard_resumo", pk=oficio.pk)
+            return redirect("oficios:wizard_documentos", pk=oficio.pk)
         messages.success(request, "Rascunho da justificativa salvo.")
         return redirect("oficios:wizard_justificativa", pk=oficio.pk)
 
@@ -415,21 +417,38 @@ def wizard_justificativa(request, pk):
 
 
 def wizard_resumo(request, pk):
+    """Compatibilidade: URL antiga redireciona para a etapa 5 (documentos)."""
+    return redirect("oficios:wizard_documentos", pk=pk)
+
+
+def wizard_documentos(request, pk):
     oficio = get_oficio_by_id(pk)
+    aval_doc = validar_oficio_para_documento(oficio)
+    pendencias = list(aval_doc["pendencias"])
+    doc_status = "complete" if aval_doc["status"] == "complete" else "incomplete"
+
     if request.method == "POST":
         action = request.POST.get("action") or "save_draft"
-        if action == "save_continue":
-            messages.success(request, "Dados do ofício atualizados.")
-            return redirect("oficios:detalhe", pk=oficio.pk)
+        if action == "finalizar":
+            aval = validar_oficio_para_documento(oficio)
+            if aval["pendencias"]:
+                for msg in aval["pendencias"]:
+                    messages.error(request, msg)
+                return redirect("oficios:wizard_documentos", pk=pk)
+            oficio.status = Oficio.STATUS_FINALIZADO
+            oficio.save(update_fields=["status", "updated_at"])
+            messages.success(request, "Ofício finalizado com sucesso.")
+            return redirect("oficios:detalhe", pk=pk)
         messages.success(request, "Rascunho salvo.")
-        return redirect("oficios:wizard_resumo", pk=oficio.pk)
+        return redirect("oficios:wizard_documentos", pk=pk)
 
     dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)
     transp_av = avaliar_oficio_transporte(oficio)
     roteiro_av = _wizard_roteiro_step_status(oficio)
+
     return render(
         request,
-        "oficios/wizard_resumo.html",
+        "oficios/wizard_documentos.html",
         {
             "page_title": "Cadastro de ofício",
             "wizard_header": apresentar_oficio_wizard_header("documentos"),
@@ -439,12 +458,16 @@ def wizard_resumo(request, pk):
                 dados_viajantes_status=dados_av["status"],
                 transporte_status=transp_av["status"],
                 roteiro_status=roteiro_av,
-                documentos_status="incomplete",
+                documentos_status=doc_status,
             ),
             "wizard_summary": apresentar_oficio_wizard_summary(oficio),
             "oficio": oficio,
-            "wizard_back_url": reverse("oficios:wizard_roteiro", args=[oficio.pk]),
+            "wizard_back_url": reverse("oficios:wizard_justificativa", args=[oficio.pk]),
             "wizard_back_label": "Voltar",
+            "wizard_finalizar": True,
+            "documentos_ctx": apresentar_oficio_wizard_documentos_context(oficio),
+            "pendencias_documentos": pendencias,
+            "mostrar_pendencias": bool(pendencias),
         },
     )
 
@@ -488,7 +511,8 @@ def baixar_documento(request, pk, formato):
     avaliacao = validar_oficio_para_documento(oficio)
     if avaliacao["pendencias"]:
         messages.error(request, "Documento nao gerado porque o oficio esta incompleto.")
-        return redirect(f"{reverse('oficios:dados_viajantes', args=[oficio.pk])}?documento_incompleto=1")
+        alvo = redirect_para_corrigir_documento_oficio(oficio)
+        return redirect(f"{alvo}?documento_incompleto=1")
     return gerar_resposta_documento_oficio(oficio, formato_documento)
 
 

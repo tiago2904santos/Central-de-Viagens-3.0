@@ -285,6 +285,7 @@ class OficioWizardDadosViajantesTests(TestCase):
             Path("templates/oficios/wizard_roteiro.html"),
             Path("templates/oficios/wizard_justificativa.html"),
             Path("templates/oficios/wizard_resumo.html"),
+            Path("templates/oficios/wizard_documentos.html"),
             Path("templates/oficios/partials/wizard_stepper.html"),
             Path("templates/oficios/partials/wizard_actions.html"),
         ]

@@ -1,7 +1,13 @@
+import datetime
+
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from cadastros.models import Cargo
+from cadastros.models import Cidade
+from cadastros.models import ConfiguracaoSistema
+from cadastros.models import Estado
 from cadastros.models import Servidor
 from cadastros.models import Viatura
 from oficios.forms import OficioDadosViajantesForm
@@ -16,6 +22,10 @@ from oficios.services import criar_modelo_motivo
 from oficios.services import criar_oficio_dados_viajantes
 from oficios.services import excluir_modelo_motivo
 from oficios.services import get_next_available_numero_oficio
+from oficios.services import redirect_para_corrigir_documento_oficio
+from oficios.services import validar_oficio_para_documento
+from roteiros.models import Roteiro
+from roteiros.models import RoteiroDestino
 
 
 class OficioServicesTests(TestCase):
@@ -134,3 +144,57 @@ class OficioServicesTests(TestCase):
 
         excluir_modelo_motivo(modelo_2)
         self.assertFalse(ModeloMotivoOficio.objects.filter(pk=modelo_2.pk).exists())
+
+    def test_validar_bloqueia_sem_roteiro(self):
+        ConfiguracaoSistema.get_singleton()
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            motivo="M",
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+            protocolo="123456789",
+            viatura=self.viatura,
+            motorista=self.servidor,
+            motorista_modo=Oficio.MOTORISTA_MODO_SERVIDOR,
+        )
+        oficio.servidores.add(self.servidor)
+        out = validar_oficio_para_documento(oficio)
+        self.assertEqual(out["status"], "incomplete")
+        self.assertTrue(any("roteiro" in p.lower() for p in out["pendencias"]))
+
+    def test_redirect_falta_justificativa_vai_etapa_4(self):
+        ConfiguracaoSistema.get_singleton()
+        est, _ = Estado.objects.get_or_create(sigla="PR", defaults={"nome": "Paraná"})
+        cid, _ = Cidade.objects.get_or_create(
+            nome="CuritibaDocTest",
+            estado=est,
+            defaults={"uf": "PR"},
+        )
+        roteiro = Roteiro.objects.create(
+            tipo=Roteiro.TIPO_AVULSO,
+            status=Roteiro.STATUS_RASCUNHO,
+            origem_estado=est,
+            origem_cidade=cid,
+        )
+        roteiro.saida_dt = timezone.make_aware(
+            datetime.datetime(2026, 5, 12, 8, 0, 0),
+            timezone.get_current_timezone(),
+        )
+        roteiro.save(update_fields=["saida_dt"])
+        RoteiroDestino.objects.create(roteiro=roteiro, estado=est, cidade=cid, ordem=0)
+        base = datetime.date(2026, 5, 10)
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            data_criacao=base,
+            motivo="M",
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+            protocolo="123456789",
+            roteiro=roteiro,
+            viatura=self.viatura,
+            motorista=self.servidor,
+            motorista_modo=Oficio.MOTORISTA_MODO_SERVIDOR,
+        )
+        oficio.servidores.add(self.servidor)
+        url = redirect_para_corrigir_documento_oficio(oficio)
+        self.assertEqual(url, reverse("oficios:wizard_justificativa", args=[oficio.pk]))

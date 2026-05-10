@@ -1,6 +1,7 @@
 import re
 
 from django.db import transaction
+from django.urls import reverse
 from django.db.models import ProtectedError
 from django.utils import timezone
 
@@ -249,14 +250,87 @@ def _pendencias_oficio_protocolo_motorista(oficio):
     return pendencias
 
 
+def _pendencias_transporte_documento(oficio):
+    av = avaliar_oficio_transporte(oficio)
+    if av["status"] == "complete":
+        return []
+    return ["Complete o transporte (viatura ou placa manual e motorista)."]
+
+
+def _pendencias_roteiro_documento(oficio):
+    from justificativas.services import get_primeira_saida_oficio
+
+    pendencias = []
+    if not oficio.roteiro_id:
+        pendencias.append("Associe um roteiro ao ofício.")
+        return pendencias
+    roteiro = oficio.roteiro
+    if not (roteiro.origem_cidade_id or roteiro.origem_estado_id):
+        pendencias.append("Informe a sede ou origem do roteiro.")
+    if get_primeira_saida_oficio(oficio) is None:
+        pendencias.append("Informe a data da primeira saída no roteiro.")
+    if not roteiro.destinos.exists() and not roteiro.trechos.exists():
+        pendencias.append("Informe destinos ou trechos no roteiro.")
+    return pendencias
+
+
+def _pendencias_justificativa_documento(oficio):
+    from justificativas.services import justificativa_oficio_esta_completa
+    from justificativas.services import oficio_exige_justificativa
+
+    if not oficio_exige_justificativa(oficio):
+        return []
+    if not justificativa_oficio_esta_completa(oficio):
+        return ["Informe a justificativa obrigatória para este ofício."]
+    return []
+
+
 def validar_oficio_para_documento(oficio):
-    base = avaliar_oficio_dados_viajantes(oficio=oficio)
-    pendencias = list(base["pendencias"])
-    pendencias.extend(pendencias_motorista_documento(oficio))
-    status = base["status"]
-    if pendencias:
-        status = "incomplete"
-    return {"status": status, "pendencias": pendencias}
+    dados = avaliar_oficio_dados_viajantes(oficio=oficio)
+    pendencias = list(dados["pendencias"])
+    checks = {"dados_viajantes": dados["status"]}
+
+    mot = pendencias_motorista_documento(oficio)
+    pendencias.extend(mot)
+    checks["motorista_documento"] = "complete" if not mot else "incomplete"
+
+    transp_extra = _pendencias_transporte_documento(oficio)
+    pendencias.extend(transp_extra)
+    checks["transporte"] = avaliar_oficio_transporte(oficio)["status"]
+
+    rot_extra = _pendencias_roteiro_documento(oficio)
+    pendencias.extend(rot_extra)
+    checks["roteiro"] = "complete" if not rot_extra else "incomplete"
+
+    just_extra = _pendencias_justificativa_documento(oficio)
+    pendencias.extend(just_extra)
+    checks["justificativa"] = "complete" if not just_extra else "incomplete"
+
+    checks["documento"] = "complete"
+
+    status = "complete" if not pendencias else "incomplete"
+    return {"status": status, "pendencias": pendencias, "checks": checks}
+
+
+def redirect_para_corrigir_documento_oficio(oficio):
+    """Primeira etapa do wizard com pendência relevante para download documental."""
+    dados = avaliar_oficio_dados_viajantes(oficio=oficio)
+    if dados["pendencias"]:
+        return reverse("oficios:dados_viajantes", args=[oficio.pk])
+    mot = pendencias_motorista_documento(oficio)
+    if mot:
+        return reverse("oficios:transporte", args=[oficio.pk])
+    if avaliar_oficio_transporte(oficio)["status"] != "complete":
+        return reverse("oficios:transporte", args=[oficio.pk])
+    rot_extra = _pendencias_roteiro_documento(oficio)
+    if rot_extra:
+        return reverse("oficios:wizard_roteiro", args=[oficio.pk])
+    from justificativas.services import justificativa_oficio_esta_completa
+    from justificativas.services import oficio_exige_justificativa
+
+    if oficio_exige_justificativa(oficio) and not justificativa_oficio_esta_completa(oficio):
+        return reverse("oficios:wizard_justificativa", args=[oficio.pk])
+    return reverse("oficios:wizard_documentos", args=[oficio.pk])
 
 
 def gerar_resposta_documento_oficio(oficio, formato: DocumentoFormato):

@@ -145,7 +145,7 @@ class WizardJustificativaTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("oficios:wizard_resumo", args=[oficio.pk]))
+        self.assertEqual(response.url, reverse("oficios:wizard_documentos", args=[oficio.pk]))
 
     def test_nao_obrigatoria_sem_texto_avanca(self):
         oficio = self._oficio_ate_transporte()
@@ -160,4 +160,4 @@ class WizardJustificativaTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("oficios:wizard_resumo", args=[oficio.pk]))
+        self.assertEqual(response.url, reverse("oficios:wizard_documentos", args=[oficio.pk]))

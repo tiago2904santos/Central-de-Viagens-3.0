@@ -28,7 +28,9 @@
             <form class="app-form-shell app-form-shell--oficio form-shell" method="post" novalidate>
               {% csrf_token %}
               {% block wizard_content %}{% endblock %}
-              {% include "oficios/partials/wizard_actions.html" with wizard_back_url=wizard_back_url wizard_back_label=wizard_back_label oficio=oficio only %}
+              {% block wizard_actions %}
+              {% include "oficios/partials/wizard_actions.html" with wizard_back_url=wizard_back_url wizard_back_label=wizard_back_label oficio=oficio wizard_finalizar=wizard_finalizar only %}
+              {% endblock %}
             </form>
           </main>
         </div>

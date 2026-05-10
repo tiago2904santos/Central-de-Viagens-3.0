@@ -170,7 +170,7 @@ def apresentar_oficio_wizard_steps(
             step["state"] = "current" if etapa_atual == key else justificativa_status
             step["completion_state"] = justificativa_status
         elif key == "documentos":
-            step["url"] = reverse("oficios:wizard_resumo", args=[oficio.pk]) if oficio else ""
+            step["url"] = reverse("oficios:wizard_documentos", args=[oficio.pk]) if oficio else ""
             step["state"] = "current" if etapa_atual == key else documentos_status
             step["completion_state"] = documentos_status
         else:
@@ -223,5 +223,71 @@ def apresentar_linha_lista_simples_modelo_motivo(modelo, edit_url="#", delete_ur
         ],
         "edit_url": edit_url,
         "delete_url": delete_url,
+    }
+
+
+def apresentar_oficio_wizard_documentos_context(oficio):
+    """Dados exibidos na etapa 5 (documentos / resumo final)."""
+    from django.utils import timezone
+
+    from justificativas.selectors import get_or_none_justificativa_by_oficio
+    from justificativas.services import avaliar_etapa_justificativa_oficio
+    from justificativas.services import get_primeira_saida_oficio
+
+    detalhe = apresentar_pagina_detalhe_oficio(oficio)
+    roteiro = oficio.roteiro
+    destinos = []
+    if roteiro:
+        destinos = [f"{d.cidade} ({d.estado.sigla})" for d in roteiro.destinos.order_by("ordem")]
+
+    primeira = get_primeira_saida_oficio(oficio)
+    primeira_label = "—"
+    if primeira:
+        primeira_label = primeira.astimezone(timezone.get_current_timezone()).strftime("%d/%m/%Y %H:%M")
+
+    retorno_label = "—"
+    if roteiro and roteiro.retorno_saida_dt:
+        dt = roteiro.retorno_saida_dt
+        if timezone.is_naive(dt):
+            dt = timezone.make_aware(dt, timezone.get_current_timezone())
+        retorno_label = dt.astimezone(timezone.get_current_timezone()).strftime("%d/%m/%Y %H:%M")
+
+    dist_txt = "—"
+    if roteiro:
+        dist = roteiro.rota_distancia_manual_km or roteiro.rota_distancia_calculada_km
+        if dist is not None:
+            dist_txt = f"{dist} km"
+
+    tempo_txt = "—"
+    if roteiro:
+        mins = roteiro.rota_duracao_manual_min or roteiro.rota_duracao_calculada_min
+        if mins:
+            tempo_txt = f"{mins} min"
+
+    j_et = avaliar_etapa_justificativa_oficio(oficio)
+    j_obj = get_or_none_justificativa_by_oficio(oficio)
+    texto_j = (j_obj.texto or "").strip() if j_obj else ""
+
+    sede = "—"
+    if roteiro:
+        if roteiro.origem_cidade_id:
+            sede = str(roteiro.origem_cidade)
+        elif roteiro.origem_estado_id:
+            sede = str(roteiro.origem_estado)
+
+    return {
+        "detalhe": detalhe,
+        "destinos": destinos,
+        "primeira_saida_label": primeira_label,
+        "retorno_label": retorno_label,
+        "distancia_label": dist_txt,
+        "tempo_rota_label": tempo_txt,
+        "sede_label": sede,
+        "roteiro": roteiro,
+        "justificativa_etapa": j_et,
+        "justificativa_texto": texto_j,
+        "quantidade_diarias": (roteiro.quantidade_diarias if roteiro else "") or "—",
+        "valor_diarias": roteiro.valor_diarias if roteiro else None,
+        "valor_diarias_extenso": (roteiro.valor_diarias_extenso if roteiro else "") or "—",
     }
 

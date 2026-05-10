@@ -1,0 +1,112 @@
+{% extends "oficios/wizard_base.html" %}
+
+{% block wizard_content %}
+  <section class="form-section app-form-section oficio-documentos-hero">
+    <div class="oficio-equipe-section__copy">
+      <h3>Documentos</h3>
+      <p class="app-form-help">
+        Revise o resumo antes de gerar DOCX/PDF ou finalizar o ofício. Pendências bloqueiam a finalização e os downloads.
+      </p>
+    </div>
+  </section>
+
+  {% if mostrar_pendencias %}
+    <section class="form-section app-form-section oficio-documentos-pendencias" aria-live="polite">
+      <h4 class="oficio-justificativa-subtitle">Pendências</h4>
+      <ul class="oficio-justificativa-pendencias__list">
+        {% for p in pendencias_documentos %}
+          <li>{{ p }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section class="form-section app-form-section">
+    <h4 class="oficio-justificativa-subtitle">Resumo do ofício</h4>
+    <div class="app-form-grid-panel oficio-data-block oficio-documentos-resumo">
+      <dl class="oficio-justificativa-dl">
+        <div class="oficio-justificativa-dl__item">
+          <dt>Número</dt>
+          <dd>{{ documentos_ctx.detalhe.numero_formatado }}</dd>
+        </div>
+        <div class="oficio-justificativa-dl__item">
+          <dt>Protocolo</dt>
+          <dd>{{ documentos_ctx.detalhe.protocolo }}</dd>
+        </div>
+        <div class="oficio-justificativa-dl__item">
+          <dt>Data de criação</dt>
+          <dd>{{ documentos_ctx.detalhe.data_criacao }}</dd>
+        </div>
+        <div class="oficio-justificativa-dl__item">
+          <dt>Status</dt>
+          <dd>{{ documentos_ctx.detalhe.status }}</dd>
+        </div>
+        <div class="oficio-justificativa-dl__item">
+          <dt>Custeio</dt>
+          <dd>{{ documentos_ctx.detalhe.custeio }}</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="form-section app-form-section">
+    <h4 class="oficio-justificativa-subtitle">Equipe</h4>
+    <div class="app-form-grid-panel oficio-data-block">
+      <p class="field-help">
+        <strong>Viajantes:</strong>
+        {% if documentos_ctx.detalhe.servidores %}
+          {{ documentos_ctx.detalhe.servidores|join:", " }}
+        {% else %}—{% endif %}
+      </p>
+      <p class="field-help"><strong>Motorista:</strong> {{ documentos_ctx.detalhe.motorista }}</p>
+    </div>
+  </section>
+
+  <section class="form-section app-form-section">
+    <h4 class="oficio-justificativa-subtitle">Transporte</h4>
+    <div class="app-form-grid-panel oficio-data-block">
+      <dl class="oficio-justificativa-dl">
+        <div class="oficio-justificativa-dl__item">
+          <dt>Viatura</dt>
+          <dd>{{ documentos_ctx.detalhe.viatura }}</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="form-section app-form-section">
+    <h4 class="oficio-justificativa-subtitle">Roteiro e diárias</h4>
+    <div class="app-form-grid-panel oficio-data-block">
+      <p class="field-help"><strong>Sede / origem:</strong> {{ documentos_ctx.sede_label }}</p>
+      <p class="field-help"><strong>Destinos:</strong>
+        {% if documentos_ctx.destinos %}{{ documentos_ctx.destinos|join:", " }}{% else %}—{% endif %}
+      </p>
+      <p class="field-help"><strong>Primeira saída:</strong> {{ documentos_ctx.primeira_saida_label }}</p>
+      <p class="field-help"><strong>Retorno (saída):</strong> {{ documentos_ctx.retorno_label }}</p>
+      <p class="field-help"><strong>Distância / tempo:</strong> {{ documentos_ctx.distancia_label }} · {{ documentos_ctx.tempo_rota_label }}</p>
+      <p class="field-help"><strong>Diárias (qtd):</strong> {{ documentos_ctx.quantidade_diarias }}</p>
+      <p class="field-help"><strong>Valor:</strong>
+        {% if documentos_ctx.valor_diarias %}{{ documentos_ctx.valor_diarias }}{% else %}—{% endif %}
+      </p>
+      <p class="field-help"><strong>Por extenso:</strong> {{ documentos_ctx.valor_diarias_extenso }}</p>
+    </div>
+  </section>
+
+  <section class="form-section app-form-section">
+    <h4 class="oficio-justificativa-subtitle">Justificativa</h4>
+    <div class="app-form-grid-panel oficio-data-block">
+      {% if documentos_ctx.justificativa_etapa.obrigatoria %}
+        {% if documentos_ctx.justificativa_texto %}
+          <p class="field-help">{{ documentos_ctx.justificativa_texto }}</p>
+        {% else %}
+          <p class="field-help"><strong>Incompleta</strong> — informe o texto na etapa anterior.</p>
+        {% endif %}
+      {% else %}
+        <p class="field-help">Não exigida pela regra de prazo.</p>
+        {% if documentos_ctx.justificativa_texto %}
+          <p class="field-help">{{ documentos_ctx.justificativa_texto }}</p>
+        {% endif %}
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

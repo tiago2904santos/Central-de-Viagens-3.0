@@ -20,6 +20,7 @@ urlpatterns = [
     path("<int:pk>/justificativa/", views.wizard_justificativa, name="wizard_justificativa"),
     path("<int:pk>/resumo/", views.wizard_resumo, name="wizard_resumo"),
     path("<int:pk>/api/viatura-por-placa/", views.api_viatura_por_placa, name="api_viatura_por_placa"),
+    path("<int:pk>/documentos/", views.wizard_documentos, name="wizard_documentos"),
     path("<int:pk>/documentos/<str:formato>/", views.baixar_documento, name="baixar_documento"),
     path("<int:pk>/excluir/", views.excluir, name="excluir"),
 ]
