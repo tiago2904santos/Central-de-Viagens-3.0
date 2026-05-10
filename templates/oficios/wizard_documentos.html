@@ -144,23 +144,21 @@
     {% if documentos_ctx.roteiro_card %}
       {% with card=documentos_ctx.roteiro_card %}
         <article
-          class="oficio-documentos-route-card oficio-documentos-route-card--status-{{ card.status_variant|default:'outro' }} oficio-documentos-route-card--trechos-{{ card.trechos_count|default:0 }} oficio-documentos-route-card--layout-{{ card.roteiro_card_layout|default:'compact' }}"
+          class="oficio-documentos-route-card oficio-documentos-route-card--trechos-{{ card.trechos_count|default:0 }} oficio-documentos-route-card--layout-{{ card.roteiro_card_layout|default:'compact' }}"
         >
-          <header class="oficio-documentos-route-card__wizard-head">
-            <h4 class="oficio-documentos-route-card__wizard-title">Roteiro e diárias</h4>
-            <p class="oficio-documentos-route-card__wizard-subtitle">Trajeto, tempos e valores</p>
+          <header class="oficio-documentos-route-card__head">
+            <p class="oficio-documentos-route-card__eyebrow">Roteiro e diárias</p>
+            <div class="oficio-documentos-route-card__title-row">
+              <h3 class="oficio-documentos-route-card__title">{{ card.title|default:"Roteiro" }}</h3>
+              {% if card.status_chip_label %}
+                <span class="status-chip oficio-documentos-route-card__status-chip {{ card.status_chip_class|default:'status-chip--muted' }}">{{ card.status_chip_label }}</span>
+              {% endif %}
+            </div>
+            {% if card.subtitle %}
+              <p class="oficio-documentos-route-card__subtitle">{{ card.subtitle }}</p>
+            {% endif %}
+            <p class="oficio-documentos-route-card__tagline">Trajeto, tempos e valores</p>
           </header>
-              <div class="oficio-documentos-route-card__top">
-                <div class="oficio-documentos-route-card__title-row">
-                  <h3 class="oficio-documentos-route-card__title">{{ card.title|default:"Roteiro" }}</h3>
-                  {% if card.status_chip_label %}
-                    <span class="status-chip oficio-documentos-route-card__status-chip {{ card.status_chip_class|default:'status-chip--muted' }}">{{ card.status_chip_label }}</span>
-                  {% endif %}
-                </div>
-                {% if card.subtitle %}
-                  <p class="oficio-documentos-route-card__subtitle">{{ card.subtitle }}</p>
-                {% endif %}
-              </div>
 
               <div class="oficio-documentos-route-card__body">
                 <div class="oficio-documentos-route-card__trechos-col">
@@ -285,19 +283,16 @@
         </article>
       {% endwith %}
     {% else %}
-      <article class="oficio-documentos-route-card oficio-documentos-route-card--fallback oficio-documentos-route-card--status-outro">
-        <header class="oficio-documentos-route-card__wizard-head">
-          <h4 class="oficio-documentos-route-card__wizard-title">Roteiro e diárias</h4>
-          <p class="oficio-documentos-route-card__wizard-subtitle">Trajeto, tempos e valores</p>
+      <article class="oficio-documentos-route-card oficio-documentos-route-card--fallback">
+        <header class="oficio-documentos-route-card__head">
+          <p class="oficio-documentos-route-card__eyebrow">Roteiro e diárias</p>
+          <div class="oficio-documentos-route-card__title-row">
+            <h3 class="oficio-documentos-route-card__title">{{ documentos_ctx.sede_label }} → {{ documentos_ctx.destino_principal_label }}</h3>
+          </div>
+          <p class="oficio-documentos-route-card__subtitle">
+            Nenhum roteiro vinculado a este ofício; abaixo estão os dados disponíveis para documentos.
+          </p>
         </header>
-            <div class="oficio-documentos-route-card__top">
-              <div class="oficio-documentos-route-card__title-row">
-                <h3 class="oficio-documentos-route-card__title">{{ documentos_ctx.sede_label }} → {{ documentos_ctx.destino_principal_label }}</h3>
-              </div>
-              <p class="oficio-documentos-route-card__subtitle">
-                Nenhum roteiro vinculado a este ofício; abaixo estão os dados disponíveis para documentos.
-              </p>
-            </div>
             <div class="oficio-documentos-route-card__body">
               <div class="oficio-documentos-route-card__trechos-col">
                 <div class="oficio-documentos-route-card__fallback-facts">

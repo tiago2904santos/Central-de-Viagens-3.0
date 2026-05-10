@@ -1717,62 +1717,42 @@
   font-weight: 500;
 }
 
-/* Resumo de roteiro (etapa documentos) — espelha lista de roteiros, prefixo oficio-documentos-route-card */
+/* Resumo de roteiro (etapa documentos) — alinhado aos cartões da etapa documentos */
 .oficio-documentos-route-card {
-  background: var(--route-card-bg);
-  border: 1px solid var(--route-card-border);
-  border-radius: calc(var(--radius-lg) + 4px);
-  border-left: 8px solid var(--route-card-border);
-  box-shadow: var(--theme-shadow-block);
+  background: var(--color-card);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   box-sizing: border-box;
   display: grid;
   gap: var(--space-2);
   margin: 0;
-  padding: var(--space-3) var(--space-4);
+  overflow: hidden;
+  padding: var(--space-4);
 }
 
-.oficio-documentos-route-card--status-rascunho {
-  border-left-color: var(--route-status-draft-border);
-}
-
-.oficio-documentos-route-card--status-finalizado {
-  border-left-color: var(--route-status-final-border);
-}
-
-.oficio-documentos-route-card--status-outro {
-  border-left-color: var(--route-status-muted-border);
-}
-
-.oficio-documentos-route-card--fallback {
-  border-left-color: var(--route-status-muted-border);
-}
-
-.oficio-documentos-route-card__wizard-head {
-  border-bottom: 1px solid var(--route-card-inner-border);
+.oficio-documentos-route-card__head {
+  border-bottom: 1px solid var(--color-border-soft);
   margin-bottom: var(--space-3);
   padding-bottom: var(--space-3);
 }
 
-.oficio-documentos-route-card__wizard-title {
-  color: var(--color-heading);
-  font-size: var(--font-size-md);
+.oficio-documentos-route-card__eyebrow {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
   font-weight: 800;
-  letter-spacing: -0.01em;
-  margin: 0 0 var(--space-1);
+  letter-spacing: 0.12em;
+  margin: 0 0 var(--space-2);
+  text-transform: uppercase;
 }
 
-.oficio-documentos-route-card__wizard-subtitle {
+.oficio-documentos-route-card__tagline {
   color: var(--color-muted);
   font-size: var(--font-size-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
-  margin: 0;
+  margin: var(--space-2) 0 0;
   text-transform: uppercase;
-}
-
-.oficio-documentos-route-card__top {
-  display: grid;
-  gap: var(--space-1);
 }
 
 .oficio-documentos-route-card__title-row {
