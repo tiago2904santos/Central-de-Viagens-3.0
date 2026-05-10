@@ -2475,6 +2475,7 @@
   flex-direction: column;
   gap: var(--space-2);
   min-width: 0;
+  width: 100%;
 }
 
 .oficio-documentos-justification-text-card__label {
@@ -2489,14 +2490,14 @@
   background: var(--color-card-muted);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-control);
+  box-sizing: border-box;
   color: var(--color-heading);
-  display: inline-block;
+  display: block;
   font-size: var(--font-size-sm);
   line-height: 1.6;
-  max-width: min(100%, 42rem);
+  max-width: 100%;
   padding: var(--space-3) var(--space-4);
-  vertical-align: top;
-  width: auto;
+  width: 100%;
 }
 
 .oficio-documentos-justification-text-card__body p {
@@ -2546,11 +2547,5 @@
 @media (max-width: 520px) {
   .oficio-documentos-summary {
     flex-direction: column;
-  }
-
-  .oficio-documentos-justification-text-card__body {
-    display: block;
-    max-width: 100%;
-    width: 100%;
   }
 }
