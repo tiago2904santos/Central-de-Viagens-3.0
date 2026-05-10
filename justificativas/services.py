@@ -7,7 +7,12 @@ from typing import Any
 
 from django.utils import timezone
 
+from django.db import transaction
+
 from cadastros.models import ConfiguracaoSistema
+
+from .models import Justificativa
+from .selectors import get_or_none_justificativa_by_oficio
 
 
 def get_prazo_justificativa_dias() -> int:
@@ -123,4 +128,121 @@ def avaliar_justificativa_oficio(oficio) -> dict[str, Any]:
         "motivo_regra": (
             f"Antecedência ({dias} dias) superior ao prazo mínimo ({prazo} dias)."
         ),
+    }
+
+
+@transaction.atomic
+def get_or_create_justificativa_oficio(oficio):
+    """Garante registro de Justificativa com snapshots da regra de prazo."""
+    ev = avaliar_justificativa_oficio(oficio)
+    defaults = {
+        "obrigatoria": ev["obrigatoria"],
+        "dias_antecedencia": ev["dias_antecedencia"],
+        "prazo_dias": ev["prazo_dias"],
+        "primeira_saida_dt": ev["primeira_saida"],
+        "texto": "",
+        "status": Justificativa.STATUS_RASCUNHO,
+    }
+    j, created = Justificativa.objects.get_or_create(oficio=oficio, defaults=defaults)
+    if not created:
+        j.obrigatoria = ev["obrigatoria"]
+        j.dias_antecedencia = ev["dias_antecedencia"]
+        j.prazo_dias = ev["prazo_dias"]
+        j.primeira_saida_dt = ev["primeira_saida"]
+        j.save(
+            update_fields=[
+                "obrigatoria",
+                "dias_antecedencia",
+                "prazo_dias",
+                "primeira_saida_dt",
+                "updated_at",
+            ]
+        )
+    return j
+
+
+@transaction.atomic
+def atualizar_justificativa_oficio(oficio, form, action="save_draft"):
+    """
+    Persiste modelo/texto e atualiza snapshots. action: save_draft | save_continue.
+    """
+    if not getattr(form, "is_bound", False) or not form.is_valid():
+        raise ValueError("Formulario de justificativa invalido.")
+
+    j = get_or_create_justificativa_oficio(oficio)
+    cd = form.cleaned_data
+    j.modelo = cd.get("modelo")
+    j.texto = cd.get("texto") or ""
+
+    ev = avaliar_justificativa_oficio(oficio)
+    j.obrigatoria = ev["obrigatoria"]
+    j.dias_antecedencia = ev["dias_antecedencia"]
+    j.prazo_dias = ev["prazo_dias"]
+    j.primeira_saida_dt = ev["primeira_saida"]
+
+    if action == "save_continue":
+        j.status = Justificativa.STATUS_FINALIZADA
+    else:
+        j.status = Justificativa.STATUS_RASCUNHO
+
+    j.save()
+    return j
+
+
+def justificativa_oficio_esta_completa(oficio) -> bool:
+    ev = avaliar_justificativa_oficio(oficio)
+    if not ev["obrigatoria"]:
+        return True
+    j = get_or_none_justificativa_by_oficio(oficio)
+    return bool(j and (j.texto or "").strip())
+
+
+def avaliar_etapa_justificativa_oficio(oficio) -> dict[str, Any]:
+    """Estado da etapa para wizard e templates."""
+    ev = avaliar_justificativa_oficio(oficio)
+    j = get_or_none_justificativa_by_oficio(oficio)
+    pendencias = []
+    primeira = ev["primeira_saida"]
+
+    if ev["status"] == "unknown":
+        pendencias.append("Defina data de saída no roteiro para avaliar a justificativa.")
+        return {
+            "obrigatoria": False,
+            "status": "not_started",
+            "pendencias": pendencias,
+            "dias_antecedencia": ev["dias_antecedencia"],
+            "prazo_dias": ev["prazo_dias"],
+            "primeira_saida": primeira,
+            "justificativa": j,
+            "regra": ev,
+        }
+
+    if not ev["obrigatoria"]:
+        return {
+            "obrigatoria": False,
+            "status": "not_required",
+            "pendencias": [],
+            "dias_antecedencia": ev["dias_antecedencia"],
+            "prazo_dias": ev["prazo_dias"],
+            "primeira_saida": primeira,
+            "justificativa": j,
+            "regra": ev,
+        }
+
+    texto_ok = bool(j and (j.texto or "").strip())
+    if not texto_ok:
+        pendencias.append("Informe o texto da justificativa.")
+        status_etapa = "incomplete"
+    else:
+        status_etapa = "complete"
+
+    return {
+        "obrigatoria": True,
+        "status": status_etapa,
+        "pendencias": pendencias,
+        "dias_antecedencia": ev["dias_antecedencia"],
+        "prazo_dias": ev["prazo_dias"],
+        "primeira_saida": primeira,
+        "justificativa": j,
+        "regra": ev,
     }
