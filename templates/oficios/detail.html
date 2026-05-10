@@ -28,7 +28,7 @@
       </header>
 
       <section class="app-page__form-card">
-        <div class="form-section">
+        <div class="form-section app-form-section">
           {% include "components/forms/form_section.html" with title="Identificação" only %}
           <dl class="document-meta">
             <div class="document-meta-item"><dt>Status</dt><dd><span class="status-chip {{ detail.status_class }}">{{ detail.status }}</span></dd></div>
@@ -38,7 +38,7 @@
           </dl>
         </div>
 
-        <div class="form-section">
+        <div class="form-section app-form-section">
           {% include "components/forms/form_section.html" with title="Equipe e transporte" only %}
           <dl class="document-meta">
             <div class="document-meta-item"><dt>Servidores</dt><dd>{% if detail.servidores %}{{ detail.servidores|join:", " }}{% else %}—{% endif %}</dd></div>
@@ -47,7 +47,7 @@
           </dl>
         </div>
 
-        <div class="form-section">
+        <div class="form-section app-form-section">
           {% include "components/forms/form_section.html" with title="Custeio e motivo" only %}
           <dl class="document-meta">
             <div class="document-meta-item"><dt>Custeio</dt><dd>{{ detail.custeio }}</dd></div>
