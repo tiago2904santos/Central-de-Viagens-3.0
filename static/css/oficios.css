@@ -1600,93 +1600,118 @@
   max-width: 36rem;
 }
 
-.oficio-documentos-transport-stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+.oficio-documentos-transport__titles {
+  max-width: 40rem;
 }
 
-.oficio-documentos-vehicle {
+.oficio-documentos-vehicle-card {
   background: var(--color-card-muted);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   padding: var(--space-4);
 }
 
-.oficio-documentos-vehicle__plate {
-  color: var(--color-heading);
-  font-size: var(--font-size-xl);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  line-height: 1.25;
-  margin: 0 0 var(--space-4);
-}
-
-.oficio-documentos-vehicle__meta {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  margin: 0;
-}
-
-.oficio-documentos-vehicle__meta-item dt {
-  color: var(--color-muted);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-1);
-  text-transform: uppercase;
-}
-
-.oficio-documentos-vehicle__meta-item dd {
-  color: var(--color-heading);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  margin: 0;
-  word-break: break-word;
-}
-
-.oficio-documentos-driver {
-  background: var(--color-card-muted);
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-control);
+.oficio-documentos-vehicle-card__main {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: var(--space-4);
+  min-width: 0;
 }
 
-.oficio-documentos-driver__label {
+.oficio-documentos-vehicle-card__label {
   color: var(--color-muted);
   font-size: var(--font-size-xs);
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.oficio-documentos-driver__name {
+.oficio-documentos-vehicle-card__plate {
   color: var(--color-heading);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
+}
+
+.oficio-documentos-vehicle-card__model {
+  color: var(--color-heading);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
   line-height: 1.35;
   word-break: break-word;
 }
 
-@media (min-width: 640px) {
-  .oficio-documentos-transport-stack {
-    align-items: stretch;
-    flex-direction: row;
+.oficio-documentos-vehicle-card__facts {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.oficio-documentos-vehicle-card__facts > div {
+  min-width: 0;
+}
+
+.oficio-documentos-vehicle-card__facts dt {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-1);
+  text-transform: uppercase;
+}
+
+.oficio-documentos-vehicle-card__facts dd {
+  color: var(--color-heading);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0;
+  word-break: break-word;
+}
+
+.oficio-documentos-driver-strip {
+  align-items: center;
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+}
+
+.oficio-documentos-driver-strip__label {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.oficio-documentos-driver-strip__value {
+  color: var(--color-heading);
+  flex: 1 1 12rem;
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  line-height: 1.35;
+  min-width: 0;
+  text-align: right;
+  word-break: break-word;
+}
+
+@media (max-width: 520px) {
+  .oficio-documentos-vehicle-card__facts {
+    grid-template-columns: 1fr;
   }
 
-  .oficio-documentos-transport-stack .oficio-documentos-vehicle {
-    flex: 2 1 0;
-    min-width: 0;
-  }
-
-  .oficio-documentos-transport-stack .oficio-documentos-driver {
-    flex: 1 1 12rem;
-    justify-content: center;
-    min-width: 0;
+  .oficio-documentos-driver-strip__value {
+    text-align: left;
   }
 }
 
@@ -1725,6 +1750,9 @@
 }
 
 .oficio-documentos-card__body--transport {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   padding-bottom: var(--space-3);
   padding-top: var(--space-3);
 }

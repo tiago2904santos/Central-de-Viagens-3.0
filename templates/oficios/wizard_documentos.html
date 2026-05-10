@@ -110,42 +110,43 @@
       </article>
 
       <article class="oficio-documentos-card oficio-documentos-card--transport">
-        <header class="oficio-documentos-card__header">
-          <h4 class="oficio-documentos-card__title">Transporte</h4>
-          <p class="oficio-documentos-card__subtitle">Viatura e condução</p>
+        <header class="oficio-documentos-card__header oficio-documentos-transport__header">
+          <div class="oficio-documentos-transport__titles">
+            <span class="oficio-documentos-card__eyebrow">Transporte</span>
+            <h4 class="oficio-documentos-card__title">Viatura e condução</h4>
+            <p class="oficio-documentos-card__subtitle">Dados utilizados na emissão do ofício</p>
+          </div>
         </header>
         <div class="oficio-documentos-card__body oficio-documentos-card__body--transport">
           {% with t=documentos_ctx.transporte %}
-            <div class="oficio-documentos-transport-stack">
-              <div class="oficio-documentos-vehicle">
-                <div class="oficio-documentos-vehicle__plate" aria-label="Placa">{{ t.placa }}</div>
-                <dl class="oficio-documentos-vehicle__meta" aria-label="Detalhes da viatura">
-                  <div class="oficio-documentos-vehicle__meta-item">
-                    <dt>Modelo</dt>
-                    <dd>{{ t.modelo }}</dd>
-                  </div>
-                  <div class="oficio-documentos-vehicle__meta-item">
-                    <dt>Tipo</dt>
-                    <dd>{{ t.tipo }}</dd>
-                  </div>
-                  <div class="oficio-documentos-vehicle__meta-item">
-                    <dt>Combustível</dt>
-                    <dd>{{ t.combustivel }}</dd>
-                  </div>
-                  <div class="oficio-documentos-vehicle__meta-item">
-                    <dt>Porte / transporte de armas</dt>
-                    <dd>{{ t.porte_armas }}</dd>
-                  </div>
-                  <div class="oficio-documentos-vehicle__meta-item">
-                    <dt>Unidade solicitante</dt>
-                    <dd>{{ t.unidade }}</dd>
-                  </div>
-                </dl>
+            <div class="oficio-documentos-vehicle-card">
+              <div class="oficio-documentos-vehicle-card__main">
+                <span class="oficio-documentos-vehicle-card__label">Viatura</span>
+                <strong class="oficio-documentos-vehicle-card__plate">{{ t.placa }}</strong>
+                <span class="oficio-documentos-vehicle-card__model">{{ t.modelo }}</span>
               </div>
-              <div class="oficio-documentos-driver">
-                <span class="oficio-documentos-driver__label">Motorista</span>
-                <strong class="oficio-documentos-driver__name">{{ t.motorista }}</strong>
-              </div>
+              <dl class="oficio-documentos-vehicle-card__facts" aria-label="Detalhes da viatura">
+                <div>
+                  <dt>Tipo</dt>
+                  <dd>{{ t.tipo }}</dd>
+                </div>
+                <div>
+                  <dt>Combustível</dt>
+                  <dd>{{ t.combustivel }}</dd>
+                </div>
+                <div>
+                  <dt>Armas</dt>
+                  <dd>{{ t.porte_armas }}</dd>
+                </div>
+                <div>
+                  <dt>Unidade</dt>
+                  <dd>{{ t.unidade }}</dd>
+                </div>
+              </dl>
+            </div>
+            <div class="oficio-documentos-driver-strip">
+              <span class="oficio-documentos-driver-strip__label">Motorista</span>
+              <strong class="oficio-documentos-driver-strip__value">{{ t.motorista }}</strong>
             </div>
           {% endwith %}
         </div>
