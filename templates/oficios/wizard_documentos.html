@@ -358,33 +358,41 @@
     <article class="oficio-documentos-card oficio-documentos-card--justification">
       <header class="oficio-documentos-card__header">
         <h4 class="oficio-documentos-card__title">Justificativa</h4>
-        <p class="oficio-documentos-card__subtitle">Regra de prazo e texto registrado</p>
+        <p class="oficio-documentos-card__subtitle">Antecedência, prazo e modelo</p>
       </header>
       <div class="oficio-documentos-card__body">
-        {% if documentos_ctx.justificativa_etapa.obrigatoria %}
-          {% if documentos_ctx.justificativa_texto %}
-            <div class="oficio-documentos-callout oficio-documentos-callout--ok">
-              <span class="oficio-documentos-callout__badge">Obrigatória preenchida</span>
-              <div class="oficio-documentos-callout__text">{{ documentos_ctx.justificativa_texto|linebreaksbr }}</div>
+        {% with jr=documentos_ctx.justificativa_resumo %}
+          <div class="oficio-documentos-justification-compact">
+            <div class="oficio-documentos-justification-head">
+              <span class="oficio-documentos-status-chip oficio-documentos-status-chip--{{ jr.chip_variant }}">{{ jr.chip_label }}</span>
             </div>
-          {% else %}
-            <div class="oficio-documentos-callout oficio-documentos-callout--alert">
-              <span class="oficio-documentos-callout__badge">Pendente</span>
-              <p class="oficio-documentos-callout__lead">
-                O texto da justificativa é obrigatório para este ofício. Informe-o na etapa anterior.
-              </p>
-            </div>
-          {% endif %}
-        {% else %}
-          <div class="oficio-documentos-callout oficio-documentos-callout--muted">
-            <span class="oficio-documentos-callout__badge">Não exigida</span>
-            {% if documentos_ctx.justificativa_texto %}
-              <div class="oficio-documentos-callout__text">{{ documentos_ctx.justificativa_texto|linebreaksbr }}</div>
-            {% else %}
-              <p class="oficio-documentos-callout__lead">Não há obrigatoriedade de justificativa pela regra de antecedência.</p>
+            <dl class="oficio-documentos-justification-facts">
+              <div class="oficio-documentos-justification-fact">
+                <dt>Data de criação do ofício</dt>
+                <dd>{{ jr.data_criacao }}</dd>
+              </div>
+              <div class="oficio-documentos-justification-fact">
+                <dt>Primeira saída</dt>
+                <dd>{{ jr.primeira_saida }}</dd>
+              </div>
+              <div class="oficio-documentos-justification-fact">
+                <dt>Dias de antecedência</dt>
+                <dd>{{ jr.antecedencia }}</dd>
+              </div>
+              <div class="oficio-documentos-justification-fact">
+                <dt>Prazo mínimo (regra)</dt>
+                <dd>{{ jr.prazo_minimo }}</dd>
+              </div>
+              <div class="oficio-documentos-justification-fact">
+                <dt>Modelo utilizado</dt>
+                <dd>{{ jr.modelo_nome }}</dd>
+              </div>
+            </dl>
+            {% if documentos_ctx.justificativa_etapa.obrigatoria and not documentos_ctx.justificativa_texto %}
+              <p class="oficio-documentos-justification-hint">Registre o texto na etapa de justificativa para concluir.</p>
             {% endif %}
           </div>
-        {% endif %}
+        {% endwith %}
       </div>
     </article>
   </div>

@@ -304,6 +304,52 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         roteiro_card.pop("actions", None)
         roteiro_card["subtitle"] = "Roteiro utilizado para geração dos documentos"
 
+    ev_rule = j_et.get("regra") or {}
+    dias_ant = j_et.get("dias_antecedencia")
+    if dias_ant is None:
+        dias_ant = ev_rule.get("dias_antecedencia")
+
+    antecedencia_display = "—"
+    if dias_ant is not None:
+        antecedencia_display = f"{dias_ant} dias"
+
+    prazo_val = j_et.get("prazo_dias")
+    if prazo_val is None:
+        prazo_val = ev_rule.get("prazo_dias")
+    prazo_display = "—"
+    if prazo_val is not None:
+        prazo_display = f"{prazo_val} dias"
+
+    dc = oficio.data_criacao
+    data_criacao_resumo = dc.strftime("%d/%m/%Y") if hasattr(dc, "strftime") else "—"
+
+    modelo_nome = "—"
+    if j_obj and j_obj.modelo_id:
+        modelo = getattr(j_obj, "modelo", None)
+        if modelo is not None:
+            modelo_nome = modelo.nome
+
+    if j_et.get("obrigatoria"):
+        if texto_j:
+            chip_label = "Obrigatória preenchida"
+            chip_variant = "success"
+        else:
+            chip_label = "Obrigatória pendente"
+            chip_variant = "warning"
+    else:
+        chip_label = "Não exigida"
+        chip_variant = "muted"
+
+    justificativa_resumo = {
+        "chip_label": chip_label,
+        "chip_variant": chip_variant,
+        "data_criacao": data_criacao_resumo,
+        "primeira_saida": primeira_label,
+        "antecedencia": antecedencia_display,
+        "prazo_minimo": prazo_display,
+        "modelo_nome": modelo_nome,
+    }
+
     return {
         "detalhe": detalhe,
         "destinos": destinos,
@@ -317,6 +363,7 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         "roteiro_card": roteiro_card,
         "justificativa_etapa": j_et,
         "justificativa_texto": texto_j,
+        "justificativa_resumo": justificativa_resumo,
         "quantidade_diarias": (roteiro.quantidade_diarias if roteiro else "") or "—",
         "valor_diarias": roteiro.valor_diarias if roteiro else None,
         "valor_diarias_display": _format_brl_diarias(roteiro.valor_diarias if roteiro else None),
