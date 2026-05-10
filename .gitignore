@@ -14,6 +14,13 @@ htmlcov/
 .idea/
 .vscode/
 legacy/
+
+# Agentes/Claude/Cursor - evitar projetos duplicados dentro do repo
+/Central de Viagens 3.0/
+*_DUPLICADO_NAO_USAR/
+great-euler-*/
+kind-jennings-*/
+.claude/
 legacy/
 
 # CSVs grandes de geografia (manter localmente; exemplo versionado em dados/exemplos/)
