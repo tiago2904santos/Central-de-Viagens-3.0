@@ -18,14 +18,14 @@
 {% endblock %}
 
 {% block content %}
-  <div class="app-page oficio-wizard">
+  <div class="app-page oficio-wizard app-wizard">
     <section class="oficio-wizard__section">
       <div class="app-page__shell oficio-wizard__shell">
         <section class="oficio-wizard__top" aria-labelledby="oficios-wizard-title">
-          <header class="oficio-wizard__header">
+          <header class="oficio-wizard__header app-wizard__header">
             <div class="oficio-wizard__header-copy">
-              <h1 class="oficio-wizard__title" id="oficios-wizard-title">{{ wizard_header.title }}</h1>
-              <p class="oficio-wizard__subtitle">{{ wizard_header.subtitle }}</p>
+              <h1 class="oficio-wizard__title app-wizard__title" id="oficios-wizard-title">{{ wizard_header.title }}</h1>
+              <p class="oficio-wizard__subtitle app-wizard__subtitle">{{ wizard_header.subtitle }}</p>
             </div>
             <div class="app-page__brand-mark" aria-hidden="true">OF</div>
           </header>
@@ -33,7 +33,7 @@
           {% include "oficios/partials/wizard_stepper.html" with steps=wizard_steps only %}
         </section>
 
-        <div class="oficio-wizard__layout">
+        <div class="oficio-wizard__layout app-wizard__layout">
           <main class="oficio-wizard__main">
             <div class="app-form-shell app-form-shell--roteiro roteiro-form-shell">
               {{ initial_trechos_data|json_script:"initialTrechosData" }}

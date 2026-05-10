@@ -13,7 +13,7 @@
     </div>
   {% endif %}
 
-  <div class="form-section">
+  <div class="form-section app-form-section">
     {% include "components/forms/form_section.html" with title="Dados do ofício" description="Identificação administrativa, protocolo e custeio." only %}
     <div class="oficio-data-block app-form-grid-panel">
       <div class="oficio-data-grid oficio-data-grid--three">
@@ -85,7 +85,7 @@
       </div>
       {% include "components/buttons/action_button.html" with href=servidor_create_url label="Cadastrar novo viajante" variant="secondary" only %}
     </div>
-    <div class="form-grid">
+    <div class="form-grid app-form-grid">
       <div class="field-span-12">
         {% include "components/forms/form_field.html" with field=form.servidores label="BUSCAR VIAJANTE" help_text="A busca mostra apenas viajantes finalizados e continua disponível após cada seleção." only %}
       </div>
