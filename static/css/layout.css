@@ -39,95 +39,6 @@
   text-transform: uppercase;
 }
 
-/*
- * .page-header = cabeçalho legado. Mantido para retrocompatibilidade.
- * Novos templates devem usar .app-page__header (via .app-page-hero).
- */
-.page-header {
-  align-items: center;
-  background:
-    linear-gradient(135deg, #0b3a66 0%, #155b9a 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-elevated);
-  color: var(--color-white);
-  display: flex;
-  gap: var(--space-6);
-  justify-content: space-between;
-  margin-bottom: var(--space-6);
-  overflow: hidden;
-  padding: 28px 32px;
-  position: relative;
-}
-
-.page-header::after {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-pill);
-  content: "";
-  height: 300px;
-  position: absolute;
-  right: -80px;
-  top: -120px;
-  width: 300px;
-}
-
-.page-header::before {
-  background: linear-gradient(90deg, rgba(216, 162, 27, 0.22), transparent 38%);
-  content: "";
-  inset: 0;
-  pointer-events: none;
-  position: absolute;
-}
-
-.page-header > * {
-  position: relative;
-  z-index: 1;
-}
-
-.page-header > div:first-child {
-  display: grid;
-  gap: 6px;
-}
-
-.page-header h2 {
-  color: var(--color-white);
-  font-size: clamp(1.55rem, 1.9vw, 2rem);
-  font-weight: 750;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  margin-bottom: 4px;
-}
-
-.page-header__title {
-  color: var(--color-white);
-}
-
-.page-header p {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: var(--font-size-sm);
-  margin-bottom: 0;
-  max-width: 66ch;
-}
-
-.page-header__description {
-  color: rgba(255, 255, 255, 0.88);
-}
-
-.page-header .eyebrow {
-  color: var(--color-accent);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  margin-bottom: var(--space-2);
-}
-
-.page-header-actions {
-  align-items: center;
-  display: flex;
-  flex-shrink: 0;
-  justify-content: flex-end;
-}
-
 /* --------------------------------------------------------------------------
    3. Responsividade
    -------------------------------------------------------------------------- */
@@ -138,17 +49,6 @@
 
   .app-main {
     padding: 24px 16px 20px;
-  }
-
-  .page-header {
-    align-items: flex-start;
-    display: grid;
-    gap: var(--space-4);
-    padding: var(--space-5);
-  }
-
-  .page-header-actions {
-    justify-content: flex-start;
   }
 }
 

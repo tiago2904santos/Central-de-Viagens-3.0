@@ -18,11 +18,7 @@ CSS_DIR = ROOT / "static" / "css"
 # ---------------------------------------------------------------------------
 TEMPLATE_EXCEPTIONS: dict[str, dict] = {
     "templates/core/dashboard.html": {
-        "reason": "Shell dashboard-login-inspired é exceção oficial — usa 100% CSS vars.",
-        "rules": {"legacy_page_header"},
-    },
-    "templates/components/layout/page_header.html": {
-        "reason": "Componente em migração: emite page-header + app-page__header em paralelo.",
+        "reason": "Shell dashboard-login-inspired e excecao oficial -- usa 100% CSS vars.",
         "rules": {"legacy_page_header"},
     },
 }
@@ -39,10 +35,6 @@ CSS_EXCEPTIONS: dict[str, dict] = {
     "static/css/cards.css": {
         "reason": ".oficio-card em cards.css: domínio a mover para oficios.css (Prompt 5).",
         "rules": {"domain_selector_in_global"},
-    },
-    "static/css/layout.css": {
-        "reason": "page-header mantido como alias mínimo documentado até Prompt 3.",
-        "rules": {"legacy_page_header_in_css"},
     },
     "static/css/tokens.css": {
         "reason": "Arquivo de tokens — cores hex são a definição original, permitidas aqui.",
