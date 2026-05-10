@@ -10,18 +10,23 @@
 {% block content %}
   <div class="app-page app-page--roteiros-list">
     <div class="app-page__shell">
-      <header class="app-page-hero app-page-hero--hybrid app-page-hero--roteiros-list" aria-labelledby="roteiros-list-title">
+      <header class="app-page-hero app-page__header app-page-hero--hybrid app-page__header--hybrid app-page-hero--roteiros-list" aria-labelledby="roteiros-list-title">
         <div class="app-page-hero__stage">
-          <div class="app-page-hero__roteiros-head">
-            <div class="app-page-hero__roteiros-text">
-              <span class="app-page-hero__eyebrow">Roteiros</span>
-              <h1 class="app-page-hero__title" id="roteiros-list-title">{{ page_title }}</h1>
-              {% if page_description %}
-                <p class="app-page-hero__roteiros-sub">{{ page_description }}</p>
-              {% endif %}
+          <span class="app-page-hero__eyebrow">Roteiros</span>
+          <h1 class="app-page-hero__title" id="roteiros-list-title">{{ page_title }}</h1>
+        </div>
+        <div class="app-page-hero__body">
+          <div class="app-page__hero-top">
+            <div class="app-page__brand">
+              <div class="app-page__brand-mark" aria-hidden="true">RT</div>
+              <div class="app-page__brand-copy">
+                {% if page_description %}
+                  <p class="app-page__subtitle">{{ page_description }}</p>
+                {% endif %}
+              </div>
             </div>
             {% if create_url %}
-              <div class="app-page-hero__roteiros-actions">
+              <div class="app-page__hero-actions app-page__actions">
                 {% include "components/buttons/action_button.html" with href=create_url label="Novo roteiro" variant="primary" only %}
               </div>
             {% endif %}
@@ -34,7 +39,7 @@
         {% include "components/lists/list_toolbar.html" with search_placeholder="Buscar por sede, destino ou observações" q=q search_clear_url=search_clear_url action_label="" action_url="" only %}
       </div>
 
-      <div class="list-grid list-grid--roteiros">
+      <div class="list-grid list-grid--roteiros app-list-grid">
         {% for card in cards %}
           {% include "roteiros/partials/roteiro_list_card.html" with card=card only %}
         {% empty %}
