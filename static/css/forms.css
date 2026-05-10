@@ -1947,3 +1947,80 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   user-select: none;
   white-space: nowrap;
 }
+
+/* ==========================================================================
+   ALIASES CANONICOS DO DESIGN SYSTEM — Fase 6
+   Novas classes semanticas .app-form-* como joint selectors das regras
+   existentes. Classes legadas (.field, .form-grid, etc.) nao removidas.
+   ========================================================================== */
+
+.app-form-field,
+.field {
+  display: grid;
+  gap: var(--space-field-gap);
+}
+
+.app-form-field label,
+.field label {
+  color: var(--color-label);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.app-form-help,
+.field-help {
+  color: var(--color-help);
+  font-size: var(--font-size-sm);
+  margin-bottom: 0;
+}
+
+.app-form-error {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-1);
+}
+
+.app-form-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.app-form-grid > * {
+  grid-column: span 6;
+}
+
+.app-form-grid--stack > * {
+  grid-column: span 12;
+}
+
+.app-form-section {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-5);
+}
+
+.app-form-section__header {
+  border-bottom: 1px solid var(--color-border-soft);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+}
+
+.app-form-section__title {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-1);
+}
+
+.app-form-section__description {
+  color: var(--color-help);
+  font-size: var(--font-size-sm);
+  margin-bottom: 0;
+}
+
+.app-form-page {
+  display: grid;
+  gap: var(--space-6);
+}

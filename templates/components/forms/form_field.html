@@ -1,7 +1,7 @@
 {% if field.field.widget.input_type == 'checkbox' %}
   {% include "components/forms/card_toggle.html" with field=field title=label|default:field.label description=help_text only %}
 {% else %}
-<div class="field">
+<div class="field app-form-field">
   {% if field.field.widget.input_type == 'select' %}
     <label for="{{ field.id_for_label }}">{{ label|default:field.label }}</label>
     {{ field.as_widget }}
