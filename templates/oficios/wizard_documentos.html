@@ -92,7 +92,12 @@
           {% for viajante in documentos_ctx.viajantes_cards %}
             <article class="oficio-documentos-traveller-line">
               <div class="oficio-documentos-traveller-line__person">
-                <strong class="oficio-documentos-traveller-line__name">{{ viajante.nome }}</strong>
+                <div class="oficio-documentos-traveller-line__name-row">
+                  <strong class="oficio-documentos-traveller-line__name">{{ viajante.nome }}</strong>
+                  {% if viajante.is_motorista %}
+                    <span class="oficio-documentos-traveller-line__badge">Motorista</span>
+                  {% endif %}
+                </div>
                 <span class="oficio-documentos-traveller-line__role">
                   {% if viajante.cargo %}{{ viajante.cargo }}{% elif viajante.funcao %}{{ viajante.funcao }}{% else %}Servidor{% endif %}{% if viajante.unidade %} · {{ viajante.unidade }}{% endif %}
                 </span>
@@ -129,9 +134,6 @@
                   </div>
                 {% endif %}
               </dl>
-              {% if viajante.is_motorista %}
-                <span class="oficio-documentos-traveller-line__badge">Motorista</span>
-              {% endif %}
             </article>
           {% empty %}
             <div class="oficio-documentos-travellers-empty">Nenhum viajante vinculado a este ofício.</div>
