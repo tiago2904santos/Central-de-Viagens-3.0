@@ -49,17 +49,57 @@ def apresentar_oficio_card(oficio):
     }
 
 
-def apresentar_pagina_detalhe_oficio(oficio):
-    viatura_label = "—"
-    if oficio.viatura_id:
-        viatura_label = oficio.viatura.placa_formatada
-    elif (oficio.transporte_placa_manual or "").strip():
-        viatura_label = format_placa(oficio.transporte_placa_manual)
-    motorista_label = "—"
+def _motorista_label_oficio(oficio):
     if oficio.motorista_id:
-        motorista_label = oficio.motorista.nome
-    elif oficio.motorista_modo == Oficio.MOTORISTA_MODO_MANUAL and (oficio.motorista_manual_nome or "").strip():
-        motorista_label = oficio.motorista_manual_nome.strip()
+        return oficio.motorista.nome
+    if oficio.motorista_modo == Oficio.MOTORISTA_MODO_MANUAL and (oficio.motorista_manual_nome or "").strip():
+        return oficio.motorista_manual_nome.strip()
+    return "—"
+
+
+def _viatura_placa_curta_oficio(oficio):
+    if oficio.viatura_id:
+        return oficio.viatura.placa_formatada
+    if (oficio.transporte_placa_manual or "").strip():
+        return format_placa(oficio.transporte_placa_manual)
+    return "—"
+
+
+def _montar_transporte_resumo_documentos(oficio):
+    """Strings formatadas para o cartão Transporte na etapa documentos (sem lógica no template)."""
+    motorista = _motorista_label_oficio(oficio)
+    porte = "Sim" if oficio.porte_transporte_armas else "Não"
+    unidade = str(oficio.solicitante) if oficio.solicitante_id else "—"
+
+    if oficio.viatura_id:
+        v = oficio.viatura
+        placa = v.placa_formatada
+        modelo = (v.modelo or "").strip() or "—"
+        tipo = v.get_tipo_display() if (v.tipo or "").strip() else "—"
+        combustivel = str(v.combustivel) if v.combustivel_id else "—"
+    else:
+        placa = _viatura_placa_curta_oficio(oficio)
+        modelo = (oficio.transporte_modelo_manual or "").strip() or "—"
+        tm = (oficio.transporte_tipo_manual or "").strip()
+        tipo = oficio.get_transporte_tipo_manual_display() if tm else "—"
+        combustivel = (
+            str(oficio.transporte_combustivel_manual) if oficio.transporte_combustivel_manual_id else "—"
+        )
+
+    return {
+        "placa": placa,
+        "modelo": modelo,
+        "tipo": tipo,
+        "combustivel": combustivel,
+        "porte_armas": porte,
+        "unidade": unidade,
+        "motorista": motorista,
+    }
+
+
+def apresentar_pagina_detalhe_oficio(oficio):
+    viatura_label = _viatura_placa_curta_oficio(oficio)
+    motorista_label = _motorista_label_oficio(oficio)
     return {
         "status": oficio.get_status_display(),
         "status_class": _status_variant(oficio.status),
@@ -254,6 +294,7 @@ def apresentar_oficio_wizard_documentos_context(oficio):
     from justificativas.services import get_primeira_saida_oficio
 
     detalhe = apresentar_pagina_detalhe_oficio(oficio)
+    transporte = _montar_transporte_resumo_documentos(oficio)
     roteiro = oficio.roteiro
     destinos = []
     if roteiro:
@@ -352,6 +393,7 @@ def apresentar_oficio_wizard_documentos_context(oficio):
 
     return {
         "detalhe": detalhe,
+        "transporte": transporte,
         "destinos": destinos,
         "destino_principal_label": destino_principal,
         "primeira_saida_label": primeira_label,

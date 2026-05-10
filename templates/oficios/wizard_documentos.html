@@ -104,16 +104,39 @@
           <p class="oficio-documentos-card__subtitle">Viatura e condução</p>
         </header>
         <div class="oficio-documentos-card__body oficio-documentos-card__body--transport">
-          <div class="oficio-documentos-transport-grid">
-            <div class="oficio-documentos-feature oficio-documentos-feature--viatura">
-              <span class="oficio-documentos-feature__label">Viatura</span>
-              <strong class="oficio-documentos-feature__value">{{ documentos_ctx.detalhe.viatura|default:"—" }}</strong>
+          {% with t=documentos_ctx.transporte %}
+            <div class="oficio-documentos-transport-stack">
+              <div class="oficio-documentos-vehicle">
+                <div class="oficio-documentos-vehicle__plate" aria-label="Placa">{{ t.placa }}</div>
+                <dl class="oficio-documentos-vehicle__meta" aria-label="Detalhes da viatura">
+                  <div class="oficio-documentos-vehicle__meta-item">
+                    <dt>Modelo</dt>
+                    <dd>{{ t.modelo }}</dd>
+                  </div>
+                  <div class="oficio-documentos-vehicle__meta-item">
+                    <dt>Tipo</dt>
+                    <dd>{{ t.tipo }}</dd>
+                  </div>
+                  <div class="oficio-documentos-vehicle__meta-item">
+                    <dt>Combustível</dt>
+                    <dd>{{ t.combustivel }}</dd>
+                  </div>
+                  <div class="oficio-documentos-vehicle__meta-item">
+                    <dt>Porte / transporte de armas</dt>
+                    <dd>{{ t.porte_armas }}</dd>
+                  </div>
+                  <div class="oficio-documentos-vehicle__meta-item">
+                    <dt>Unidade solicitante</dt>
+                    <dd>{{ t.unidade }}</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="oficio-documentos-driver">
+                <span class="oficio-documentos-driver__label">Motorista</span>
+                <strong class="oficio-documentos-driver__name">{{ t.motorista }}</strong>
+              </div>
             </div>
-            <div class="oficio-documentos-feature oficio-documentos-feature--motorista">
-              <span class="oficio-documentos-feature__label">Motorista</span>
-              <strong class="oficio-documentos-feature__value">{{ documentos_ctx.detalhe.motorista|default:"—" }}</strong>
-            </div>
-          </div>
+          {% endwith %}
         </div>
       </article>
     </section>
