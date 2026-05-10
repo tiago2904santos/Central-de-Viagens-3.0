@@ -852,6 +852,26 @@ html[data-theme="light-dark"] input[type="checkbox"] {
   grid-column: span 6;
 }
 
+.app-form-grid > .field-span-12 {
+  grid-column: span 12;
+}
+
+.app-form-grid > .field-span-8 {
+  grid-column: span 8;
+}
+
+.app-form-grid > .field-span-6 {
+  grid-column: span 6;
+}
+
+.app-form-grid > .field-span-4 {
+  grid-column: span 4;
+}
+
+.app-form-grid > .field-span-2 {
+  grid-column: span 2;
+}
+
 .app-form-grid--stack > * {
   grid-column: span 12;
 }
