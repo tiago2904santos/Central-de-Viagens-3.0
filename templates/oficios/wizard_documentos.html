@@ -88,35 +88,50 @@
         </span>
       </header>
       <div class="oficio-documentos-card__body">
-        <div class="oficio-documentos-travellers-compact-list">
+        <div class="oficio-documentos-travellers-lines">
           {% for viajante in documentos_ctx.viajantes_cards %}
-            <article class="oficio-documentos-traveller-row">
-              <div class="oficio-documentos-traveller-row__identity">
-                <div class="oficio-documentos-traveller-row__avatar" aria-hidden="true">{{ viajante.iniciais }}</div>
-                <div>
-                  <strong class="oficio-documentos-traveller-row__name">{{ viajante.nome }}</strong>
-                  <span class="oficio-documentos-traveller-row__subtitle">
-                    {% if viajante.cargo %}{{ viajante.cargo }}{% else %}Servidor{% endif %}{% if viajante.unidade %} · {{ viajante.unidade }}{% endif %}
-                  </span>
-                </div>
+            <article class="oficio-documentos-traveller-line">
+              <div class="oficio-documentos-traveller-line__person">
+                <strong class="oficio-documentos-traveller-line__name">{{ viajante.nome }}</strong>
+                <span class="oficio-documentos-traveller-line__role">
+                  {% if viajante.cargo %}{{ viajante.cargo }}{% elif viajante.funcao %}{{ viajante.funcao }}{% else %}Servidor{% endif %}{% if viajante.unidade %} · {{ viajante.unidade }}{% endif %}
+                </span>
               </div>
-              <div class="oficio-documentos-traveller-row__meta">
+              <dl class="oficio-documentos-traveller-line__details">
                 {% if viajante.matricula %}
-                  <span class="oficio-documentos-traveller-row__meta-item"><small>Matr.</small>{{ viajante.matricula }}</span>
+                  <div class="oficio-documentos-traveller-line__detail">
+                    <dt>Matrícula</dt>
+                    <dd>{{ viajante.matricula }}</dd>
+                  </div>
                 {% endif %}
                 {% if viajante.rg %}
-                  <span class="oficio-documentos-traveller-row__meta-item"><small>RG</small>{{ viajante.rg }}</span>
+                  <div class="oficio-documentos-traveller-line__detail">
+                    <dt>RG</dt>
+                    <dd>{{ viajante.rg }}</dd>
+                  </div>
                 {% endif %}
                 {% if viajante.cpf %}
-                  <span class="oficio-documentos-traveller-row__meta-item"><small>CPF</small>{{ viajante.cpf }}</span>
+                  <div class="oficio-documentos-traveller-line__detail">
+                    <dt>CPF</dt>
+                    <dd>{{ viajante.cpf }}</dd>
+                  </div>
                 {% endif %}
                 {% if viajante.telefone %}
-                  <span class="oficio-documentos-traveller-row__meta-item"><small>Tel.</small>{{ viajante.telefone }}</span>
+                  <div class="oficio-documentos-traveller-line__detail">
+                    <dt>Tel.</dt>
+                    <dd>{{ viajante.telefone }}</dd>
+                  </div>
                 {% endif %}
-                {% if viajante.is_motorista %}
-                  <span class="oficio-documentos-traveller-row__badge">Motorista</span>
+                {% if viajante.email %}
+                  <div class="oficio-documentos-traveller-line__detail">
+                    <dt>E-mail</dt>
+                    <dd>{{ viajante.email }}</dd>
+                  </div>
                 {% endif %}
-              </div>
+              </dl>
+              {% if viajante.is_motorista %}
+                <span class="oficio-documentos-traveller-line__badge">Motorista</span>
+              {% endif %}
             </article>
           {% empty %}
             <div class="oficio-documentos-travellers-empty">Nenhum viajante vinculado a este ofício.</div>
