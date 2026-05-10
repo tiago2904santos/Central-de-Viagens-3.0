@@ -1775,8 +1775,8 @@
   flex-shrink: 0;
   letter-spacing: 0.04em;
   margin-bottom: 0;
-  min-height: 26px;
-  padding: 5px 12px;
+  min-height: 1.625rem;
+  padding: var(--space-1) var(--space-3);
 }
 
 .oficio-documentos-route-card__status-chip.status-chip--draft {
@@ -1799,16 +1799,16 @@
 
 .oficio-documentos-route-card__subtitle {
   color: var(--color-muted);
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   line-height: 1.35;
-  margin: 0;
+  margin: var(--space-2) 0 0;
   max-width: 56ch;
 }
 
 .oficio-documentos-route-card__body {
   align-items: stretch;
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: var(--space-1);
 }
@@ -1835,28 +1835,28 @@
 }
 
 .oficio-documentos-route-card__diarias-box {
-  background: var(--route-card-inner-bg);
-  border: 1px solid var(--route-card-inner-border);
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
   box-sizing: border-box;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   height: auto;
   min-height: 0;
-  padding: 12px 14px 14px;
+  padding: var(--space-3) var(--space-4) var(--space-4);
 }
 
 .oficio-documentos-route-card__diarias-box-title {
   color: var(--color-heading);
   display: block;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 800;
   letter-spacing: 0;
   line-height: 1.2;
-  margin-bottom: 4px;
-  padding: 2px 2px 0;
+  margin-bottom: var(--space-1);
+  padding: var(--space-1) var(--space-1) 0;
   text-transform: uppercase;
 }
 
@@ -1864,7 +1864,7 @@
   align-items: stretch;
   display: grid;
   flex: 1 1 auto;
-  gap: 8px;
+  gap: var(--space-2);
   grid-template-columns: 1fr 1fr;
   min-height: 0;
   min-width: 0;
@@ -1872,16 +1872,16 @@
 
 .oficio-documentos-route-card__diarias-subblock {
   align-items: flex-start;
-  background: var(--route-card-inner-bg);
-  border: 1px solid var(--route-card-inner-border);
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   justify-content: flex-start;
   min-width: 0;
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
   text-align: left;
 }
 
@@ -1892,10 +1892,10 @@
 .oficio-documentos-route-card__diarias-panel-heading {
   color: var(--color-muted);
   display: block;
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: 800;
   letter-spacing: 0;
-  margin-bottom: 2px;
+  margin-bottom: var(--space-1);
   text-transform: uppercase;
 }
 
@@ -1972,19 +1972,19 @@
   align-items: stretch;
   display: grid;
   flex: 1 1 auto;
-  gap: 10px;
+  gap: var(--space-3);
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   min-height: 0;
 }
 
 .oficio-documentos-route-card__diarias-main,
 .oficio-documentos-route-card__diarias-metric {
-  background: var(--route-card-inner-bg);
-  border: 1px solid var(--route-card-inner-border);
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
   box-sizing: border-box;
   min-width: 0;
-  padding: 14px 16px;
+  padding: var(--space-4);
 }
 
 .oficio-documentos-route-card__diarias-main {
@@ -2000,7 +2000,7 @@
 
 .oficio-documentos-route-card__diarias-side {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
   grid-template-columns: 1fr;
   grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   min-height: 0;
@@ -2038,8 +2038,8 @@
 }
 
 .oficio-documentos-route-card__trecho {
-  background: var(--route-card-inner-bg);
-  border: 1px solid var(--route-card-inner-border);
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
   box-sizing: border-box;
   flex-shrink: 0;
@@ -2097,13 +2097,13 @@
 .oficio-documentos-route-card__metric {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-1);
   min-width: 0;
 }
 
 .oficio-documentos-route-card__metric dt {
   color: var(--color-muted);
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: 800;
   letter-spacing: 0.02em;
   margin: 0;
@@ -2126,18 +2126,18 @@
 }
 
 .oficio-documentos-route-card__fallback-fact {
-  background: var(--route-card-inner-bg);
-  border: 1px solid var(--route-card-inner-border);
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   padding: var(--space-2) var(--space-3);
 }
 
 .oficio-documentos-route-card__fallback-label {
   color: var(--color-muted);
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -2151,7 +2151,7 @@
 }
 
 .oficio-documentos-route-card--layout-diarias-dashboard .oficio-documentos-route-card__diarias-panel-heading {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
 }
 
 @media (max-width: 1100px) {
