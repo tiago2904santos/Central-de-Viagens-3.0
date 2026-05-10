@@ -170,3 +170,13 @@ Antecedência em dias (inteiro):
 - Stepper e URLs não refletem Justificativa + Documentos como produto final.
 - Validação documental incompleta (sem roteiro/transporte/justificativa).
 - App `justificativas` sem dados persistidos.
+
+---
+
+## 16. Status final da implementação
+
+- **Etapa 4 (Justificativa):** rota `/oficios/<pk>/justificativa/`, stepper, UI em `wizard_justificativa.html`, regra em `justificativas/services.py`.
+- **Etapa 5 (Documentos):** rota canônica `/oficios/<pk>/documentos/` (`wizard_documentos`); `/oficios/<pk>/resumo/` redireciona para etapa 5; download permanece em `/oficios/<pk>/documentos/<formato>/`.
+- **Validação:** `validar_oficio_para_documento` com `checks` (dados, motorista, transporte, roteiro, justificativa); `redirect_para_corrigir_documento_oficio` para downloads incompletos; finalização na etapa 5 (`action=finalizar`).
+- **Testes:** cobertura em `oficios/tests`, `justificativas/tests`.
+- **Pendências futuras:** CRUD global de justificativas; DOCX específico de justificativa; Termos/PT/OS conforme outros planos.

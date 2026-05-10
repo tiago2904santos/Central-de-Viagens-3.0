@@ -83,12 +83,15 @@
 ## REG-OF-009 — Justificativa por prazo mínimo
 - Descrição: ofício exige justificativa quando antecedência é menor que o prazo configurado.
 - Origem no legacy: `eventos/services/justificativa.py`, `ConfiguracaoSistema.prazo_justificativa_dias`.
-- Arquivos/funções: funções de prazo e presença de justificativa.
-- Estado no 3.0: não implementado.
-- Adaptação correta: regra em service com configuração central.
+- **Implementação no 3.0 (implementado):**
+  - Regra de prazo e primeira saída: `justificativas/services.py` (`get_prazo_justificativa_dias`, `get_primeira_saida_oficio`, `avaliar_justificativa_oficio`, `oficio_exige_justificativa`).
+  - Prazo configurável via `cadastros.ConfiguracaoSistema.prazo_justificativa_dias` (fallback 10 dias).
+  - Antecedência: `(primeira_saida.date() - oficio.data_criacao).days` usando **`data_criacao`** (campo de domínio), não `created_at`.
+  - Persistência e wizard: modelos `Justificativa` / `ModeloJustificativa`, etapa 4 `/oficios/<pk>/justificativa/`, integração ao stepper.
+  - Bloqueio de DOCX/PDF e finalização: `oficios/services.validar_oficio_para_documento`, `redirect_para_corrigir_documento_oficio`; downloads via `oficios.views.baixar_documento`.
+  - Testes: `justificativas/tests/test_services.py`, `justificativas/tests/test_models.py`, `justificativas/tests/test_forms_services_layer.py`, `oficios/tests/test_wizard_justificativa.py`, `oficios/tests/test_services.py`.
 - Prioridade: Alta.
-- Riscos: descumprimento normativo.
-- Testes necessários: antecedência acima/abaixo do limite.
+- Riscos: descumprimento normativo (mitigado por validação central).
 
 ## REG-OF-010 — Geração de Termo por modalidade
 - Descrição: termo pode ser rápido, automático com viatura ou automático sem viatura.
