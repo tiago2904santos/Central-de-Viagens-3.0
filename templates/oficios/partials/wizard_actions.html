@@ -1,9 +1,9 @@
-<div class="form-actions app-form-actions oficio-wizard__actions">
+<div class="form-actions app-form-actions oficio-wizard__actions app-wizard__actions">
   {% include "components/buttons/action_button.html" with href=wizard_back_url label=wizard_back_label|default:"Voltar" variant="secondary" only %}
   {% if oficio %}
-    <a class="btn btn-secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'docx' %}">DOCX</a>
-    <a class="btn btn-secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">PDF</a>
+    <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'docx' %}">DOCX</a>
+    <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">PDF</a>
   {% endif %}
-  <button class="btn btn-secondary" type="submit" name="action" value="save_draft">Salvar rascunho</button>
-  <button class="btn btn-primary" type="submit" name="action" value="save_continue">Salvar e continuar</button>
+  <button class="btn btn-secondary app-btn app-btn--secondary" type="submit" name="action" value="save_draft">Salvar rascunho</button>
+  <button class="btn btn-primary app-btn app-btn--primary" type="submit" name="action" value="save_continue">Salvar e continuar</button>
 </div>
