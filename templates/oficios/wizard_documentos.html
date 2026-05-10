@@ -77,23 +77,34 @@
 
     <section class="oficio-documentos-two-col" aria-label="Equipe e transporte">
       <article class="oficio-documentos-card oficio-documentos-card--team">
-        <header class="oficio-documentos-card__header">
-          <div class="oficio-documentos-card__heading">
-            <h4 class="oficio-documentos-card__title">Equipe</h4>
-            <p class="oficio-documentos-card__subtitle">Viajantes vinculados ao ofício</p>
+        <header class="oficio-documentos-card__header oficio-documentos-team__header">
+          <div class="oficio-documentos-team__titles">
+            <span class="oficio-documentos-card__eyebrow">Equipe</span>
+            <h4 class="oficio-documentos-card__title">Viajantes do ofício</h4>
+            <p class="oficio-documentos-card__subtitle">Servidores vinculados à viagem</p>
           </div>
           <span class="oficio-documentos-count-pill" aria-label="Total de viajantes">
             {{ documentos_ctx.detalhe.servidores|length }}
             {% if documentos_ctx.detalhe.servidores|length == 1 %}viajante{% else %}viajantes{% endif %}
           </span>
         </header>
-        <div class="oficio-documentos-card__body">
-          <div class="oficio-documentos-chip-list">
-            {% for nome in documentos_ctx.detalhe.servidores %}
-              <span class="oficio-documentos-chip">{{ nome }}</span>
-            {% empty %}
-              <span class="oficio-documentos-chip oficio-documentos-chip--muted">Nenhum viajante</span>
-            {% endfor %}
+        <div class="oficio-documentos-card__body oficio-documentos-card__body--team">
+          <div class="oficio-documentos-team-panel">
+            <div class="oficio-documentos-team-panel__lead">
+              <span class="oficio-documentos-team-panel__label">Composição</span>
+              <strong class="oficio-documentos-team-panel__value">
+                {% with n=documentos_ctx.detalhe.servidores|length %}
+                  {% if n == 0 %}Nenhum servidor{% elif n == 1 %}1 servidor{% else %}{{ n }} servidores{% endif %}
+                {% endwith %}
+              </strong>
+            </div>
+            <div class="oficio-documentos-team-list">
+              {% for nome in documentos_ctx.detalhe.servidores %}
+                <span class="oficio-documentos-team-chip">{{ nome }}</span>
+              {% empty %}
+                <p class="oficio-documentos-team-empty">Nenhum viajante vinculado a este ofício.</p>
+              {% endfor %}
+            </div>
           </div>
         </div>
       </article>
