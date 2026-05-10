@@ -30,17 +30,17 @@
         >
           {% csrf_token %}
 
-          <div class="form-section">
+          <div class="form-section app-form-section">
             {% include "components/forms/form_section.html" with title="Dados da unidade" description="Identificação da divisão e da unidade." only %}
-            <div class="form-grid">
+            <div class="form-grid app-form-grid">
               {% include "components/forms/form_field.html" with field=form.divisao only %}
               {% include "components/forms/form_field.html" with field=form.unidade only %}
             </div>
           </div>
 
-          <div class="form-section">
+          <div class="form-section app-form-section">
             {% include "components/forms/form_section.html" with title="Endereço dos documentos" description="Dados institucionais utilizados no rodapé dos documentos gerados pelo sistema." only %}
-            <div class="form-grid">
+            <div class="form-grid app-form-grid">
               <div class="field-span-4">
                 {% include "components/forms/form_field.html" with field=form.cep only %}
               </div>
@@ -68,9 +68,9 @@
             </div>
           </div>
 
-          <div class="form-section">
+          <div class="form-section app-form-section">
             {% include "components/forms/form_section.html" with title="Assinaturas documentais" description="Assinantes preferenciais por tipo de documento; não é assinatura digital." only %}
-            <div class="form-grid">
+            <div class="form-grid app-form-grid">
               {% include "components/forms/form_field.html" with field=form.assinatura_oficio only %}
               {% include "components/forms/form_field.html" with field=form.assinatura_justificativas only %}
               {% include "components/forms/form_field.html" with field=form.assinatura_planos_trabalho only %}

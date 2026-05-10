@@ -35,7 +35,7 @@
 
       {% if internal_modules %}
         <div class="app-page__list-card app-page__list-card--grid">
-          <div class="list-grid">
+          <div class="list-grid app-list-grid">
             {% for module in internal_modules %}
               {% include "components/cards/module_card.html" with title=module.title description=module.description href=module.href action_label="Abrir" eyebrow=module.eyebrow only %}
             {% endfor %}
