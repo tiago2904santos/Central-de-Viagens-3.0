@@ -890,35 +890,62 @@ html[data-theme="light-dark"] input[type="checkbox"] {
    ALIASES CANONICOS DO DESIGN SYSTEM — Fase 10: Wizard shell
    .app-wizard-* e .app-stepper-* como aliases de .oficio-wizard-* e
    .oficio-stepper-*. Classes originais nao removidas.
+   Tratamento visual completo aqui: garante que o wizard funcione mesmo
+   sem oficios.css carregado (ex.: cache antigo de style.css).
    ========================================================================== */
 
 .app-wizard {
   container-type: inline-size;
 }
 
+.app-wizard__top {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+
 .app-wizard__header {
-  align-items: flex-start;
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(11, 58, 102, 0.96), rgba(21, 91, 154, 0.92)),
+    var(--color-primary);
+  border: 0;
+  color: var(--color-white);
   display: flex;
-  justify-content: space-between;
   gap: var(--space-4);
+  justify-content: space-between;
+  min-height: 108px;
+  padding: var(--space-5) var(--space-5) var(--space-6);
+}
+
+.app-wizard__header-copy {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
 }
 
 .app-wizard__title {
-  font-size: var(--font-size-xl);
+  color: var(--color-white);
+  font-size: var(--font-size-2xl);
   font-weight: 800;
-  line-height: 1.2;
-  margin-bottom: var(--space-1);
+  line-height: 1.1;
+  margin: 0;
 }
 
 .app-wizard__subtitle {
-  color: var(--color-muted);
-  font-size: var(--font-size-sm);
+  color: var(--color-accent-soft);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
   margin: 0;
 }
 
 .app-wizard__layout {
+  align-items: start;
   display: grid;
   gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .app-wizard__actions {
@@ -929,25 +956,68 @@ html[data-theme="light-dark"] input[type="checkbox"] {
 }
 
 .app-stepper {
+  background: var(--color-card);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: var(--space-3);
   width: 100%;
 }
 
 .app-stepper__list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .app-stepper__item {
-  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .app-stepper__link {
   align-items: center;
-  display: flex;
-  gap: var(--space-2);
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-heading);
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 76px;
+  padding: var(--space-3);
   text-decoration: none;
+}
+
+.app-stepper__number {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  display: inline-flex;
+  font-weight: 900;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.app-stepper__copy {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.app-stepper__state {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.app-stepper__title {
+  font-size: var(--font-size-sm);
+  font-weight: 900;
+  line-height: 1.2;
 }

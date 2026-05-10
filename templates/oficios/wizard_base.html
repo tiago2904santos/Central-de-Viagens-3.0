@@ -1,14 +1,19 @@
 ﻿{% extends "base.html" %}
+{% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/oficios.css' %}">
+{% endblock %}
 
 {% block content %}
   <div class="app-page oficio-wizard app-wizard">
     <section class="oficio-wizard__section">
       <div class="app-page__shell oficio-wizard__shell">
-        <section class="oficio-wizard__top" aria-labelledby="oficios-wizard-title">
+        <section class="oficio-wizard__top app-wizard__top" aria-labelledby="oficios-wizard-title">
           <header class="oficio-wizard__header app-wizard__header">
-            <div class="oficio-wizard__header-copy">
+            <div class="oficio-wizard__header-copy app-wizard__header-copy">
               <h1 class="oficio-wizard__title app-wizard__title" id="oficios-wizard-title">{{ wizard_header.title }}</h1>
               <p class="oficio-wizard__subtitle app-wizard__subtitle">{{ wizard_header.subtitle }}</p>
             </div>
