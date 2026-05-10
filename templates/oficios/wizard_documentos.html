@@ -98,42 +98,15 @@
                     <span class="oficio-documentos-traveller-line__badge">Motorista</span>
                   {% endif %}
                 </div>
-                <span class="oficio-documentos-traveller-line__role">
-                  {% if viajante.cargo %}{{ viajante.cargo }}{% elif viajante.funcao %}{{ viajante.funcao }}{% else %}Servidor{% endif %}{% if viajante.unidade %} · {{ viajante.unidade }}{% endif %}
-                </span>
+                {% if viajante.unidade %}
+                  <span class="oficio-documentos-traveller-line__role">{{ viajante.unidade }}</span>
+                {% endif %}
               </div>
-              <dl class="oficio-documentos-traveller-line__details">
-                {% if viajante.matricula %}
-                  <div class="oficio-documentos-traveller-line__detail">
-                    <dt>Matrícula</dt>
-                    <dd>{{ viajante.matricula }}</dd>
-                  </div>
-                {% endif %}
-                {% if viajante.rg %}
-                  <div class="oficio-documentos-traveller-line__detail">
-                    <dt>RG</dt>
-                    <dd>{{ viajante.rg }}</dd>
-                  </div>
-                {% endif %}
-                {% if viajante.cpf %}
-                  <div class="oficio-documentos-traveller-line__detail">
-                    <dt>CPF</dt>
-                    <dd>{{ viajante.cpf }}</dd>
-                  </div>
-                {% endif %}
-                {% if viajante.telefone %}
-                  <div class="oficio-documentos-traveller-line__detail">
-                    <dt>Tel.</dt>
-                    <dd>{{ viajante.telefone }}</dd>
-                  </div>
-                {% endif %}
-                {% if viajante.email %}
-                  <div class="oficio-documentos-traveller-line__detail">
-                    <dt>E-mail</dt>
-                    <dd>{{ viajante.email }}</dd>
-                  </div>
-                {% endif %}
-              </dl>
+              {% if viajante.cargo or viajante.funcao %}
+                <span class="oficio-documentos-traveller-line__cargo">
+                  {% if viajante.cargo %}{{ viajante.cargo }}{% else %}{{ viajante.funcao }}{% endif %}
+                </span>
+              {% endif %}
             </article>
           {% empty %}
             <div class="oficio-documentos-travellers-empty">Nenhum viajante vinculado a este ofício.</div>
