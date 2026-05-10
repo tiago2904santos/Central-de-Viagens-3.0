@@ -97,6 +97,71 @@ def _montar_transporte_resumo_documentos(oficio):
     }
 
 
+def _montar_justificativa_resumo_documentos(j_et, j_obj, texto_j):
+    """Resumo editorial da justificativa para a etapa documentos (textos fixos aqui, não no template)."""
+    modelo_nome = "—"
+    if j_obj and j_obj.modelo_id:
+        modelo = getattr(j_obj, "modelo", None)
+        if modelo is not None:
+            modelo_nome = modelo.nome
+
+    if j_et.get("obrigatoria"):
+        if texto_j:
+            chip_label = "Obrigatória preenchida"
+            chip_variant = "success"
+        else:
+            chip_label = "Obrigatória pendente"
+            chip_variant = "warning"
+    else:
+        chip_label = "Não exigida"
+        chip_variant = "muted"
+
+    ev_rule = j_et.get("regra") or {}
+    dias_ant = j_et.get("dias_antecedencia")
+    if dias_ant is None:
+        dias_ant = ev_rule.get("dias_antecedencia")
+
+    antecedencia_valor = "—"
+    if dias_ant is not None:
+        antecedencia_valor = f"{dias_ant} dias"
+
+    st = j_et.get("status") or ""
+    if st == "not_started":
+        antecedencia_helper = (
+            "Sem data de saída definida no roteiro, a antecedência em relação à regra não pode ser calculada."
+        )
+    elif not j_et.get("obrigatoria"):
+        antecedencia_helper = (
+            "Não se aplica: a regra vigente não exige justificativa de antecedência para este ofício."
+        )
+    elif dias_ant is None:
+        antecedencia_helper = "—"
+    elif dias_ant < 0:
+        antecedencia_helper = (
+            "A primeira saída ocorre com antecedência inferior ao mínimo exigido. O texto deve documentar a exceção."
+        )
+    else:
+        antecedencia_helper = (
+            "Antecedência compatível com o prazo mínimo configurado para a primeira saída."
+        )
+
+    if not j_et.get("obrigatoria"):
+        texto_registrado = "Justificativa não exigida para este ofício."
+    elif not texto_j:
+        texto_registrado = "Texto ainda não registrado; conclua na etapa de justificativa."
+    else:
+        texto_registrado = texto_j
+
+    return {
+        "chip_label": chip_label,
+        "chip_variant": chip_variant,
+        "antecedencia_valor": antecedencia_valor,
+        "antecedencia_helper": antecedencia_helper,
+        "modelo_nome": modelo_nome,
+        "texto_registrado": texto_registrado,
+    }
+
+
 def apresentar_pagina_detalhe_oficio(oficio):
     viatura_label = _viatura_placa_curta_oficio(oficio)
     motorista_label = _motorista_label_oficio(oficio)
@@ -345,51 +410,7 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         roteiro_card.pop("actions", None)
         roteiro_card["subtitle"] = "Roteiro utilizado para geração dos documentos"
 
-    ev_rule = j_et.get("regra") or {}
-    dias_ant = j_et.get("dias_antecedencia")
-    if dias_ant is None:
-        dias_ant = ev_rule.get("dias_antecedencia")
-
-    antecedencia_display = "—"
-    if dias_ant is not None:
-        antecedencia_display = f"{dias_ant} dias"
-
-    prazo_val = j_et.get("prazo_dias")
-    if prazo_val is None:
-        prazo_val = ev_rule.get("prazo_dias")
-    prazo_display = "—"
-    if prazo_val is not None:
-        prazo_display = f"{prazo_val} dias"
-
-    dc = oficio.data_criacao
-    data_criacao_resumo = dc.strftime("%d/%m/%Y") if hasattr(dc, "strftime") else "—"
-
-    modelo_nome = "—"
-    if j_obj and j_obj.modelo_id:
-        modelo = getattr(j_obj, "modelo", None)
-        if modelo is not None:
-            modelo_nome = modelo.nome
-
-    if j_et.get("obrigatoria"):
-        if texto_j:
-            chip_label = "Obrigatória preenchida"
-            chip_variant = "success"
-        else:
-            chip_label = "Obrigatória pendente"
-            chip_variant = "warning"
-    else:
-        chip_label = "Não exigida"
-        chip_variant = "muted"
-
-    justificativa_resumo = {
-        "chip_label": chip_label,
-        "chip_variant": chip_variant,
-        "data_criacao": data_criacao_resumo,
-        "primeira_saida": primeira_label,
-        "antecedencia": antecedencia_display,
-        "prazo_minimo": prazo_display,
-        "modelo_nome": modelo_nome,
-    }
+    justificativa_resumo = _montar_justificativa_resumo_documentos(j_et, j_obj, texto_j)
 
     return {
         "detalhe": detalhe,

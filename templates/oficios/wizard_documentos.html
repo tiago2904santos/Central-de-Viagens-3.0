@@ -352,45 +352,34 @@
       </article>
     {% endif %}
 
-    <article class="oficio-documentos-card oficio-documentos-card--justification">
-      <header class="oficio-documentos-card__header">
-        <h4 class="oficio-documentos-card__title">Justificativa</h4>
-        <p class="oficio-documentos-card__subtitle">Antecedência, prazo e modelo</p>
-      </header>
-      <div class="oficio-documentos-card__body">
-        {% with jr=documentos_ctx.justificativa_resumo %}
-          <div class="oficio-documentos-justification-compact">
-            <div class="oficio-documentos-justification-head">
-              <span class="oficio-documentos-status-chip oficio-documentos-status-chip--{{ jr.chip_variant }}">{{ jr.chip_label }}</span>
+    {% with jr=documentos_ctx.justificativa_resumo %}
+      <article class="oficio-documentos-card oficio-documentos-card--justification">
+        <header class="oficio-documentos-card__header oficio-documentos-jheader">
+          <div class="oficio-documentos-jheader__row">
+            <div class="oficio-documentos-jheader__titles">
+              <h4 class="oficio-documentos-card__title">Justificativa</h4>
+              <p class="oficio-documentos-card__subtitle">Antecedência e texto registrado</p>
             </div>
-            <dl class="oficio-documentos-justification-facts">
-              <div class="oficio-documentos-justification-fact">
-                <dt>Data de criação do ofício</dt>
-                <dd>{{ jr.data_criacao }}</dd>
-              </div>
-              <div class="oficio-documentos-justification-fact">
-                <dt>Primeira saída</dt>
-                <dd>{{ jr.primeira_saida }}</dd>
-              </div>
-              <div class="oficio-documentos-justification-fact">
-                <dt>Dias de antecedência</dt>
-                <dd>{{ jr.antecedencia }}</dd>
-              </div>
-              <div class="oficio-documentos-justification-fact">
-                <dt>Prazo mínimo (regra)</dt>
-                <dd>{{ jr.prazo_minimo }}</dd>
-              </div>
-              <div class="oficio-documentos-justification-fact">
-                <dt>Modelo utilizado</dt>
-                <dd>{{ jr.modelo_nome }}</dd>
-              </div>
-            </dl>
-            {% if documentos_ctx.justificativa_etapa.obrigatoria and not documentos_ctx.justificativa_texto %}
-              <p class="oficio-documentos-justification-hint">Registre o texto na etapa de justificativa para concluir.</p>
-            {% endif %}
+            <span class="oficio-documentos-status-chip oficio-documentos-status-chip--{{ jr.chip_variant }}">{{ jr.chip_label }}</span>
           </div>
-        {% endwith %}
-      </div>
-    </article>
+        </header>
+        <div class="oficio-documentos-card__body">
+          <div class="oficio-documentos-justification-body">
+            <section class="oficio-documentos-antecedencia" aria-label="Antecedência">
+              <p class="oficio-documentos-antecedencia__label">Dias de antecedência (regra)</p>
+              <p class="oficio-documentos-antecedencia__value">{{ jr.antecedencia_valor }}</p>
+              <p class="oficio-documentos-antecedencia__helper">{{ jr.antecedencia_helper }}</p>
+            </section>
+            <div class="oficio-documentos-justification-model">
+              <span class="oficio-documentos-justification-model__label">Modelo utilizado</span>
+              <span class="oficio-documentos-justification-model__name">{{ jr.modelo_nome }}</span>
+            </div>
+            <div class="oficio-documentos-justification-text">
+              {{ jr.texto_registrado|linebreaks }}
+            </div>
+          </div>
+        </div>
+      </article>
+    {% endwith %}
   </div>
 {% endblock %}
