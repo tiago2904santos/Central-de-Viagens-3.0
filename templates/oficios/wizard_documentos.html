@@ -356,29 +356,33 @@
 
     {% with jr=documentos_ctx.justificativa_resumo %}
       <article class="oficio-documentos-card oficio-documentos-card--justification">
-        <header class="oficio-documentos-card__header oficio-documentos-jheader">
-          <div class="oficio-documentos-jheader__row">
-            <div class="oficio-documentos-jheader__titles">
-              <h4 class="oficio-documentos-card__title">Justificativa</h4>
-              <p class="oficio-documentos-card__subtitle">Antecedência e texto registrado</p>
-            </div>
-            <span class="oficio-documentos-status-chip oficio-documentos-status-chip--{{ jr.chip_variant }}">{{ jr.chip_label }}</span>
+        <header class="oficio-documentos-card__header oficio-documentos-justification__header">
+          <div class="oficio-documentos-justification__intro">
+            <span class="oficio-documentos-card__eyebrow">Justificativa</span>
+            <h4 class="oficio-documentos-card__title">Antecedência e fundamento registrado</h4>
+            <p class="oficio-documentos-card__subtitle">Resumo da regra aplicada ao ofício</p>
           </div>
+          <span class="oficio-documentos-status-chip oficio-documentos-status-chip--{{ jr.chip_variant }}">{{ jr.chip_label }}</span>
         </header>
-        <div class="oficio-documentos-card__body">
-          <div class="oficio-documentos-justification-body">
-            <section class="oficio-documentos-antecedencia" aria-label="Antecedência">
-              <p class="oficio-documentos-antecedencia__label">Dias de antecedência (regra)</p>
-              <p class="oficio-documentos-antecedencia__value">{{ jr.antecedencia_valor }}</p>
-              <p class="oficio-documentos-antecedencia__helper">{{ jr.antecedencia_helper }}</p>
+        <div class="oficio-documentos-card__body oficio-documentos-card__body--justification">
+          <div class="oficio-documentos-justification-stack">
+            <div class="oficio-documentos-justification-grid">
+              <section class="oficio-documentos-antecedence-card" aria-label="Antecedência">
+                <span class="oficio-documentos-antecedence-card__label">Dias de antecedência</span>
+                <strong class="oficio-documentos-antecedence-card__value">{{ jr.antecedencia_label }}</strong>
+                <span class="oficio-documentos-antecedence-card__help">{{ jr.antecedencia_helper }}</span>
+              </section>
+              <section class="oficio-documentos-model-card" aria-label="Modelo">
+                <span class="oficio-documentos-model-card__label">Modelo utilizado</span>
+                <strong class="oficio-documentos-model-card__value">{{ jr.modelo_nome }}</strong>
+              </section>
+            </div>
+            <section class="oficio-documentos-justification-text-card" aria-label="Texto registrado">
+              <span class="oficio-documentos-justification-text-card__label">Texto registrado</span>
+              <div class="oficio-documentos-justification-text-card__body">
+                {{ jr.texto_registrado|linebreaks }}
+              </div>
             </section>
-            <div class="oficio-documentos-justification-model">
-              <span class="oficio-documentos-justification-model__label">Modelo utilizado</span>
-              <span class="oficio-documentos-justification-model__name">{{ jr.modelo_nome }}</span>
-            </div>
-            <div class="oficio-documentos-justification-text">
-              {{ jr.texto_registrado|linebreaks }}
-            </div>
           </div>
         </div>
       </article>

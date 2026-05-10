@@ -2338,7 +2338,7 @@
   }
 }
 
-.oficio-documentos-jheader__row {
+.oficio-documentos-justification__header {
   align-items: flex-start;
   display: flex;
   flex-wrap: wrap;
@@ -2346,90 +2346,135 @@
   justify-content: space-between;
 }
 
-.oficio-documentos-jheader__titles {
-  flex: 1 1 12rem;
+.oficio-documentos-justification__intro {
+  flex: 1 1 14rem;
   min-width: 0;
 }
 
-.oficio-documentos-justification-body {
-  display: grid;
+.oficio-documentos-card__body--justification {
+  padding-top: var(--space-3);
+}
+
+.oficio-documentos-justification-stack {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-4);
 }
 
-.oficio-documentos-antecedencia {
+.oficio-documentos-justification-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr;
+}
+
+.oficio-documentos-antecedence-card {
   background: var(--color-card-muted);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-card);
-  padding: var(--space-4);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
 }
 
-.oficio-documentos-antecedencia__label {
+.oficio-documentos-antecedence-card__label {
   color: var(--color-muted);
   font-size: var(--font-size-xs);
   font-weight: 800;
-  letter-spacing: 0.06em;
-  margin: 0 0 var(--space-2);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.oficio-documentos-antecedencia__value {
+.oficio-documentos-antecedence-card__value {
   color: var(--color-heading);
   font-size: var(--font-size-xl);
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.2;
-  margin: 0 0 var(--space-2);
 }
 
-.oficio-documentos-antecedencia__helper {
+.oficio-documentos-antecedence-card__help {
   color: var(--color-muted);
   font-size: var(--font-size-sm);
-  line-height: 1.45;
-  margin: 0;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
-.oficio-documentos-justification-model {
-  align-items: baseline;
+.oficio-documentos-model-card {
+  background: var(--color-card-muted);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--space-2);
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
 }
 
-.oficio-documentos-justification-model__label {
+.oficio-documentos-model-card__label {
   color: var(--color-muted);
   font-size: var(--font-size-xs);
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.oficio-documentos-justification-model__name {
+.oficio-documentos-model-card__value {
   color: var(--color-heading);
-  flex: 1 1 12rem;
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  min-width: 0;
-  text-align: right;
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
   word-break: break-word;
 }
 
-.oficio-documentos-justification-text {
+.oficio-documentos-justification-text-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.oficio-documentos-justification-text-card__label {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.oficio-documentos-justification-text-card__body {
   background: var(--color-card-muted);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-control);
   color: var(--color-heading);
+  display: inline-block;
   font-size: var(--font-size-sm);
-  line-height: 1.55;
-  padding: var(--space-4);
+  line-height: 1.6;
+  max-width: min(100%, 42rem);
+  padding: var(--space-3) var(--space-4);
+  vertical-align: top;
+  width: auto;
 }
 
-.oficio-documentos-justification-text p {
-  margin: 0 0 var(--space-3);
+.oficio-documentos-justification-text-card__body p {
+  margin: 0 0 var(--space-2);
 }
 
-.oficio-documentos-justification-text p:last-child {
+.oficio-documentos-justification-text-card__body p:last-child {
   margin-bottom: 0;
+}
+
+@media (min-width: 640px) {
+  .oficio-documentos-justification-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .oficio-documentos-status-chip {
@@ -2467,7 +2512,9 @@
     flex-direction: column;
   }
 
-  .oficio-documentos-justification-model__name {
-    text-align: left;
+  .oficio-documentos-justification-text-card__body {
+    display: block;
+    max-width: 100%;
+    width: 100%;
   }
 }

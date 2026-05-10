@@ -127,28 +127,22 @@ def _montar_justificativa_resumo_documentos(j_et, j_obj, texto_j):
 
     st = j_et.get("status") or ""
     if st == "not_started":
-        antecedencia_helper = (
-            "Sem data de saída definida no roteiro, a antecedência em relação à regra não pode ser calculada."
-        )
+        antecedencia_helper = "Informe a data de saída no roteiro para calcular a antecedência."
     elif not j_et.get("obrigatoria"):
-        antecedencia_helper = (
-            "Não se aplica: a regra vigente não exige justificativa de antecedência para este ofício."
-        )
+        antecedencia_helper = "Não aplicável"
     elif dias_ant is None:
         antecedencia_helper = "—"
     elif dias_ant < 0:
-        antecedencia_helper = (
-            "A primeira saída ocorre com antecedência inferior ao mínimo exigido. O texto deve documentar a exceção."
-        )
+        antecedencia_helper = "Saída anterior ao prazo mínimo"
     else:
-        antecedencia_helper = (
-            "Antecedência compatível com o prazo mínimo configurado para a primeira saída."
-        )
+        antecedencia_helper = "Dentro do prazo mínimo"
 
     if not j_et.get("obrigatoria"):
-        texto_registrado = "Justificativa não exigida para este ofício."
+        texto_registrado = (
+            texto_j if texto_j else "Justificativa não exigida pela regra de prazo."
+        )
     elif not texto_j:
-        texto_registrado = "Texto ainda não registrado; conclua na etapa de justificativa."
+        texto_registrado = "Texto ainda não informado."
     else:
         texto_registrado = texto_j
 
@@ -156,6 +150,7 @@ def _montar_justificativa_resumo_documentos(j_et, j_obj, texto_j):
         "chip_label": chip_label,
         "chip_variant": chip_variant,
         "antecedencia_valor": antecedencia_valor,
+        "antecedencia_label": antecedencia_valor,
         "antecedencia_helper": antecedencia_helper,
         "modelo_nome": modelo_nome,
         "texto_registrado": texto_registrado,
