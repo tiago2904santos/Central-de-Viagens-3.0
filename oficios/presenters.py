@@ -296,6 +296,14 @@ def apresentar_oficio_wizard_documentos_context(oficio):
 
     destino_principal = destinos[0] if destinos else "—"
 
+    roteiro_card = None
+    if roteiro:
+        from roteiros.presenters import apresentar_roteiro_card
+
+        roteiro_card = apresentar_roteiro_card(roteiro)
+        roteiro_card.pop("actions", None)
+        roteiro_card["subtitle"] = "Roteiro utilizado para geração dos documentos"
+
     return {
         "detalhe": detalhe,
         "destinos": destinos,
@@ -306,6 +314,7 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         "tempo_rota_label": tempo_txt,
         "sede_label": sede,
         "roteiro": roteiro,
+        "roteiro_card": roteiro_card,
         "justificativa_etapa": j_et,
         "justificativa_texto": texto_j,
         "quantidade_diarias": (roteiro.quantidade_diarias if roteiro else "") or "—",

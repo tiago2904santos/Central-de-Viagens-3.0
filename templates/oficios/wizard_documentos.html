@@ -145,50 +145,213 @@
         <p class="oficio-documentos-card__subtitle">Trajeto, tempos e valores</p>
       </header>
       <div class="oficio-documentos-card__body">
-        <div class="oficio-documentos-route">
-          <div class="oficio-documentos-route__grid">
-            <div class="oficio-documentos-route__cell">
-              <span class="oficio-documentos-route__label">Origem / sede</span>
-              <span class="oficio-documentos-route__value">{{ documentos_ctx.sede_label }}</span>
+        {% if documentos_ctx.roteiro_card %}
+          {% with card=documentos_ctx.roteiro_card %}
+            <article
+              class="oficio-documentos-route-card oficio-documentos-route-card--status-{{ card.status_variant|default:'outro' }} oficio-documentos-route-card--trechos-{{ card.trechos_count|default:0 }} oficio-documentos-route-card--layout-{{ card.roteiro_card_layout|default:'compact' }}"
+            >
+              <div class="oficio-documentos-route-card__top">
+                <div class="oficio-documentos-route-card__title-row">
+                  <h3 class="oficio-documentos-route-card__title">{{ card.title|default:"Roteiro" }}</h3>
+                  {% if card.status_chip_label %}
+                    <span class="status-chip oficio-documentos-route-card__status-chip {{ card.status_chip_class|default:'status-chip--muted' }}">{{ card.status_chip_label }}</span>
+                  {% endif %}
+                </div>
+                {% if card.subtitle %}
+                  <p class="oficio-documentos-route-card__subtitle">{{ card.subtitle }}</p>
+                {% endif %}
+              </div>
+
+              <div class="oficio-documentos-route-card__body">
+                <div class="oficio-documentos-route-card__trechos-col">
+                  {% for t in card.trechos %}
+                    <div class="oficio-documentos-route-card__trecho">
+                      <div class="oficio-documentos-route-card__trecho-rota">{{ t.rota }}</div>
+                      <div class="oficio-documentos-route-card__trecho-times">
+                        <span><span class="oficio-documentos-route-card__trecho-label">Saída:</span> {{ t.saida }}</span>
+                        <span><span class="oficio-documentos-route-card__trecho-label">Chegada:</span> {{ t.chegada }}</span>
+                      </div>
+                    </div>
+                  {% endfor %}
+
+                  {% if card.trechos_resumo %}
+                    <div class="oficio-documentos-route-card__trecho oficio-documentos-route-card__trecho-summary">
+                      <div class="oficio-documentos-route-card__trecho-summary-text">
+                        + {{ card.trechos_resumo.count }}{% if card.trechos_resumo.texto %}, {{ card.trechos_resumo.texto }}{% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+
+                  <dl class="oficio-documentos-route-card__metrics" aria-label="Métricas do trajeto">
+                    <div class="oficio-documentos-route-card__metric">
+                      <dt>Distância</dt>
+                      <dd>{{ documentos_ctx.distancia_label }}</dd>
+                    </div>
+                    <div class="oficio-documentos-route-card__metric">
+                      <dt>Tempo estimado</dt>
+                      <dd>{{ documentos_ctx.tempo_rota_label }}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <aside class="oficio-documentos-route-card__diarias-col" aria-label="Diárias">
+                  <div class="oficio-documentos-route-card__diarias-box">
+                    <span class="oficio-documentos-route-card__diarias-box-title">Diárias</span>
+
+                    {% if card.roteiro_card_layout == "diarias-dashboard" %}
+                      <div class="oficio-documentos-route-card__diarias-grid" aria-label="Resumo de diárias">
+                        <div class="oficio-documentos-route-card__diarias-main{% if card.diaria_vazio %} oficio-documentos-route-card__diarias-main--vazio{% endif %}">
+                          <span class="oficio-documentos-route-card__diarias-panel-heading">Valor total</span>
+                          <div class="oficio-documentos-route-card__diarias-main-content">
+                            {% if card.diaria_vazio %}
+                              <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--muted">Não calculado</p>
+                            {% elif card.diaria_moeda %}
+                              <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--moeda oficio-documentos-route-card__diarias-panel-line--moeda-large">{{ card.diaria_moeda }}</p>
+                            {% else %}
+                              <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--muted">—</p>
+                            {% endif %}
+
+                            <span class="oficio-documentos-route-card__diarias-panel-heading oficio-documentos-route-card__diarias-extenso-label">Valor por extenso</span>
+                            {% if card.diaria_extenso %}
+                              <p class="oficio-documentos-route-card__diarias-extenso">{{ card.diaria_extenso }}</p>
+                            {% else %}
+                              <p class="oficio-documentos-route-card__diarias-extenso oficio-documentos-route-card__diarias-panel-line--muted">Não informado</p>
+                            {% endif %}
+                          </div>
+                        </div>
+
+                        <div class="oficio-documentos-route-card__diarias-side">
+                          <div class="oficio-documentos-route-card__diarias-metric">
+                            <span class="oficio-documentos-route-card__diarias-panel-heading">Tipo destino</span>
+                            <div class="oficio-documentos-route-card__diarias-metric-value">
+                              {% if card.diaria_tipo_destino %}
+                                <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--strong">{{ card.diaria_tipo_destino }}</p>
+                              {% else %}
+                                <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--muted">—</p>
+                              {% endif %}
+                            </div>
+                          </div>
+
+                          <div class="oficio-documentos-route-card__diarias-metric">
+                            <span class="oficio-documentos-route-card__diarias-panel-heading">Quantidade de diárias</span>
+                            <div class="oficio-documentos-route-card__diarias-metric-value">
+                              {% if card.diaria_composicao_linhas %}
+                                <ul class="oficio-documentos-route-card__diarias-composicao-list">
+                                  {% for linha in card.diaria_composicao_linhas %}
+                                    <li>{{ linha }}</li>
+                                  {% endfor %}
+                                </ul>
+                              {% else %}
+                                <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--muted">—</p>
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% else %}
+                      <div class="oficio-documentos-route-card__diarias-box-panels">
+                        <div class="oficio-documentos-route-card__diarias-subblock oficio-documentos-route-card__diarias-subblock--valor{% if card.diaria_vazio %} oficio-documentos-route-card__diarias-subblock--vazio{% endif %}">
+                          <span class="oficio-documentos-route-card__diarias-panel-heading">Valor da diária</span>
+                          <div class="oficio-documentos-route-card__diarias-metric-value">
+                            {% if card.diaria_vazio %}
+                              <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--muted">Não calculado</p>
+                            {% elif card.diaria_moeda %}
+                              <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--moeda">{{ card.diaria_moeda }}</p>
+                            {% else %}
+                              <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--muted">—</p>
+                            {% endif %}
+                          </div>
+                        </div>
+
+                        <div class="oficio-documentos-route-card__diarias-subblock oficio-documentos-route-card__diarias-subblock--composicao">
+                          <span class="oficio-documentos-route-card__diarias-panel-heading">Quantidade de diárias</span>
+                          <div class="oficio-documentos-route-card__diarias-metric-value">
+                            {% if card.diaria_composicao_linhas %}
+                              <ul class="oficio-documentos-route-card__diarias-composicao-list">
+                                {% for linha in card.diaria_composicao_linhas %}
+                                  <li>{{ linha }}</li>
+                                {% endfor %}
+                              </ul>
+                            {% else %}
+                              <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--muted">—</p>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                </aside>
+              </div>
+            </article>
+          {% endwith %}
+        {% else %}
+          <article class="oficio-documentos-route-card oficio-documentos-route-card--fallback oficio-documentos-route-card--status-outro">
+            <div class="oficio-documentos-route-card__top">
+              <div class="oficio-documentos-route-card__title-row">
+                <h3 class="oficio-documentos-route-card__title">{{ documentos_ctx.sede_label }} → {{ documentos_ctx.destino_principal_label }}</h3>
+              </div>
+              <p class="oficio-documentos-route-card__subtitle">
+                Nenhum roteiro vinculado a este ofício; abaixo estão os dados disponíveis para documentos.
+              </p>
             </div>
-            <div class="oficio-documentos-route__cell oficio-documentos-route__cell--wide">
-              <span class="oficio-documentos-route__label">Destinos</span>
-              <span class="oficio-documentos-route__value">
-                {% if documentos_ctx.destinos %}{{ documentos_ctx.destinos|join:", " }}{% else %}—{% endif %}
-              </span>
+            <div class="oficio-documentos-route-card__body">
+              <div class="oficio-documentos-route-card__trechos-col">
+                <div class="oficio-documentos-route-card__fallback-facts">
+                  <div class="oficio-documentos-route-card__fallback-fact">
+                    <span class="oficio-documentos-route-card__fallback-label">Destinos</span>
+                    <span class="oficio-documentos-route-card__fallback-value">
+                      {% if documentos_ctx.destinos %}{{ documentos_ctx.destinos|join:", " }}{% else %}—{% endif %}
+                    </span>
+                  </div>
+                  <div class="oficio-documentos-route-card__fallback-fact">
+                    <span class="oficio-documentos-route-card__fallback-label">Primeira saída</span>
+                    <span class="oficio-documentos-route-card__fallback-value">{{ documentos_ctx.primeira_saida_label }}</span>
+                  </div>
+                  <div class="oficio-documentos-route-card__fallback-fact">
+                    <span class="oficio-documentos-route-card__fallback-label">Retorno (saída)</span>
+                    <span class="oficio-documentos-route-card__fallback-value">{{ documentos_ctx.retorno_label }}</span>
+                  </div>
+                </div>
+                <dl class="oficio-documentos-route-card__metrics" aria-label="Métricas do trajeto">
+                  <div class="oficio-documentos-route-card__metric">
+                    <dt>Distância</dt>
+                    <dd>{{ documentos_ctx.distancia_label }}</dd>
+                  </div>
+                  <div class="oficio-documentos-route-card__metric">
+                    <dt>Tempo estimado</dt>
+                    <dd>{{ documentos_ctx.tempo_rota_label }}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <aside class="oficio-documentos-route-card__diarias-col" aria-label="Diárias">
+                <div class="oficio-documentos-route-card__diarias-box">
+                  <span class="oficio-documentos-route-card__diarias-box-title">Diárias</span>
+                  <div class="oficio-documentos-route-card__diarias-box-panels">
+                    <div class="oficio-documentos-route-card__diarias-subblock oficio-documentos-route-card__diarias-subblock--valor">
+                      <span class="oficio-documentos-route-card__diarias-panel-heading">Valor total</span>
+                      <div class="oficio-documentos-route-card__diarias-metric-value">
+                        <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--moeda">{{ documentos_ctx.valor_diarias_display }}</p>
+                      </div>
+                      <span class="oficio-documentos-route-card__diarias-panel-heading oficio-documentos-route-card__diarias-extenso-label">Valor por extenso</span>
+                      {% if documentos_ctx.valor_diarias_extenso and documentos_ctx.valor_diarias_extenso != "—" %}
+                        <p class="oficio-documentos-route-card__diarias-extenso">{{ documentos_ctx.valor_diarias_extenso }}</p>
+                      {% else %}
+                        <p class="oficio-documentos-route-card__diarias-extenso oficio-documentos-route-card__diarias-panel-line--muted">—</p>
+                      {% endif %}
+                    </div>
+                    <div class="oficio-documentos-route-card__diarias-subblock oficio-documentos-route-card__diarias-subblock--composicao">
+                      <span class="oficio-documentos-route-card__diarias-panel-heading">Quantidade de diárias</span>
+                      <div class="oficio-documentos-route-card__diarias-metric-value">
+                        <p class="oficio-documentos-route-card__diarias-panel-line oficio-documentos-route-card__diarias-panel-line--strong">{{ documentos_ctx.quantidade_diarias }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </aside>
             </div>
-            <div class="oficio-documentos-route__cell">
-              <span class="oficio-documentos-route__label">Primeira saída</span>
-              <span class="oficio-documentos-route__value">{{ documentos_ctx.primeira_saida_label }}</span>
-            </div>
-            <div class="oficio-documentos-route__cell">
-              <span class="oficio-documentos-route__label">Retorno (saída)</span>
-              <span class="oficio-documentos-route__value">{{ documentos_ctx.retorno_label }}</span>
-            </div>
-            <div class="oficio-documentos-route__cell">
-              <span class="oficio-documentos-route__label">Distância</span>
-              <span class="oficio-documentos-route__value">{{ documentos_ctx.distancia_label }}</span>
-            </div>
-            <div class="oficio-documentos-route__cell">
-              <span class="oficio-documentos-route__label">Tempo estimado</span>
-              <span class="oficio-documentos-route__value">{{ documentos_ctx.tempo_rota_label }}</span>
-            </div>
-            <div class="oficio-documentos-route__cell">
-              <span class="oficio-documentos-route__label">Quantidade de diárias</span>
-              <span class="oficio-documentos-route__value">{{ documentos_ctx.quantidade_diarias }}</span>
-            </div>
-          </div>
-          <div class="oficio-documentos-route__money">
-            <div class="oficio-documentos-money-block">
-              <span class="oficio-documentos-money-block__label">Valor total das diárias</span>
-              <span class="oficio-documentos-money-block__amount">{{ documentos_ctx.valor_diarias_display }}</span>
-            </div>
-            <p class="oficio-documentos-money-block__extenso">
-              <span class="oficio-documentos-money-block__extenso-label">Por extenso</span>
-              {{ documentos_ctx.valor_diarias_extenso }}
-            </p>
-          </div>
-        </div>
+          </article>
+        {% endif %}
       </div>
     </article>
 
