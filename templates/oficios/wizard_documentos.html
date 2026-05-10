@@ -425,14 +425,14 @@
         <div class="oficio-documentos-card__body oficio-documentos-card__body--justification">
           <div class="oficio-documentos-justification-stack">
             <div class="oficio-documentos-justification-grid">
+              <section class="oficio-documentos-model-card" aria-label="Modelo">
+                <span class="oficio-documentos-model-card__label">Modelo utilizado</span>
+                <strong class="oficio-documentos-model-card__value">{{ jr.modelo_nome }}</strong>
+              </section>
               <section class="oficio-documentos-antecedence-card" aria-label="Antecedência">
                 <span class="oficio-documentos-antecedence-card__label">Dias de antecedência</span>
                 <strong class="oficio-documentos-antecedence-card__value">{{ jr.antecedencia_label }}</strong>
                 <span class="oficio-documentos-antecedence-card__help">{{ jr.antecedencia_helper }}</span>
-              </section>
-              <section class="oficio-documentos-model-card" aria-label="Modelo">
-                <span class="oficio-documentos-model-card__label">Modelo utilizado</span>
-                <strong class="oficio-documentos-model-card__value">{{ jr.modelo_nome }}</strong>
               </section>
             </div>
             <section class="oficio-documentos-justification-text-card" aria-label="Texto registrado">
