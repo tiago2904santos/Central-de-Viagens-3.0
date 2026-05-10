@@ -694,12 +694,14 @@
   align-items: center;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  border-radius: 50%;
   display: inline-flex;
+  font-size: var(--font-size-sm);
   font-weight: 900;
   height: 36px;
   justify-content: center;
   width: 36px;
+  flex-shrink: 0;
 }
 
 .oficio-stepper__copy {
@@ -721,28 +723,38 @@
   line-height: 1.2;
 }
 
+/* ATUAL — fundo sólido azul navy, badge branco */
 .oficio-stepper__item--current .oficio-stepper__link {
-  background:
-    linear-gradient(135deg, var(--color-primary), var(--color-primary-bright)),
-    var(--color-primary);
-  border-color: var(--color-accent-border-strong);
-  box-shadow: var(--glow-primary);
+  background: var(--color-primary-strong, #0b3a66);
+  border-color: var(--color-primary-strong, #0b3a66);
+  box-shadow: 0 2px 8px rgba(11, 58, 102, 0.35);
   color: var(--color-white);
 }
 
 .oficio-stepper__item--current .oficio-stepper__number {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-primary-strong);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: var(--color-white);
 }
 
 .oficio-stepper__item--current .oficio-stepper__state {
-  color: var(--color-accent-soft);
+  color: rgba(255, 255, 255, 0.75);
 }
 
+.oficio-stepper__item--current .oficio-stepper__title {
+  color: var(--color-white);
+}
+
+/* CONCLUÍDA — fundo verde suave + label verde */
 .oficio-stepper__item--complete .oficio-stepper__link,
 .oficio-stepper__item--status-complete .oficio-stepper__link {
+  background: var(--color-success-soft);
   border-color: var(--color-success);
+}
+
+.oficio-stepper__item--complete .oficio-stepper__state,
+.oficio-stepper__item--status-complete .oficio-stepper__state {
+  color: var(--color-success);
 }
 
 .oficio-stepper__item--complete .oficio-stepper__number,
@@ -752,9 +764,16 @@
   color: var(--color-success);
 }
 
+/* RASCUNHO/INCOMPLETO — fundo vermelho suave + label vermelho */
 .oficio-stepper__item--incomplete .oficio-stepper__link,
 .oficio-stepper__item--status-incomplete .oficio-stepper__link {
+  background: var(--color-danger-soft);
   border-color: var(--color-danger);
+}
+
+.oficio-stepper__item--incomplete .oficio-stepper__state,
+.oficio-stepper__item--status-incomplete .oficio-stepper__state {
+  color: var(--color-danger);
 }
 
 .oficio-stepper__item--incomplete .oficio-stepper__number,
@@ -764,14 +783,24 @@
   color: var(--color-danger);
 }
 
+/* VAZIA/LOCKED — neutro */
 .oficio-stepper__item--locked .oficio-stepper__link {
-  background: var(--color-input-disabled-bg);
-  color: var(--color-input-disabled-text);
-  opacity: 0.72;
+  background: var(--color-card-muted);
+  color: var(--color-muted);
+  opacity: 1;
 }
 
 .oficio-stepper__item--locked .oficio-stepper__number {
-  background: var(--color-surface-muted);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-muted);
+}
+
+.oficio-stepper__item--locked .oficio-stepper__state {
+  color: var(--color-muted);
+}
+
+.oficio-stepper__item--locked .oficio-stepper__title {
   color: var(--color-muted);
 }
 
