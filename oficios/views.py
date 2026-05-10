@@ -416,11 +416,6 @@ def wizard_justificativa(request, pk):
     )
 
 
-def wizard_resumo(request, pk):
-    """Compatibilidade: URL antiga redireciona para a etapa 5 (documentos)."""
-    return redirect("oficios:wizard_documentos", pk=pk)
-
-
 def wizard_documentos(request, pk):
     oficio = get_oficio_by_id(pk)
     aval_doc = validar_oficio_para_documento(oficio)
@@ -470,6 +465,11 @@ def wizard_documentos(request, pk):
             "mostrar_pendencias": bool(pendencias),
         },
     )
+
+
+def wizard_resumo(request, pk):
+    """Compatibilidade: `/resumo/` é alias da etapa 5 — mesmo conteúdo de `wizard_documentos`."""
+    return wizard_documentos(request, pk)
 
 
 @require_GET

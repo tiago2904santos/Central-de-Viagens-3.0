@@ -101,12 +101,12 @@ class OficioWizardRoteiroDiariasTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_wizard_resumo_redireciona_documentos(self):
+    def test_wizard_resumo_e_alias_da_etapa_documentos(self):
         oficio = self._oficio_ate_transporte([self.servidor_a.pk])
         self.client.get(reverse("oficios:wizard_roteiro", args=[oficio.pk]))
         response = self.client.get(reverse("oficios:wizard_resumo", args=[oficio.pk]))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("oficios:wizard_documentos", args=[oficio.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "oficios/wizard_documentos.html")
 
     def test_wizard_documentos_get(self):
         oficio = self._oficio_ate_transporte([self.servidor_a.pk])
