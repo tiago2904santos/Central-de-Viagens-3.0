@@ -139,4 +139,39 @@
   /* Shell: sidebar fixa em % da viewport; conteudo usa o restante (grid em layout.css). */
   --sidebar-width: 15%;
   --page-max-width: 100%;
+
+  /* --------------------------------------------------------------------------
+     Espaco 7 (28px) — alias ausente; corrige uso em app-page.css/dashboard.css
+     -------------------------------------------------------------------------- */
+  --space-7: 28px;
+
+  /* --------------------------------------------------------------------------
+     API publica do design system — tokens --app-*
+     Alias estaveis para radius, espaco e tipografia (nao mudam por tema).
+     Tokens de cor ficam em theme.css pois variam entre light e dark.
+     -------------------------------------------------------------------------- */
+
+  /* Radius */
+  --app-radius-sm: var(--radius-sm);
+  --app-radius-md: var(--radius-md);
+  --app-radius-lg: var(--radius-lg);
+  --app-radius-xl: var(--radius-xl);
+
+  /* Espaco */
+  --app-space-1: var(--space-1);
+  --app-space-2: var(--space-2);
+  --app-space-3: var(--space-3);
+  --app-space-4: var(--space-4);
+  --app-space-5: var(--space-5);
+
+  /* Tipografia */
+  --app-font-family: var(--font-sans);
+  --app-font-size-xs: var(--font-size-xs);
+  --app-font-size-sm: var(--font-size-sm);
+  --app-font-size-md: var(--font-size-md);
+  --app-font-size-lg: var(--font-size-lg);
+  --app-font-size-xl: var(--font-size-xl);
+  --app-font-weight-normal: 400;
+  --app-font-weight-semibold: var(--font-weight-semibold);
+  --app-font-weight-bold: var(--font-weight-bold);
 }

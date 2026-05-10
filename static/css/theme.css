@@ -205,6 +205,26 @@
   --route-status-muted-border: #b9cbe0;
   --route-status-muted-text: #334c63;
   --route-focus-ring: rgba(21, 91, 154, 0.18);
+
+  /* --------------------------------------------------------------------------
+     API publica de cor do design system — tokens --app-* (light default)
+     Alias estaveis que componentes devem consumir em vez de --color-* diretos.
+     -------------------------------------------------------------------------- */
+  --app-bg: var(--color-bg);
+  --app-surface: var(--color-surface);
+  --app-surface-muted: var(--color-surface-muted);
+  --app-surface-elevated: var(--color-card);
+  --app-border: var(--color-border);
+  --app-border-strong: var(--color-border-strong);
+  --app-text: var(--color-text);
+  --app-text-muted: var(--color-text-muted);
+  --app-text-soft: var(--color-text-soft);
+  --app-primary: var(--color-primary);
+  --app-primary-hover: var(--color-primary-hover);
+  --app-primary-soft: var(--color-primary-soft);
+  --app-danger: var(--color-danger);
+  --app-warning: var(--color-warning);
+  --app-success: var(--color-success);
 }
 
 
@@ -367,6 +387,17 @@ html[data-theme="light-dark"] {
   --app-hero-stage-bg: linear-gradient(225deg, var(--app-hero-stage-end) 0%, var(--app-hero-stage-start) 72%);
 
   --sidebar-surface: var(--color-card);
+
+  /* --app-* overrides para tema escuro */
+  --app-bg: var(--color-bg);
+  --app-surface: var(--color-surface);
+  --app-surface-muted: var(--color-surface-muted);
+  --app-surface-elevated: var(--color-card);
+  --app-border: var(--color-border);
+  --app-border-strong: var(--color-border-strong);
+  --app-text: var(--color-text);
+  --app-text-muted: var(--color-text-muted);
+  --app-text-soft: var(--color-text-soft);
 }
 
 /* ========== 3 tema claro oficial (inclui alias legado claro) ========== */
@@ -470,6 +501,17 @@ html[data-theme="light-light"] {
   --app-hero-stage-bg: linear-gradient(315deg, var(--app-hero-stage-start) -25%, var(--app-hero-stage-end) 25%);
 
   --sidebar-surface: linear-gradient(225deg, var(--app-hero-stage-end) 0%, var(--app-hero-stage-start) 72%);
+
+  /* --app-* overrides para tema claro explicito */
+  --app-bg: var(--color-bg);
+  --app-surface: var(--color-surface);
+  --app-surface-muted: var(--color-surface-muted);
+  --app-surface-elevated: var(--color-card);
+  --app-border: var(--color-border);
+  --app-border-strong: var(--color-border-strong);
+  --app-text: var(--color-text);
+  --app-text-muted: var(--color-text-muted);
+  --app-text-soft: var(--color-text-soft);
 }
 
 /* aliases legados acima continuam apontando para dark/light oficiais */
