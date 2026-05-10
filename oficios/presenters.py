@@ -223,6 +223,11 @@ def apresentar_linha_lista_simples_modelo_motivo(modelo, edit_url="#", delete_ur
         ],
         "edit_url": edit_url,
         "delete_url": delete_url,
+        "set_default_url": (
+            reverse("oficios:modelo_motivo_definir_padrao", args=[modelo.pk])
+            if not modelo.is_padrao
+            else ""
+        ),
     }
 
 

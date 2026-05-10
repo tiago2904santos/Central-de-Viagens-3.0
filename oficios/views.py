@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_POST
 
 from justificativas.forms import JustificativaOficioForm
 from justificativas.presenters import apresentar_justificativa_wizard_context
@@ -412,6 +413,7 @@ def wizard_justificativa(request, pk):
             "wizard_back_label": "Voltar",
             "justificativa_ctx": apresentar_justificativa_wizard_context(oficio),
             "justificativa_obrigatoria": obrigatoria,
+            "modelos_justificativa_url": reverse("justificativas:index"),
         },
     )
 
@@ -582,6 +584,15 @@ def modelo_motivo_novo(request):
             "submit_label": "Salvar modelo",
         },
     )
+
+
+@require_POST
+def modelo_motivo_definir_padrao(request, pk):
+    modelo = get_modelo_motivo_by_id(pk)
+    modelo.is_padrao = True
+    modelo.save()
+    messages.success(request, "Modelo definido como padrão.")
+    return redirect("oficios:modelos_motivo_index")
 
 
 def modelo_motivo_editar(request, pk):

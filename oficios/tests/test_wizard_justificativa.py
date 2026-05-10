@@ -99,6 +99,8 @@ class WizardJustificativaTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "oficios/wizard_justificativa.html")
+        self.assertContains(response, "motivo-card__body")
+        self.assertContains(response, reverse("justificativas:index"))
 
     def test_stepper_contem_justificativa(self):
         oficio = self._oficio_ate_transporte()

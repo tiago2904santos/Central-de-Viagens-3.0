@@ -1282,15 +1282,6 @@
 /* --------------------------------------------------------------------------
    Wizard — Justificativa (etapa 4)
    -------------------------------------------------------------------------- */
-.oficio-justificativa-hero__header {
-  align-items: flex-start;
-}
-
-.oficio-justificativa-hero__lead {
-  margin-top: var(--space-2);
-  max-width: 52rem;
-}
-
 .oficio-justificativa-subtitle {
   color: var(--color-heading);
   font-size: var(--font-size-sm);
@@ -1298,11 +1289,6 @@
   letter-spacing: 0.04em;
   margin: 0 0 var(--space-3);
   text-transform: uppercase;
-}
-
-.oficio-justificativa-diagnostico {
-  display: grid;
-  gap: var(--space-4);
 }
 
 .oficio-justificativa-dl {
@@ -1339,10 +1325,6 @@
   word-break: break-word;
 }
 
-.oficio-justificativa-motivo {
-  margin: 0;
-}
-
 .oficio-justificativa-pendencias__list {
   color: var(--color-heading);
   margin: 0;
@@ -1352,13 +1334,3 @@
 .oficio-justificativa-pendencias__list li {
   margin-bottom: var(--space-2);
 }
-
-.oficio-justificativa-form-grid {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.oficio-justificativa-empty-models {
-  margin: calc(var(--space-2) * -1) 0 var(--space-2);
-}
-

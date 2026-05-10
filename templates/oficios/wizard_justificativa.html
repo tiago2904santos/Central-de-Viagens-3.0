@@ -2,73 +2,44 @@
 {% load static %}
 
 {% block wizard_content %}
-  <section class="form-section app-form-section oficio-justificativa-hero">
-    <div class="oficio-equipe-section__header oficio-justificativa-hero__header">
-      <div class="oficio-equipe-section__copy">
-        <h3>Justificativa</h3>
-        <p class="app-form-help oficio-justificativa-hero__lead">
-          Quando a primeira saída ocorre em até {{ justificativa_ctx.prazo_dias_label }} dias corridos da data de criação do ofício,
-          a justificativa é obrigatória para seguir com documentos e finalização.
-        </p>
+  <div class="form-section motivo-card">
+    <div class="motivo-card__header">
+      <div class="motivo-card__heading">
+        <h3 class="motivo-card__title">Justificativa</h3>
+        <p class="motivo-card__description">Use um modelo salvo ou descreva a justificativa da viagem.</p>
       </div>
-      <span class="status-chip {{ justificativa_ctx.badge_class }}">{{ justificativa_ctx.badge_label }}</span>
-    </div>
-  </section>
-
-  <section class="form-section app-form-section oficio-justificativa-diagnostico-card">
-    <h4 class="oficio-justificativa-subtitle">Diagnóstico da regra</h4>
-    <div class="app-form-grid-panel oficio-data-block oficio-justificativa-diagnostico">
-      <dl class="oficio-justificativa-dl">
-        <div class="oficio-justificativa-dl__item">
-          <dt>Data de criação do ofício</dt>
-          <dd>{{ justificativa_ctx.data_criacao_label }}</dd>
-        </div>
-        <div class="oficio-justificativa-dl__item">
-          <dt>Primeira saída do roteiro</dt>
-          <dd>{{ justificativa_ctx.primeira_saida_label }}</dd>
-        </div>
-        <div class="oficio-justificativa-dl__item">
-          <dt>Dias de antecedência</dt>
-          <dd>{{ justificativa_ctx.dias_antecedencia_label }}</dd>
-        </div>
-        <div class="oficio-justificativa-dl__item">
-          <dt>Prazo mínimo</dt>
-          <dd>{{ justificativa_ctx.prazo_dias_label }} dias</dd>
-        </div>
-        <div class="oficio-justificativa-dl__item oficio-justificativa-dl__item--wide">
-          <dt>Resultado</dt>
-          <dd><strong>{{ justificativa_ctx.resultado_label }}</strong></dd>
-        </div>
-      </dl>
-      <p class="field-help app-form-help oficio-justificativa-motivo">{{ justificativa_ctx.alerta_regra }}</p>
-    </div>
-  </section>
-
-  {% if justificativa_ctx.pendencias %}
-    <section class="form-section app-form-section oficio-justificativa-pendencias" aria-live="polite">
-      <h4 class="oficio-justificativa-subtitle">Pendências</h4>
-      <ul class="oficio-justificativa-pendencias__list">
-        {% for p in justificativa_ctx.pendencias %}
-          <li>{{ p }}</li>
-        {% endfor %}
-      </ul>
-    </section>
-  {% endif %}
-
-  <section class="form-section app-form-section oficio-justificativa-form-card">
-    <h4 class="oficio-justificativa-subtitle">Preenchimento</h4>
-    <div class="app-form-grid-panel oficio-data-block oficio-justificativa-form-grid">
-      <div class="field-span-12">
-        {% include "components/forms/form_field.html" with field=form.modelo label="MODELO DE JUSTIFICATIVA" help_text="Opcional — escolha um texto base cadastrado." only %}
-      </div>
-      {% if not form.fields.modelo.queryset.exists %}
-        <p class="field-help app-form-help oficio-justificativa-empty-models">
-          Nenhum modelo de justificativa cadastrado ainda. Você pode digitar o texto livremente abaixo.
-        </p>
-      {% endif %}
-      <div class="field-span-12">
-        {% include "components/forms/form_field.html" with field=form.texto label="TEXTO DA JUSTIFICATIVA" help_text=justificativa_ctx.help_texto only %}
+      <div class="motivo-card__actions">
+        {% include "components/buttons/action_button.html" with href=modelos_justificativa_url label="Gerenciar modelos" variant="secondary" only %}
       </div>
     </div>
-  </section>
+    <div class="motivo-card__body app-form-grid-panel">
+      <div class="motivo-card__model field">
+        <label for="{{ form.modelo.id_for_label }}">Modelo de justificativa</label>
+        <select
+          name="{{ form.modelo.html_name }}"
+          id="{{ form.modelo.id_for_label }}"
+          class="form-select"
+          data-modelo-justificativa-select="true"
+        >
+          <option value="">Selecione um modelo (opcional)</option>
+          {% for modelo in form.fields.modelo.queryset %}
+            <option
+              value="{{ modelo.pk }}"
+              data-texto-justificativa="{{ modelo.texto|escape }}"
+              {% if form.modelo.value|stringformat:'s' == modelo.pk|stringformat:'s' %}selected{% endif %}
+            >{{ modelo.nome }}</option>
+          {% endfor %}
+        </select>
+        {% if form.modelo.errors %}<p class="field-error">{{ form.modelo.errors|striptags }}</p>{% endif %}
+      </div>
+      <div class="motivo-card__textarea">
+        {% include "components/forms/form_field.html" with field=form.texto label="Justificativa" help_text=justificativa_ctx.help_texto only %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script src="{% static 'js/pages/oficios-justificativa-wizard.js' %}" defer></script>
 {% endblock %}

@@ -246,3 +246,20 @@ def avaliar_etapa_justificativa_oficio(oficio) -> dict[str, Any]:
         "justificativa": j,
         "regra": ev,
     }
+
+
+@transaction.atomic
+def criar_modelo_justificativa(form):
+    """Persiste novo modelo (normalização em ModeloJustificativa.save)."""
+    return form.save()
+
+
+@transaction.atomic
+def atualizar_modelo_justificativa(instance, form):
+    _ = instance
+    return form.save()
+
+
+@transaction.atomic
+def excluir_modelo_justificativa(instance):
+    instance.delete()

@@ -1,7 +1,39 @@
+from core.presenters.badges import build_badge
+from core.presenters.meta import build_meta
+from django.urls import reverse
 from django.utils import timezone
 
+from .models import ModeloJustificativa
 from .services import avaliar_etapa_justificativa_oficio
 from .services import avaliar_justificativa_oficio
+
+
+def apresentar_linha_lista_simples_modelo_justificativa(
+    modelo: ModeloJustificativa,
+    edit_url: str = "#",
+    delete_url: str = "#",
+):
+    """Mesmo contrato de `apresentar_linha_lista_simples_modelo_motivo` (lista simples)."""
+    badges = []
+    if modelo.is_padrao:
+        badges.append(build_badge("Padrão", "accent"))
+    texto = (modelo.texto or "").strip()
+    if len(texto) > 90:
+        texto = f"{texto[:90]}..."
+    return {
+        "title": modelo.nome,
+        "badges": badges,
+        "meta": [
+            build_meta("Prévia", texto or "—"),
+        ],
+        "edit_url": edit_url,
+        "delete_url": delete_url,
+        "set_default_url": (
+            reverse("justificativas:modelo_definir_padrao", args=[modelo.pk])
+            if not modelo.is_padrao
+            else ""
+        ),
+    }
 
 
 def apresentar_justificativa_wizard_context(oficio):

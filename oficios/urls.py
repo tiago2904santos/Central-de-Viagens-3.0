@@ -11,6 +11,11 @@ urlpatterns = [
     path("modelos-motivo/", views.modelos_motivo_index, name="modelos_motivo_index"),
     path("modelos-motivo/novo/", views.modelo_motivo_novo, name="modelo_motivo_novo"),
     path("modelos-motivo/<int:pk>/editar/", views.modelo_motivo_editar, name="modelo_motivo_editar"),
+    path(
+        "modelos-motivo/<int:pk>/padrao/",
+        views.modelo_motivo_definir_padrao,
+        name="modelo_motivo_definir_padrao",
+    ),
     path("modelos-motivo/<int:pk>/excluir/", views.modelo_motivo_excluir, name="modelo_motivo_excluir"),
     path("<int:pk>/", views.detalhe, name="detalhe"),
     path("<int:pk>/editar/", views.editar, name="editar"),
