@@ -239,3 +239,64 @@
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   ALIASES CANONICOS DO DESIGN SYSTEM — Fase 7
+   .app-list-* como joint selectors das classes legadas.
+   ========================================================================== */
+
+.app-list-toolbar,
+.list-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.app-list-grid,
+.list-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+}
+
+.app-list,
+.simple-list {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.app-list__row,
+.simple-list__row {
+  align-items: center;
+  border-bottom: 1px solid var(--color-border-soft);
+  display: flex;
+  gap: var(--space-4);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+}
+
+.app-empty-state,
+.empty-state {
+  padding: var(--space-8, 64px) var(--space-4);
+  text-align: center;
+}
+
+.app-badge {
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  padding: 2px 10px;
+  text-transform: uppercase;
+}
+
+.app-badge--accent {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text, var(--color-accent));
+}
+
+.app-badge--muted {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}

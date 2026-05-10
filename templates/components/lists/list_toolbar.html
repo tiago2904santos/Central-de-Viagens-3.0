@@ -1,4 +1,4 @@
-<form class="list-toolbar" method="get"{% if search_form_action %} action="{{ search_form_action }}"{% endif %}>
+<form class="list-toolbar app-list-toolbar" method="get"{% if search_form_action %} action="{{ search_form_action }}"{% endif %}>
   <div class="list-search">
     <label class="sr-only" for="{{ search_id|default:'list-search' }}">Buscar</label>
     <input id="{{ search_id|default:'list-search' }}" name="q" type="search" value="{{ q }}" placeholder="{{ search_placeholder|default:'Buscar registros' }}" autocomplete="off">
