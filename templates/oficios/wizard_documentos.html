@@ -75,71 +75,129 @@
       </div>
     </article>
 
-    <article class="oficio-documentos-card oficio-documentos-card--crew-transport" aria-label="Equipe e transporte">
-      <header class="oficio-documentos-card__header">
-        <div class="oficio-documentos-crew-transport__titles">
-          <span class="oficio-documentos-card__eyebrow">Equipe e deslocamento</span>
-          <h4 class="oficio-documentos-card__title">Viajantes, viatura e condução</h4>
-          <p class="oficio-documentos-card__subtitle">Resumo operacional do ofício</p>
+    <article class="oficio-documentos-card oficio-documentos-card--travellers" aria-label="Viajantes">
+      <header class="oficio-documentos-card__header oficio-documentos-travellers__header">
+        <div class="oficio-documentos-travellers__titles">
+          <span class="oficio-documentos-card__eyebrow">Equipe</span>
+          <h4 class="oficio-documentos-card__title">Viajantes</h4>
+          <p class="oficio-documentos-card__subtitle">Servidores vinculados ao ofício</p>
+        </div>
+        <span class="oficio-documentos-count-pill" aria-label="Total de viajantes">
+          {{ documentos_ctx.viajantes_cards|length }}
+          {% if documentos_ctx.viajantes_cards|length == 1 %}viajante{% else %}viajantes{% endif %}
+        </span>
+      </header>
+      <div class="oficio-documentos-card__body">
+        <div class="oficio-documentos-travellers-panel">
+          <div class="oficio-documentos-travellers-panel__summary">
+            <span class="oficio-documentos-travellers-panel__label">Composição da equipe</span>
+            <strong class="oficio-documentos-travellers-panel__value">
+              {% with n=documentos_ctx.viajantes_cards|length %}
+                {% if n == 0 %}Nenhum servidor{% elif n == 1 %}1 servidor{% else %}{{ n }} servidores{% endif %}
+              {% endwith %}
+            </strong>
+          </div>
+          <div class="oficio-documentos-travellers-list">
+            {% for viajante in documentos_ctx.viajantes_cards %}
+              <article class="oficio-documentos-traveller-card">
+                <div class="oficio-documentos-traveller-card__main">
+                  <span class="oficio-documentos-traveller-card__avatar" aria-hidden="true">{{ viajante.iniciais }}</span>
+                  <div class="oficio-documentos-traveller-card__identity">
+                    <strong class="oficio-documentos-traveller-card__name">{{ viajante.nome }}</strong>
+                    <span class="oficio-documentos-traveller-card__subtitle">
+                      {% if viajante.cargo %}
+                        {{ viajante.cargo }}
+                      {% else %}
+                        Servidor
+                      {% endif %}
+                      {% if viajante.unidade %} · {{ viajante.unidade }}{% endif %}
+                    </span>
+                  </div>
+                  {% if viajante.is_motorista %}
+                    <span class="oficio-documentos-traveller-card__badge">Motorista</span>
+                  {% endif %}
+                </div>
+                <dl class="oficio-documentos-traveller-card__facts">
+                  {% if viajante.matricula %}
+                    <div>
+                      <dt>Matrícula</dt>
+                      <dd>{{ viajante.matricula }}</dd>
+                    </div>
+                  {% endif %}
+                  {% if viajante.rg %}
+                    <div>
+                      <dt>RG</dt>
+                      <dd>{{ viajante.rg }}</dd>
+                    </div>
+                  {% endif %}
+                  {% if viajante.cpf %}
+                    <div>
+                      <dt>CPF</dt>
+                      <dd>{{ viajante.cpf }}</dd>
+                    </div>
+                  {% endif %}
+                  {% if viajante.telefone %}
+                    <div>
+                      <dt>Telefone</dt>
+                      <dd>{{ viajante.telefone }}</dd>
+                    </div>
+                  {% endif %}
+                  {% if viajante.email %}
+                    <div>
+                      <dt>E-mail</dt>
+                      <dd>{{ viajante.email }}</dd>
+                    </div>
+                  {% endif %}
+                </dl>
+              </article>
+            {% empty %}
+              <div class="oficio-documentos-travellers-empty">Nenhum viajante vinculado a este ofício.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="oficio-documentos-card oficio-documentos-card--vehicle" aria-label="Viatura e condução">
+      <header class="oficio-documentos-card__header oficio-documentos-vehicle__header">
+        <div class="oficio-documentos-vehicle__titles">
+          <span class="oficio-documentos-card__eyebrow">Transporte</span>
+          <h4 class="oficio-documentos-card__title">Viatura e condução</h4>
+          <p class="oficio-documentos-card__subtitle">Transporte utilizado no deslocamento</p>
         </div>
       </header>
-      <div class="oficio-documentos-card__body oficio-documentos-card__body--crew-transport">
-        <div class="oficio-documentos-crew-transport-grid">
-          <section class="oficio-documentos-crew-panel" aria-label="Viajantes">
-            <div class="oficio-documentos-crew-panel__head">
-              <span class="oficio-documentos-crew-panel__title">Viajantes</span>
-              <span class="oficio-documentos-count-pill" aria-label="Total de viajantes">
-                {{ documentos_ctx.detalhe.servidores|length }}
-                {% if documentos_ctx.detalhe.servidores|length == 1 %}viajante{% else %}viajantes{% endif %}
-              </span>
-            </div>
-            <div class="oficio-documentos-team-panel oficio-documentos-team-panel--embedded">
-              <div class="oficio-documentos-team-list">
-                {% for nome in documentos_ctx.detalhe.servidores %}
-                  <span class="oficio-documentos-team-chip">{{ nome }}</span>
-                {% empty %}
-                  <p class="oficio-documentos-team-empty">Nenhum viajante vinculado a este ofício.</p>
-                {% endfor %}
+      <div class="oficio-documentos-card__body oficio-documentos-card__body--vehicle">
+        {% with t=documentos_ctx.transporte %}
+          <div class="oficio-documentos-vehicle-layout">
+            <section class="oficio-documentos-vehicle-main" aria-label="Identificação da viatura">
+              <span class="oficio-documentos-vehicle-main__label">Viatura</span>
+              <strong class="oficio-documentos-vehicle-main__plate">{{ t.viatura|default:t.placa }}</strong>
+              <span class="oficio-documentos-vehicle-main__model">{{ t.modelo }}</span>
+            </section>
+            <dl class="oficio-documentos-vehicle-facts" aria-label="Detalhes da viatura">
+              <div class="oficio-documentos-vehicle-fact">
+                <dt>Tipo</dt>
+                <dd>{{ t.tipo_viatura|default:t.tipo }}</dd>
               </div>
-            </div>
-          </section>
-          <section class="oficio-documentos-transport-panel" aria-label="Viatura e condução">
-            <div class="oficio-documentos-transport-panel__head">
-              <span class="oficio-documentos-transport-panel__title">Viatura e condução</span>
-            </div>
-            {% with t=documentos_ctx.transporte %}
-              <div class="oficio-documentos-vehicle-card oficio-documentos-vehicle-card--compact">
-                <div class="oficio-documentos-vehicle-card__main">
-                  <span class="oficio-documentos-vehicle-card__label">Viatura</span>
-                  <strong class="oficio-documentos-vehicle-card__plate">{{ t.placa }}</strong>
-                  <span class="oficio-documentos-vehicle-card__model">{{ t.modelo }}</span>
-                </div>
-                <dl class="oficio-documentos-vehicle-card__facts" aria-label="Detalhes da viatura">
-                  <div>
-                    <dt>Tipo</dt>
-                    <dd>{{ t.tipo }}</dd>
-                  </div>
-                  <div>
-                    <dt>Combustível</dt>
-                    <dd>{{ t.combustivel }}</dd>
-                  </div>
-                  <div>
-                    <dt>Armas</dt>
-                    <dd>{{ t.porte_armas }}</dd>
-                  </div>
-                  <div>
-                    <dt>Unidade</dt>
-                    <dd>{{ t.unidade }}</dd>
-                  </div>
-                </dl>
+              <div class="oficio-documentos-vehicle-fact">
+                <dt>Combustível</dt>
+                <dd>{{ t.combustivel }}</dd>
               </div>
-              <div class="oficio-documentos-driver-strip">
-                <span class="oficio-documentos-driver-strip__label">Motorista</span>
-                <strong class="oficio-documentos-driver-strip__value">{{ t.motorista }}</strong>
+              <div class="oficio-documentos-vehicle-fact">
+                <dt>Porte/transporte de armas</dt>
+                <dd>{{ t.porte_armas }}</dd>
               </div>
-            {% endwith %}
-          </section>
-        </div>
+              <div class="oficio-documentos-vehicle-fact">
+                <dt>Unidade</dt>
+                <dd>{{ t.unidade }}</dd>
+              </div>
+            </dl>
+          </div>
+          <div class="oficio-documentos-driver-bar">
+            <span class="oficio-documentos-driver-bar__label">Motorista</span>
+            <strong class="oficio-documentos-driver-bar__value">{{ t.motorista }}</strong>
+          </div>
+        {% endwith %}
       </div>
     </article>
 

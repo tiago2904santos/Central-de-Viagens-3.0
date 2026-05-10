@@ -65,6 +65,52 @@ def _viatura_placa_curta_oficio(oficio):
     return "—"
 
 
+def _iniciais_nome_servidor(nome: str) -> str:
+    nome = (nome or "").strip()
+    if not nome:
+        return "?"
+    parts = nome.split()
+    if len(parts) >= 2:
+        a, b = parts[0][0], parts[-1][0]
+        return f"{a}{b}".upper()
+    return nome[:2].upper()
+
+
+def _montar_viajantes_cards_documentos(oficio):
+    """Mini-fichas dos servidores vinculados (cadastro real; sem campos inventados)."""
+    motorista_pk = oficio.motorista_id
+    cards = []
+    qs = oficio.servidores.select_related("cargo", "unidade").order_by("nome")
+    for servidor in qs:
+        cargo_nome = servidor.cargo.nome if servidor.cargo_id else ""
+        unidade_label = str(servidor.unidade) if servidor.unidade_id else ""
+        cpf_m = ""
+        if (servidor.cpf or "").strip():
+            cpf_m = servidor.cpf_formatado
+        rg_m = ""
+        if servidor.sem_rg or (servidor.rg or "").strip():
+            rg_m = servidor.rg_formatado
+        tel_m = ""
+        if (servidor.telefone or "").strip():
+            tel_m = servidor.telefone_formatado
+        cards.append(
+            {
+                "nome": servidor.nome,
+                "iniciais": _iniciais_nome_servidor(servidor.nome),
+                "cargo": cargo_nome,
+                "funcao": "",
+                "matricula": "",
+                "rg": rg_m,
+                "cpf": cpf_m,
+                "unidade": unidade_label,
+                "telefone": tel_m,
+                "email": "",
+                "is_motorista": bool(motorista_pk and servidor.pk == motorista_pk),
+            }
+        )
+    return cards
+
+
 def _montar_transporte_resumo_documentos(oficio):
     """Strings formatadas para o cartão Transporte na etapa documentos (sem lógica no template)."""
     motorista = _motorista_label_oficio(oficio)
@@ -87,9 +133,11 @@ def _montar_transporte_resumo_documentos(oficio):
         )
 
     return {
+        "viatura": placa,
         "placa": placa,
         "modelo": modelo,
         "tipo": tipo,
+        "tipo_viatura": tipo,
         "combustivel": combustivel,
         "porte_armas": porte,
         "unidade": unidade,
@@ -355,6 +403,7 @@ def apresentar_oficio_wizard_documentos_context(oficio):
 
     detalhe = apresentar_pagina_detalhe_oficio(oficio)
     transporte = _montar_transporte_resumo_documentos(oficio)
+    viajantes_cards = _montar_viajantes_cards_documentos(oficio)
     roteiro = oficio.roteiro
     destinos = []
     if roteiro:
@@ -410,6 +459,7 @@ def apresentar_oficio_wizard_documentos_context(oficio):
     return {
         "detalhe": detalhe,
         "transporte": transporte,
+        "viajantes_cards": viajantes_cards,
         "destinos": destinos,
         "destino_principal_label": destino_principal,
         "primeira_saida_label": primeira_label,
