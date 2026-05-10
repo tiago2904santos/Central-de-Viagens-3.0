@@ -78,16 +78,16 @@
     <section class="oficio-documentos-two-col" aria-label="Equipe e transporte">
       <article class="oficio-documentos-card oficio-documentos-card--team">
         <header class="oficio-documentos-card__header">
-          <h4 class="oficio-documentos-card__title">Equipe</h4>
-          <p class="oficio-documentos-card__subtitle">Viajantes</p>
+          <div class="oficio-documentos-card__heading">
+            <h4 class="oficio-documentos-card__title">Equipe</h4>
+            <p class="oficio-documentos-card__subtitle">Viajantes vinculados ao ofício</p>
+          </div>
+          <span class="oficio-documentos-count-pill" aria-label="Total de viajantes">
+            {{ documentos_ctx.detalhe.servidores|length }}
+            {% if documentos_ctx.detalhe.servidores|length == 1 %}viajante{% else %}viajantes{% endif %}
+          </span>
         </header>
         <div class="oficio-documentos-card__body">
-          <div class="oficio-documentos-team-meta">
-            <span class="oficio-documentos-team-meta__count">{{ documentos_ctx.detalhe.servidores|length }}</span>
-            <span class="oficio-documentos-team-meta__label">
-              {% if documentos_ctx.detalhe.servidores|length == 1 %}viajante{% else %}viajantes{% endif %}
-            </span>
-          </div>
           <div class="oficio-documentos-chip-list">
             {% for nome in documentos_ctx.detalhe.servidores %}
               <span class="oficio-documentos-chip">{{ nome }}</span>
@@ -104,13 +104,15 @@
           <p class="oficio-documentos-card__subtitle">Viatura e condução</p>
         </header>
         <div class="oficio-documentos-card__body oficio-documentos-card__body--transport">
-          <div class="oficio-documentos-transport-plate">
-            <span class="oficio-documentos-transport-plate__label">Viatura</span>
-            <span class="oficio-documentos-transport-plate__value">{{ documentos_ctx.detalhe.viatura|default:"—" }}</span>
-          </div>
-          <div class="oficio-documentos-feature">
-            <span class="oficio-documentos-feature__label">Motorista</span>
-            <span class="oficio-documentos-feature__value">{{ documentos_ctx.detalhe.motorista|default:"—" }}</span>
+          <div class="oficio-documentos-transport-grid">
+            <div class="oficio-documentos-feature oficio-documentos-feature--viatura">
+              <span class="oficio-documentos-feature__label">Viatura</span>
+              <strong class="oficio-documentos-feature__value">{{ documentos_ctx.detalhe.viatura|default:"—" }}</strong>
+            </div>
+            <div class="oficio-documentos-feature oficio-documentos-feature--motorista">
+              <span class="oficio-documentos-feature__label">Motorista</span>
+              <strong class="oficio-documentos-feature__value">{{ documentos_ctx.detalhe.motorista|default:"—" }}</strong>
+            </div>
           </div>
         </div>
       </article>
