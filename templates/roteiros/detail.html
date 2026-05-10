@@ -7,7 +7,7 @@
 {% block content %}
   <div class="app-page">
     <div class="app-page__shell">
-      <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact" aria-labelledby="roteiros-detail-title">
+      <header class="app-page-hero app-page__header app-page-hero--hybrid app-page__header--hybrid app-page-hero--compact" aria-labelledby="roteiros-detail-title">
         <div class="app-page-hero__stage">
           <span class="app-page-hero__eyebrow">Roteiros</span>
           <h1 class="app-page-hero__title" id="roteiros-detail-title">{{ page_title }}</h1>
@@ -30,12 +30,12 @@
       </header>
 
       <section class="app-page__form-card roteiro-detail">
-        <div class="form-section">
+        <div class="form-section app-form-section">
           {% include "components/forms/form_section.html" with title="Sede e resumo" description="Dados persistidos conforme o fluxo anterior (sedes, trechos e diárias)." only %}
           {% include "components/domain/resumo_rota.html" with roteiro=roteiro trechos=trechos %}
         </div>
 
-        <div class="form-section">
+        <div class="form-section app-form-section">
           {% include "components/forms/form_section.html" with title="Destinos (ordem)" only %}
           {% if destinos_detalhe %}
             <ol class="roteiro-sequencia">
@@ -48,7 +48,7 @@
           {% endif %}
         </div>
 
-        <div class="form-section">
+        <div class="form-section app-form-section">
           {% include "components/forms/form_section.html" with title="Trechos" only %}
           {% if trechos %}
             <div class="roteiro-sequencia" role="list">
