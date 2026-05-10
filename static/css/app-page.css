@@ -120,7 +120,9 @@
   color: var(--theme-text-muted);
 }
 
-.app-page__hero-actions {
+/* .app-page__actions = alias canônico; .app-page__hero-actions mantido para retrocompat. */
+.app-page__hero-actions,
+.app-page__actions {
   align-items: center;
   display: flex;
   flex-shrink: 0;
@@ -128,7 +130,8 @@
 }
 
 /* Botão institucional no hero (alinha ao dashboard) */
-.app-page__hero-actions .btn-primary {
+.app-page__hero-actions .btn-primary,
+.app-page__actions .btn-primary {
   background: linear-gradient(180deg, #0e5088 0%, #0b3a66 100%);
   border-color: rgba(6, 40, 71, 0.5);
   border-radius: var(--radius-pill);
@@ -146,7 +149,9 @@
 }
 
 .app-page__hero-actions .btn-primary:hover,
-.app-page__hero-actions .btn-primary:focus {
+.app-page__hero-actions .btn-primary:focus,
+.app-page__actions .btn-primary:hover,
+.app-page__actions .btn-primary:focus {
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.15) inset,
     0 10px 24px rgba(11, 58, 102, 0.34);

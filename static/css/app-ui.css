@@ -1,13 +1,19 @@
 /* Componentes de UI compartilhados (hero híbrido, superfícies). */
 
-.app-page-hero {
+/*
+ * .app-page__header = alias canônico do design system para o bloco de cabeçalho de página.
+ * Compartilha estilos com .app-page-hero (mantido para retrocompatibilidade).
+ */
+.app-page-hero,
+.app-page__header {
   border-radius: var(--radius-lg);
   box-sizing: border-box;
   overflow: hidden;
   width: 100%;
 }
 
-.app-page-hero--hybrid {
+.app-page-hero--hybrid,
+.app-page__header--hybrid {
   background: var(--theme-surface-card);
   box-shadow: var(--shadow-lg);
 }

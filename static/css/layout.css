@@ -39,6 +39,10 @@
   text-transform: uppercase;
 }
 
+/*
+ * .page-header = cabeçalho legado. Mantido para retrocompatibilidade.
+ * Novos templates devem usar .app-page__header (via .app-page-hero).
+ */
 .page-header {
   align-items: center;
   background:
