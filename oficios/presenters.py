@@ -5,9 +5,23 @@ from core.presenters.badges import build_badge
 from core.presenters.meta import build_meta
 from core.utils.masks import format_placa
 from core.utils.masks import format_protocolo
+from decimal import Decimal
+
 from django.urls import reverse
 
 from .models import Oficio
+
+
+def _format_brl_diarias(value) -> str:
+    """Exibição legível do valor das diárias (sem dependência de locale)."""
+    if value is None:
+        return "—"
+    d = Decimal(str(value)).quantize(Decimal("0.01"))
+    s = f"{d:.2f}"
+    whole, cents = s.split(".")
+    whole_rev = whole[::-1]
+    grouped = ".".join(whole_rev[i : i + 3] for i in range(0, len(whole_rev), 3))[::-1]
+    return f"R$ {grouped},{cents}"
 
 
 def _status_variant(status: str) -> str:
@@ -280,9 +294,12 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         elif roteiro.origem_estado_id:
             sede = str(roteiro.origem_estado)
 
+    destino_principal = destinos[0] if destinos else "—"
+
     return {
         "detalhe": detalhe,
         "destinos": destinos,
+        "destino_principal_label": destino_principal,
         "primeira_saida_label": primeira_label,
         "retorno_label": retorno_label,
         "distancia_label": dist_txt,
@@ -293,6 +310,7 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         "justificativa_texto": texto_j,
         "quantidade_diarias": (roteiro.quantidade_diarias if roteiro else "") or "—",
         "valor_diarias": roteiro.valor_diarias if roteiro else None,
+        "valor_diarias_display": _format_brl_diarias(roteiro.valor_diarias if roteiro else None),
         "valor_diarias_extenso": (roteiro.valor_diarias_extenso if roteiro else "") or "—",
     }
 

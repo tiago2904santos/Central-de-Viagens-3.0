@@ -1,112 +1,217 @@
 {% extends "oficios/wizard_base.html" %}
 
 {% block wizard_content %}
-  <section class="form-section app-form-section oficio-documentos-hero">
-    <div class="oficio-equipe-section__copy">
-      <h3>Documentos</h3>
-      <p class="app-form-help">
-        Revise o resumo antes de gerar DOCX/PDF ou finalizar o ofício. Pendências bloqueiam a finalização e os downloads.
-      </p>
-    </div>
-  </section>
-
   {% if mostrar_pendencias %}
-    <section class="form-section app-form-section oficio-documentos-pendencias" aria-live="polite">
-      <h4 class="oficio-justificativa-subtitle">Pendências</h4>
-      <ul class="oficio-justificativa-pendencias__list">
-        {% for p in pendencias_documentos %}
-          <li>{{ p }}</li>
-        {% endfor %}
-      </ul>
+    <section class="oficio-documentos-pendencias oficio-documentos-pendencias--alert" aria-live="polite">
+      <div class="oficio-documentos-pendencias__inner">
+        <span class="oficio-documentos-pendencias__marker" aria-hidden="true"></span>
+        <div class="oficio-documentos-pendencias__body">
+          <h3 class="oficio-documentos-pendencias__title">Pendências encontradas</h3>
+          <p class="oficio-documentos-pendencias__lead">
+            Corrija os itens abaixo antes de finalizar o ofício ou gerar DOCX/PDF.
+          </p>
+          <ul class="oficio-documentos-pendencias__items">
+            {% for p in pendencias_documentos %}
+              <li>{{ p }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
     </section>
   {% endif %}
 
-  <section class="form-section app-form-section">
-    <h4 class="oficio-justificativa-subtitle">Dados do ofício</h4>
-    <div class="app-form-grid-panel oficio-data-block oficio-documentos-resumo">
-      <dl class="oficio-justificativa-dl">
-        <div class="oficio-justificativa-dl__item">
-          <dt>Número</dt>
-          <dd>{{ documentos_ctx.detalhe.numero_formatado }}</dd>
-        </div>
-        <div class="oficio-justificativa-dl__item">
-          <dt>Protocolo</dt>
-          <dd>{{ documentos_ctx.detalhe.protocolo }}</dd>
-        </div>
-        <div class="oficio-justificativa-dl__item">
-          <dt>Data de criação</dt>
-          <dd>{{ documentos_ctx.detalhe.data_criacao }}</dd>
-        </div>
-        <div class="oficio-justificativa-dl__item">
-          <dt>Status</dt>
-          <dd>{{ documentos_ctx.detalhe.status }}</dd>
-        </div>
-        <div class="oficio-justificativa-dl__item">
-          <dt>Custeio</dt>
-          <dd>{{ documentos_ctx.detalhe.custeio }}</dd>
-        </div>
-      </dl>
-    </div>
-  </section>
-
-  <section class="form-section app-form-section">
-    <h4 class="oficio-justificativa-subtitle">Equipe</h4>
-    <div class="app-form-grid-panel oficio-data-block">
-      <p class="field-help">
-        <strong>Viajantes:</strong>
-        {% if documentos_ctx.detalhe.servidores %}
-          {{ documentos_ctx.detalhe.servidores|join:", " }}
-        {% else %}—{% endif %}
-      </p>
-      <p class="field-help"><strong>Motorista:</strong> {{ documentos_ctx.detalhe.motorista }}</p>
-    </div>
-  </section>
-
-  <section class="form-section app-form-section">
-    <h4 class="oficio-justificativa-subtitle">Transporte</h4>
-    <div class="app-form-grid-panel oficio-data-block">
-      <dl class="oficio-justificativa-dl">
-        <div class="oficio-justificativa-dl__item">
-          <dt>Viatura</dt>
-          <dd>{{ documentos_ctx.detalhe.viatura }}</dd>
-        </div>
-      </dl>
-    </div>
-  </section>
-
-  <section class="form-section app-form-section">
-    <h4 class="oficio-justificativa-subtitle">Roteiro e diárias</h4>
-    <div class="app-form-grid-panel oficio-data-block">
-      <p class="field-help"><strong>Sede / origem:</strong> {{ documentos_ctx.sede_label }}</p>
-      <p class="field-help"><strong>Destinos:</strong>
-        {% if documentos_ctx.destinos %}{{ documentos_ctx.destinos|join:", " }}{% else %}—{% endif %}
-      </p>
-      <p class="field-help"><strong>Primeira saída:</strong> {{ documentos_ctx.primeira_saida_label }}</p>
-      <p class="field-help"><strong>Retorno (saída):</strong> {{ documentos_ctx.retorno_label }}</p>
-      <p class="field-help"><strong>Distância / tempo:</strong> {{ documentos_ctx.distancia_label }} · {{ documentos_ctx.tempo_rota_label }}</p>
-      <p class="field-help"><strong>Diárias (qtd):</strong> {{ documentos_ctx.quantidade_diarias }}</p>
-      <p class="field-help"><strong>Valor:</strong>
-        {% if documentos_ctx.valor_diarias %}{{ documentos_ctx.valor_diarias }}{% else %}—{% endif %}
-      </p>
-      <p class="field-help"><strong>Por extenso:</strong> {{ documentos_ctx.valor_diarias_extenso }}</p>
-    </div>
-  </section>
-
-  <section class="form-section app-form-section">
-    <h4 class="oficio-justificativa-subtitle">Justificativa</h4>
-    <div class="app-form-grid-panel oficio-data-block">
-      {% if documentos_ctx.justificativa_etapa.obrigatoria %}
-        {% if documentos_ctx.justificativa_texto %}
-          <p class="field-help">{{ documentos_ctx.justificativa_texto }}</p>
-        {% else %}
-          <p class="field-help"><strong>Incompleta</strong> — informe o texto na etapa anterior.</p>
-        {% endif %}
+  <section class="oficio-documentos-summary">
+    <div class="oficio-documentos-summary__copy">
+      <span class="oficio-documentos-summary__eyebrow">Resumo final</span>
+      {% if mostrar_pendencias %}
+        <h3 class="oficio-documentos-summary__title">Revise antes de finalizar</h3>
+        <p class="oficio-documentos-summary__text">
+          Ainda há pendências. Depois de corrigi-las, você poderá gerar documentos e concluir o ofício.
+        </p>
       {% else %}
-        <p class="field-help">Não exigida pela regra de prazo.</p>
-        {% if documentos_ctx.justificativa_texto %}
-          <p class="field-help">{{ documentos_ctx.justificativa_texto }}</p>
-        {% endif %}
+        <h3 class="oficio-documentos-summary__title">Pronto para gerar documentos</h3>
+        <p class="oficio-documentos-summary__text">
+          Confira os dados abaixo e, se estiver tudo certo, gere DOCX/PDF ou finalize o ofício.
+        </p>
+      {% endif %}
+    </div>
+    <div
+      class="oficio-documentos-summary__status {% if mostrar_pendencias %}oficio-documentos-summary__status--warning{% else %}oficio-documentos-summary__status--ok{% endif %}"
+      role="status"
+    >
+      {% if mostrar_pendencias %}
+        Pendências encontradas
+      {% else %}
+        Sem pendências
       {% endif %}
     </div>
   </section>
+
+  <section class="oficio-documentos-kpis" aria-label="Indicadores do ofício">
+    <article class="oficio-documentos-kpi">
+      <span class="oficio-documentos-kpi__label">Ofício</span>
+      <strong class="oficio-documentos-kpi__value">{{ documentos_ctx.detalhe.numero_formatado }}</strong>
+    </article>
+    <article class="oficio-documentos-kpi">
+      <span class="oficio-documentos-kpi__label">Viajantes</span>
+      <strong class="oficio-documentos-kpi__value">{{ documentos_ctx.detalhe.servidores|length }}</strong>
+    </article>
+    <article class="oficio-documentos-kpi">
+      <span class="oficio-documentos-kpi__label">Destino principal</span>
+      <strong class="oficio-documentos-kpi__value oficio-documentos-kpi__value--compact">{{ documentos_ctx.destino_principal_label }}</strong>
+    </article>
+    <article class="oficio-documentos-kpi">
+      <span class="oficio-documentos-kpi__label">Diárias</span>
+      <strong class="oficio-documentos-kpi__value oficio-documentos-money">{{ documentos_ctx.valor_diarias_display }}</strong>
+    </article>
+    <article class="oficio-documentos-kpi">
+      <span class="oficio-documentos-kpi__label">Status</span>
+      <strong class="oficio-documentos-kpi__value">{{ documentos_ctx.detalhe.status }}</strong>
+    </article>
+  </section>
+
+  <div class="oficio-documentos-grid">
+    <article class="oficio-documentos-card oficio-documentos-card--admin">
+      <header class="oficio-documentos-card__header">
+        <h4 class="oficio-documentos-card__title">Dados administrativos</h4>
+        <p class="oficio-documentos-card__subtitle">Identificação e custeio</p>
+      </header>
+      <div class="oficio-documentos-card__body">
+        <dl class="oficio-documentos-facts">
+          <div class="oficio-documentos-fact">
+            <dt>Protocolo</dt>
+            <dd>{{ documentos_ctx.detalhe.protocolo }}</dd>
+          </div>
+          <div class="oficio-documentos-fact">
+            <dt>Data de criação</dt>
+            <dd>{{ documentos_ctx.detalhe.data_criacao }}</dd>
+          </div>
+          <div class="oficio-documentos-fact">
+            <dt>Custeio</dt>
+            <dd>{{ documentos_ctx.detalhe.custeio }}</dd>
+          </div>
+        </dl>
+      </div>
+    </article>
+
+    <article class="oficio-documentos-card oficio-documentos-card--team">
+      <header class="oficio-documentos-card__header">
+        <h4 class="oficio-documentos-card__title">Equipe</h4>
+        <p class="oficio-documentos-card__subtitle">Viajantes e condução</p>
+      </header>
+      <div class="oficio-documentos-card__body">
+        <p class="oficio-documentos-card__label">Viajantes</p>
+        <div class="oficio-documentos-chip-list">
+          {% for nome in documentos_ctx.detalhe.servidores %}
+            <span class="oficio-documentos-chip">{{ nome }}</span>
+          {% empty %}
+            <span class="oficio-documentos-chip oficio-documentos-chip--muted">Nenhum viajante</span>
+          {% endfor %}
+        </div>
+        <div class="oficio-documentos-driver">
+          <span class="oficio-documentos-driver__label">Motorista</span>
+          <span class="oficio-documentos-driver__value">{{ documentos_ctx.detalhe.motorista }}</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="oficio-documentos-card oficio-documentos-card--transport">
+      <header class="oficio-documentos-card__header">
+        <h4 class="oficio-documentos-card__title">Transporte</h4>
+        <p class="oficio-documentos-card__subtitle">Viatura utilizada</p>
+      </header>
+      <div class="oficio-documentos-card__body oficio-documentos-card__body--transport">
+        <div class="oficio-documentos-transport-plate">
+          <span class="oficio-documentos-transport-plate__label">Viatura</span>
+          <span class="oficio-documentos-transport-plate__value">{{ documentos_ctx.detalhe.viatura }}</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="oficio-documentos-card oficio-documentos-card--route">
+      <header class="oficio-documentos-card__header">
+        <h4 class="oficio-documentos-card__title">Roteiro e diárias</h4>
+        <p class="oficio-documentos-card__subtitle">Trajeto, tempos e valores</p>
+      </header>
+      <div class="oficio-documentos-card__body">
+        <div class="oficio-documentos-route">
+          <div class="oficio-documentos-route__grid">
+            <div class="oficio-documentos-route__cell">
+              <span class="oficio-documentos-route__label">Origem / sede</span>
+              <span class="oficio-documentos-route__value">{{ documentos_ctx.sede_label }}</span>
+            </div>
+            <div class="oficio-documentos-route__cell oficio-documentos-route__cell--wide">
+              <span class="oficio-documentos-route__label">Destinos</span>
+              <span class="oficio-documentos-route__value">
+                {% if documentos_ctx.destinos %}{{ documentos_ctx.destinos|join:", " }}{% else %}—{% endif %}
+              </span>
+            </div>
+            <div class="oficio-documentos-route__cell">
+              <span class="oficio-documentos-route__label">Primeira saída</span>
+              <span class="oficio-documentos-route__value">{{ documentos_ctx.primeira_saida_label }}</span>
+            </div>
+            <div class="oficio-documentos-route__cell">
+              <span class="oficio-documentos-route__label">Retorno (saída)</span>
+              <span class="oficio-documentos-route__value">{{ documentos_ctx.retorno_label }}</span>
+            </div>
+            <div class="oficio-documentos-route__cell">
+              <span class="oficio-documentos-route__label">Distância</span>
+              <span class="oficio-documentos-route__value">{{ documentos_ctx.distancia_label }}</span>
+            </div>
+            <div class="oficio-documentos-route__cell">
+              <span class="oficio-documentos-route__label">Tempo estimado</span>
+              <span class="oficio-documentos-route__value">{{ documentos_ctx.tempo_rota_label }}</span>
+            </div>
+            <div class="oficio-documentos-route__cell">
+              <span class="oficio-documentos-route__label">Quantidade de diárias</span>
+              <span class="oficio-documentos-route__value">{{ documentos_ctx.quantidade_diarias }}</span>
+            </div>
+          </div>
+          <div class="oficio-documentos-route__money">
+            <div class="oficio-documentos-money-block">
+              <span class="oficio-documentos-money-block__label">Valor total das diárias</span>
+              <span class="oficio-documentos-money-block__amount">{{ documentos_ctx.valor_diarias_display }}</span>
+            </div>
+            <p class="oficio-documentos-money-block__extenso">
+              <span class="oficio-documentos-money-block__extenso-label">Por extenso</span>
+              {{ documentos_ctx.valor_diarias_extenso }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="oficio-documentos-card oficio-documentos-card--justification">
+      <header class="oficio-documentos-card__header">
+        <h4 class="oficio-documentos-card__title">Justificativa</h4>
+        <p class="oficio-documentos-card__subtitle">Regra de prazo e texto registrado</p>
+      </header>
+      <div class="oficio-documentos-card__body">
+        {% if documentos_ctx.justificativa_etapa.obrigatoria %}
+          {% if documentos_ctx.justificativa_texto %}
+            <div class="oficio-documentos-callout oficio-documentos-callout--ok">
+              <span class="oficio-documentos-callout__badge">Obrigatória preenchida</span>
+              <div class="oficio-documentos-callout__text">{{ documentos_ctx.justificativa_texto|linebreaksbr }}</div>
+            </div>
+          {% else %}
+            <div class="oficio-documentos-callout oficio-documentos-callout--alert">
+              <span class="oficio-documentos-callout__badge">Pendente</span>
+              <p class="oficio-documentos-callout__lead">
+                O texto da justificativa é obrigatório para este ofício. Informe-o na etapa anterior.
+              </p>
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="oficio-documentos-callout oficio-documentos-callout--muted">
+            <span class="oficio-documentos-callout__badge">Não exigida</span>
+            {% if documentos_ctx.justificativa_texto %}
+              <div class="oficio-documentos-callout__text">{{ documentos_ctx.justificativa_texto|linebreaksbr }}</div>
+            {% else %}
+              <p class="oficio-documentos-callout__lead">Não há obrigatoriedade de justificativa pela regra de antecedência.</p>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </article>
+  </div>
 {% endblock %}
