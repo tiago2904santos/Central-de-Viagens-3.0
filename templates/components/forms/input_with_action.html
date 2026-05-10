@@ -4,7 +4,7 @@
     <div class="form-field-with-action__control">
       {{ field.as_widget }}
     </div>
-    <a class="btn btn-secondary btn-sm form-field-with-action__button" href="{{ action_url }}">{{ action_label }}</a>
+    <a class="btn btn-secondary btn-sm app-btn app-btn--secondary app-btn--sm form-field-with-action__button" href="{{ action_url }}">{{ action_label }}</a>
   </div>
   {% if field.errors %}<p class="field-error">{{ field.errors|striptags }}</p>{% endif %}
 </div>

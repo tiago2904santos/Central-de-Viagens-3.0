@@ -25,7 +25,7 @@
     {% if row.set_default_url %}
       <form method="post" action="{{ row.set_default_url }}" class="simple-list__inline-form">
         {% csrf_token %}
-        <button type="submit" class="btn btn-secondary btn-sm">Definir como padrão</button>
+        <button type="submit" class="btn btn-secondary btn-sm app-btn app-btn--secondary app-btn--sm">Definir como padrão</button>
       </form>
     {% endif %}
     {% include "components/buttons/action_button.html" with href=row.edit_url label="Editar" variant="secondary" size="sm" only %}

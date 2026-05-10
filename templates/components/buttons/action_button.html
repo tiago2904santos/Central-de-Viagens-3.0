@@ -1,5 +1,5 @@
 {% if href %}
-  <a class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %}{% if icon %} btn-icon{% endif %}" href="{{ href }}">{{ label }}</a>
+  <a class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %}{% if icon %} btn-icon{% endif %} app-btn app-btn--{{ variant|default:'primary' }}{% if size %} app-btn--{{ size }}{% endif %}{% if icon %} app-btn--icon{% endif %}" href="{{ href }}">{{ label }}</a>
 {% else %}
-  <button class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %}{% if icon %} btn-icon{% endif %}" type="{{ type|default:'button' }}">{{ label }}</button>
+  <button class="btn btn-{{ variant|default:'primary' }}{% if size %} btn-{{ size }}{% endif %}{% if icon %} btn-icon{% endif %} app-btn app-btn--{{ variant|default:'primary' }}{% if size %} app-btn--{{ size }}{% endif %}{% if icon %} app-btn--icon{% endif %}" type="{{ type|default:'button' }}">{{ label }}</button>
 {% endif %}
