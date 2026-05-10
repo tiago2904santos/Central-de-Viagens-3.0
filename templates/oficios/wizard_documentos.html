@@ -49,10 +49,6 @@
 
   <section class="oficio-documentos-kpis" aria-label="Indicadores do ofício">
     <article class="oficio-documentos-kpi">
-      <span class="oficio-documentos-kpi__label">Ofício</span>
-      <strong class="oficio-documentos-kpi__value">{{ documentos_ctx.detalhe.numero_formatado }}</strong>
-    </article>
-    <article class="oficio-documentos-kpi">
       <span class="oficio-documentos-kpi__label">Viajantes</span>
       <strong class="oficio-documentos-kpi__value">{{ documentos_ctx.detalhe.servidores|length }}</strong>
     </article>
@@ -78,6 +74,10 @@
       </header>
       <div class="oficio-documentos-card__body">
         <dl class="oficio-documentos-facts">
+          <div class="oficio-documentos-fact oficio-documentos-fact--numero">
+            <dt>Número do ofício</dt>
+            <dd>{{ documentos_ctx.detalhe.numero_formatado }}</dd>
+          </div>
           <div class="oficio-documentos-fact">
             <dt>Protocolo</dt>
             <dd>{{ documentos_ctx.detalhe.protocolo }}</dd>
@@ -85,6 +85,10 @@
           <div class="oficio-documentos-fact">
             <dt>Data de criação</dt>
             <dd>{{ documentos_ctx.detalhe.data_criacao }}</dd>
+          </div>
+          <div class="oficio-documentos-fact">
+            <dt>Status</dt>
+            <dd>{{ documentos_ctx.detalhe.status }}</dd>
           </div>
           <div class="oficio-documentos-fact">
             <dt>Custeio</dt>
