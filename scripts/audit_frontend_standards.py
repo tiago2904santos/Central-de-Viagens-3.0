@@ -25,7 +25,7 @@ TEMPLATE_EXCEPTIONS: dict[str, dict] = {
 
 CSS_EXCEPTIONS: dict[str, dict] = {
     "static/css/forms.css": {
-        "reason": "Roteiro-editor CSS residual em forms.css: .roteiro-editor__* e --route-* a mover para roteiros.css (Prompt 6).",
+        "reason": ".roteiro-editor__* sao joint selectors de .app-form-shell -- pareados, nao removiveis sem refactor. --route-* tokens sao variaveis globais de tema.",
         "rules": {"domain_selector_in_global", "route_token_in_global", "hex_color_outside_tokens"},
     },
     "static/css/app-page.css": {
