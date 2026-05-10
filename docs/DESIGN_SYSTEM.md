@@ -138,3 +138,123 @@ Ordem sob Cadastros: Servidores, Cargos (subordinado visual), Viaturas, Combusti
 - O usuario abre/fecha o grupo pelo botao **Cadastros** (toggle).
 - Ao clicar em qualquer **link principal** fora do grupo (Dashboard, Roteiros, modulos, marca no topo), os grupos expansiveis **fecham** e o estado e removido do `localStorage`, para nao reabrir em rotas erradas.
 - Se a URL atual for sob `/cadastros/` (ou `/cadastros`), o grupo **Cadastros** carrega **aberto**; fora desse prefixo, carrega **fechado** e o `localStorage` nao mantem o submenu aberto.
+
+## Excecoes oficiais arquiteturais
+
+Estas excecoes sao decisoes deliberadas e documentadas. O auditor (`scripts/audit_frontend_standards.py`) as reconhece como EXCECAO, nao como ERRO.
+
+### Dashboard — `dashboard-login-inspired`
+
+- **Arquivo:** `templates/core/dashboard.html` + `static/css/dashboard.css`
+- **Decisao:** manter o shell `dashboard-login-inspired` como excecao oficial
+- **Justificativa:** o Dashboard tem identidade visual propria (hero de boas-vindas, grade de stats, grade de acesso rapido) que nao se mapeia diretamente no padrao `app-page-hero`. Migracao forcada fragmentaria o visual sem beneficio funcional.
+- **Conformidade atual:** usa 100% CSS variables (zero hex hardcoded como valor primario); emite classes canônicas `app-page`, `app-page__shell`, `app-section`, `app-card` em paralelo.
+- **O que NAO deve ser feito:** adicionar CSS fixo por cor hex; duplicar tokens criando `--dashboard-*` para o mesmo conceito; misturar o shell de dashboard em outras paginas.
+
+### Forms shell com tema de Roteiros — `.roteiro-editor__*` em `forms.css`
+
+- **Arquivo:** `static/css/forms.css`
+- **Decisao:** manter `.roteiro-editor__*` como joint selectors de `.app-form-shell` em `forms.css`
+- **Justificativa:** esses seletores sao sempre pareados com seletores globais (`.app-form-shell .form-actions`, etc.) na mesma regra CSS. Separar exigiria refactor das regras globais sem ganho visual.
+- **Conformidade atual:** usa apenas tokens `--route-*` (definidos globalmente em `theme.css`), nao hex hardcoded.
+
+### Tela de autenticacao — `auth-*`
+
+- **Arquivo:** `static/css/auth.css`
+- **Decisao:** excecao de layout (sem sidebar, shell proprio `auth-shell`)
+- **Justificativa:** a tela de login nao tem sidebar e usa layout diferente de qualquer modulo interno.
+
+## API canonica — referencia rapida
+
+### Shell de pagina
+
+```html
+<div class="app-page">
+  <div class="app-page__shell">
+    <header class="app-page-hero app-page__header app-page-hero--hybrid app-page__header--hybrid">
+      <div class="app-page-hero__stage">
+        <span class="app-page-hero__eyebrow">Modulo</span>
+        <h1 class="app-page-hero__title">Titulo</h1>
+      </div>
+      <div class="app-page-hero__body">
+        <div class="app-page__hero-top">
+          <div class="app-page__brand">
+            <div class="app-page__brand-mark">XX</div>
+            <div class="app-page__brand-copy">
+              <p class="app-page__subtitle">Descricao</p>
+            </div>
+          </div>
+          <div class="app-page__hero-actions">
+            {# action_button.html #}
+          </div>
+        </div>
+      </div>
+      <div class="app-page-hero__ribbon" aria-hidden="true"></div>
+    </header>
+    {# conteudo #}
+  </div>
+</div>
+```
+
+### Formulario canonico
+
+```html
+<form class="app-form-shell form-shell">
+  <div class="form-section app-form-section">
+    {# form_field.html — emite app-form-field, app-form-label, app-form-help, app-form-error #}
+    <div class="form-grid app-form-grid">
+      {% include "components/forms/form_field.html" with field=form.campo only %}
+    </div>
+  </div>
+  <div class="form-actions">
+    {% include "components/buttons/action_button.html" with ... only %}
+  </div>
+</form>
+```
+
+### Botao canonico
+
+```html
+{# Via componente (preferido) #}
+{% include "components/buttons/action_button.html" with href=url label="Acao" variant="primary" only %}
+
+{# Saida: emite .btn.btn-primary.app-btn.app-btn--primary #}
+```
+
+### Lista canonico
+
+```html
+<div class="list-grid app-list-grid">
+  {# cards #}
+</div>
+
+<div class="simple-list app-list">
+  <div class="simple-list__row app-list__row">
+    {# conteudo + acoes #}
+  </div>
+</div>
+```
+
+## Responsabilidade dos arquivos CSS
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `tokens.css` | Primitivos: cores, espacamento, radius, tipografia |
+| `theme.css` | Tokens semanticos por tema, `--app-*`, `--route-*` |
+| `base.css` | Reset, body, tipografia base, inputs globais |
+| `layout.css` | Shell global (`app-shell`, `app-main`), `.eyebrow` |
+| `sidebar.css` | Sidebar institucional |
+| `buttons.css` | `.btn` / `.app-btn` e variantes |
+| `forms.css` | Form shell, campos, controles, joint selectors de Roteiros |
+| `lists.css` | Listas, toolbar, `.simple-list`, aliases `.app-list-*` |
+| `cards.css` | Cards, secoes, paineis, aliases `.app-card`, `.app-section` |
+| `oficios.css` | CSS exclusivo do modulo Oficios (card, wizard, equipe, motivo) |
+| `app-ui.css` | `.app-page-hero`, badges, chips, status-pill |
+| `dashboard.css` | Shell e grid exclusivos do Dashboard (excecao oficial) |
+| `app-page.css` | `.app-page`, `.app-page__shell`, superficies de pagina |
+| `stages.css` | Stepper/stages do wizard de Oficios |
+| `documents.css` | Cards e superficies de documentos (PDF/DOCX) |
+| `utilities.css` | Classes utilitarias |
+| `domain.css` | Componentes de dominio: rota, trechos, destinos, resumo |
+| `roteiros.css` | CSS extra do editor de Roteiros (Leaflet, mapa, autosave) |
+| `roteiros-list.css` | CSS extra da lista de Roteiros (cards com diarias) |

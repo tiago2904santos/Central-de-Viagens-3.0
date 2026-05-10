@@ -292,14 +292,14 @@
 .dashboard-login-inspired__button {
   align-items: center;
   align-self: flex-start;
-  background: linear-gradient(180deg, #0e5088 0%, #0b3a66 100%);
+  background: linear-gradient(180deg, var(--color-primary-bright, #0e5088) 0%, var(--color-primary-strong, #0b3a66) 100%);
   border: 1px solid rgba(6, 40, 71, 0.5);
   border-radius: var(--radius-sm);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.12) inset,
     0 8px 18px rgba(11, 58, 102, 0.28);
   box-sizing: border-box;
-  color: #f5f9ff;
+  color: var(--color-white, #f5f9ff);
   cursor: pointer;
   display: inline-flex;
   font-size: 14px;

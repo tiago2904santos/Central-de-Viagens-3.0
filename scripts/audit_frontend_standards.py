@@ -49,7 +49,7 @@ CSS_EXCEPTIONS: dict[str, dict] = {
         "rules": {"hex_color_outside_tokens"},
     },
     "static/css/dashboard.css": {
-        "reason": "Dashboard é exceção oficial — shell isolado com 100% CSS vars, sem token para gradient.",
+        "reason": "Dashboard e excecao oficial -- hex restantes sao fallbacks de var() no botao do hero.",
         "rules": {"hex_color_outside_tokens"},
     },
     "static/css/buttons.css": {
