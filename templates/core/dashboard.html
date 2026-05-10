@@ -3,8 +3,8 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-  <div class="dashboard-login-inspired">
-    <div class="dashboard-login-inspired__shell">
+  <div class="dashboard-login-inspired app-page">
+    <div class="dashboard-login-inspired__shell app-page__shell">
       <header class="dashboard-login-inspired__hero" aria-labelledby="dashboard-title">
         <div class="dashboard-login-inspired__brand">
           <div class="dashboard-login-inspired__brand-mark" aria-hidden="true">CV</div>
@@ -22,7 +22,7 @@
         <div class="dashboard-login-inspired__accent-line" aria-hidden="true"></div>
       </header>
 
-      <section class="dashboard-login-inspired__main-grid" aria-label="Painel inicial e indicadores">
+      <section class="dashboard-login-inspired__main-grid app-section" aria-label="Painel inicial e indicadores">
         <div class="dashboard-login-inspired__welcome">
           <span class="dashboard-login-inspired__eyebrow">Painel inicial</span>
           <h2 class="dashboard-login-inspired__welcome-title">Bem-vindo ao sistema</h2>
@@ -32,22 +32,22 @@
         </div>
 
         <div class="dashboard-login-inspired__stats" role="list" aria-label="Indicadores">
-          <article class="dashboard-login-inspired__stat-card" role="listitem">
+          <article class="dashboard-login-inspired__stat-card app-card" role="listitem">
             <span class="dashboard-login-inspired__stat-label">Total de ofícios</span>
             <strong class="dashboard-login-inspired__stat-value">—</strong>
             <p class="dashboard-login-inspired__stat-note">Aguardando dados</p>
           </article>
-          <article class="dashboard-login-inspired__stat-card" role="listitem">
+          <article class="dashboard-login-inspired__stat-card app-card" role="listitem">
             <span class="dashboard-login-inspired__stat-label">Rascunhos</span>
             <strong class="dashboard-login-inspired__stat-value">—</strong>
             <p class="dashboard-login-inspired__stat-note">Aguardando dados</p>
           </article>
-          <article class="dashboard-login-inspired__stat-card" role="listitem">
+          <article class="dashboard-login-inspired__stat-card app-card" role="listitem">
             <span class="dashboard-login-inspired__stat-label">Documentos recentes</span>
             <strong class="dashboard-login-inspired__stat-value">—</strong>
             <p class="dashboard-login-inspired__stat-note">Nenhuma consulta adicional nesta tela</p>
           </article>
-          <article class="dashboard-login-inspired__stat-card" role="listitem">
+          <article class="dashboard-login-inspired__stat-card app-card" role="listitem">
             <span class="dashboard-login-inspired__stat-label">Pendências</span>
             <strong class="dashboard-login-inspired__stat-value">—</strong>
             <p class="dashboard-login-inspired__stat-note">Nenhuma consulta adicional nesta tela</p>
@@ -55,8 +55,8 @@
         </div>
       </section>
 
-      <section class="dashboard-login-inspired__quick-grid" aria-label="Acessos rápidos">
-        <article class="dashboard-login-inspired__quick-card">
+      <section class="dashboard-login-inspired__quick-grid app-section" aria-label="Acessos rápidos">
+        <article class="dashboard-login-inspired__quick-card app-card">
           <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">OF</span>
           <h3 class="dashboard-login-inspired__quick-title">Ofícios</h3>
           <p class="dashboard-login-inspired__quick-desc">
@@ -64,7 +64,7 @@
           </p>
           <a class="dashboard-login-inspired__button" href="{% url 'oficios:index' %}">Abrir</a>
         </article>
-        <article class="dashboard-login-inspired__quick-card">
+        <article class="dashboard-login-inspired__quick-card app-card">
           <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">TA</span>
           <h3 class="dashboard-login-inspired__quick-title">Termos de Autorização</h3>
           <p class="dashboard-login-inspired__quick-desc">
@@ -72,7 +72,7 @@
           </p>
           <a class="dashboard-login-inspired__button" href="{% url 'termos:index' %}">Abrir</a>
         </article>
-        <article class="dashboard-login-inspired__quick-card">
+        <article class="dashboard-login-inspired__quick-card app-card">
           <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">JT</span>
           <h3 class="dashboard-login-inspired__quick-title">Justificativas</h3>
           <p class="dashboard-login-inspired__quick-desc">
@@ -80,7 +80,7 @@
           </p>
           <a class="dashboard-login-inspired__button" href="{% url 'justificativas:index' %}">Abrir</a>
         </article>
-        <article class="dashboard-login-inspired__quick-card">
+        <article class="dashboard-login-inspired__quick-card app-card">
           <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">PT</span>
           <h3 class="dashboard-login-inspired__quick-title">Planos de Trabalho</h3>
           <p class="dashboard-login-inspired__quick-desc">
@@ -88,7 +88,7 @@
           </p>
           <a class="dashboard-login-inspired__button" href="{% url 'planos_trabalho:index' %}">Abrir</a>
         </article>
-        <article class="dashboard-login-inspired__quick-card">
+        <article class="dashboard-login-inspired__quick-card app-card">
           <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">OS</span>
           <h3 class="dashboard-login-inspired__quick-title">Ordens de Serviço</h3>
           <p class="dashboard-login-inspired__quick-desc">
@@ -96,7 +96,7 @@
           </p>
           <a class="dashboard-login-inspired__button" href="{% url 'ordens_servico:index' %}">Abrir</a>
         </article>
-        <article class="dashboard-login-inspired__quick-card">
+        <article class="dashboard-login-inspired__quick-card app-card">
           <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">RT</span>
           <h3 class="dashboard-login-inspired__quick-title">Roteiros</h3>
           <p class="dashboard-login-inspired__quick-desc">
@@ -104,7 +104,7 @@
           </p>
           <a class="dashboard-login-inspired__button" href="{% url 'roteiros:index' %}">Abrir</a>
         </article>
-        <article class="dashboard-login-inspired__quick-card">
+        <article class="dashboard-login-inspired__quick-card app-card">
           <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">PC</span>
           <h3 class="dashboard-login-inspired__quick-title">Prestações de Contas</h3>
           <p class="dashboard-login-inspired__quick-desc">
@@ -112,7 +112,7 @@
           </p>
           <a class="dashboard-login-inspired__button" href="{% url 'prestacoes_contas:index' %}">Abrir</a>
         </article>
-        <article class="dashboard-login-inspired__quick-card">
+        <article class="dashboard-login-inspired__quick-card app-card">
           <span class="dashboard-login-inspired__quick-icon" aria-hidden="true">DB</span>
           <h3 class="dashboard-login-inspired__quick-title">Diário de Bordo</h3>
           <p class="dashboard-login-inspired__quick-desc">
