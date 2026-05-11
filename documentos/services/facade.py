@@ -126,6 +126,15 @@ class DocumentoFacade:
             from documentos.services.adapters.simple_pdf_fallback import render_simple_pdf_bytes
             from documentos.services.adapters.weasyprint_pdf import render_pdf_bytes_weasyprint
 
+            # Ofício: o HTML do WeasyPrint não recebe o dict plano do docxtpl; gera-se o PDF a partir
+            # do mesmo DOCX preenchido que o utilizador valida (LibreOffice), salvo desactivação explícita.
+            if (
+                getattr(settings, "DOCUMENTOS_OFICIO_PDF_VIA_DOCX", True)
+                and tipo == DocumentoTipo.OFICIO
+                and docxtpl_context is not None
+            ):
+                return self._pdf_via_libreoffice(tipo, payload, docxtpl_context=docxtpl_context)
+
             simple_ok = getattr(settings, "DOCUMENTOS_SIMPLE_PDF_FALLBACK", False)
 
             try:
