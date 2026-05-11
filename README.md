@@ -40,7 +40,8 @@ pip install -r requirements/dev.txt
 
 ## Geração de documentos (DOCX / PDF)
 
-Variáveis de ambiente, motores WeasyPrint vs LibreOffice, placeholders planos vs aninhados e fallback em Windows estão descritos em [docs/documentos.md](docs/documentos.md).
+Guia multiplataforma (motores `auto`, Word COM, LibreOffice, WeasyPrint, comandos `documentos_check` / `documentos_setup_pdf`): [docs/DOCUMENTOS_GERACAO_DOCX_PDF.md](docs/DOCUMENTOS_GERACAO_DOCX_PDF.md).  
+Placeholders e notas de CI: [docs/documentos.md](docs/documentos.md).
 
 ## Configurar .env
 
