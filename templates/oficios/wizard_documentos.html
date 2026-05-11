@@ -381,7 +381,13 @@
       {% else %}
         <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">PDF</a>
       {% endif %}
+      {% if documentos_ctx.oficio_pdf_visualizar_url %}
+        <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ documentos_ctx.oficio_pdf_visualizar_url }}" target="_blank" rel="noopener">Visualizar PDF</a>
+      {% endif %}
       <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_justificativa_documento' oficio.pk 'pdf' %}">Justificativa PDF</a>
+      {% if documentos_ctx.justificativa_pdf_visualizar_url %}
+        <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ documentos_ctx.justificativa_pdf_visualizar_url }}" target="_blank" rel="noopener">Visualizar justificativa</a>
+      {% endif %}
       <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_plano_trabalho_documento' oficio.pk 'docx' %}">Plano DOCX</a>
       <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_ordem_servico_documento' oficio.pk 'docx' %}">Ordem serviço DOCX</a>
       <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'termos:preview_termo_oficio' oficio.pk %}">Termos</a>

@@ -1,13 +1,27 @@
+from django.conf import settings
+from django.contrib.auth.decorators import login_not_required
+from django.core.signing import BadSignature
+from django.core.signing import SignatureExpired
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
+from django.templatetags.static import static
+from django.urls import reverse
+from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
 from .models import DocumentoArtefato
 from .services import default_document_registry
+from .services.access import artefato_pdf_download_filename
+from .services.access import build_pdf_http_response_for_artefato
+from .services.access import ensure_request_may_view_artefato_pdf
+from .services.access import select_artefato_pdf_fieldfile
 from .services.persistence import atualizar_apos_assinatura
 from .services.signing import assinar_pdf_final
+from .services.temporary_links import build_artefato_pdf_public_conteudo_url
+from .services.temporary_links import create_artefato_pdf_temp_token
+from .services.temporary_links import parse_artefato_pdf_temp_token
 
 
 def index(request):
@@ -25,6 +39,56 @@ def index(request):
             "core_status": "Núcleo base disponível",
             "core_types_total": len(document_types),
             "core_types_with_format": available_count,
+        },
+    )
+
+
+@require_GET
+def artefato_pdf_conteudo(request, pk):
+    artefato = get_object_or_404(DocumentoArtefato, pk=pk)
+    ensure_request_may_view_artefato_pdf(request, artefato)
+    return build_pdf_http_response_for_artefato(request, artefato)
+
+
+@login_not_required
+@require_GET
+def artefato_pdf_conteudo_publico(request):
+    token = (request.GET.get("t") or "").strip()
+    if not token:
+        raise Http404()
+    try:
+        payload = parse_artefato_pdf_temp_token(token)
+    except (BadSignature, SignatureExpired):
+        raise Http404()
+    pk = payload.get("pk")
+    if not pk:
+        raise Http404()
+    artefato = get_object_or_404(DocumentoArtefato, pk=pk, formato="pdf")
+    return build_pdf_http_response_for_artefato(request, artefato)
+
+
+@require_GET
+def artefato_pdf_visualizar(request, pk):
+    artefato = get_object_or_404(DocumentoArtefato, pk=pk)
+    ensure_request_may_view_artefato_pdf(request, artefato)
+    if select_artefato_pdf_fieldfile(artefato) is None:
+        raise Http404("Ficheiro PDF não disponível.")
+    nome = artefato_pdf_download_filename(artefato)
+    conteudo_url = reverse("documentos:artefato_pdf_conteudo", args=[artefato.pk])
+    share_url = ""
+    if getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
+        tok = create_artefato_pdf_temp_token(str(artefato.pk))
+        share_url = request.build_absolute_uri(build_artefato_pdf_public_conteudo_url(tok))
+    worker_src = static("vendor/pdfjs/pdf.worker.min.js")
+    return render(
+        request,
+        "documentos/pdf_viewer.html",
+        {
+            "page_title": f"PDF — {nome}",
+            "pdf_conteudo_url": conteudo_url,
+            "pdf_filename": nome,
+            "pdf_js_worker_src": worker_src,
+            "share_temporario_url": share_url,
         },
     )
 

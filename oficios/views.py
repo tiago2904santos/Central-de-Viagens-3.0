@@ -1,10 +1,13 @@
+import io
 import re
 
+from django.conf import settings
 from django.contrib import messages
 from django.http import Http404
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
@@ -28,9 +31,14 @@ from roteiros.services import (
 )
 
 from cadastros.models import Combustivel
+from documentos.selectors import get_latest_artefato_pdf_for_oficio
+from documentos.services.access import artefato_has_readable_pdf
 from documentos.services.downloads import download_documento_or_redirect_pdf_error
+from documentos.services.pdf_streaming import build_pdf_inline_from_file_object
+from documentos.services.responses import build_document_filename
 from documentos.services.timing import measure_step
 from documentos.services.types import DocumentoFormato
+from documentos.services.types import DocumentoTipo
 from ordens_servico.services import gerar_resposta_ordem_servico_documento
 from planos_trabalho.services import gerar_resposta_plano_trabalho_documento
 from .forms import OficioDadosViajantesForm
@@ -510,6 +518,141 @@ def api_viatura_por_placa(request, pk):
 
     encontradas = buscar_viaturas_para_oficio(q)
     return JsonResponse({"results": [viatura_para_resultado_busca(v) for v in encontradas]})
+
+
+def _redirect_se_oficio_documento_incompleto(request, oficio):
+    avaliacao = validar_oficio_para_documento(oficio)
+    if avaliacao["pendencias"]:
+        messages.error(request, "Documento nao gerado porque o oficio esta incompleto.")
+        alvo = redirect_para_corrigir_documento_oficio(oficio)
+        return redirect(f"{alvo}?documento_incompleto=1")
+    return None
+
+
+@require_GET
+def oficio_pdf_conteudo_inline(request, pk):
+    """PDF inline gerado sob demanda (iframe / PDF.js); mesma validação que o download."""
+    oficio = get_oficio_by_id(pk)
+    bloqueio = _redirect_se_oficio_documento_incompleto(request, oficio)
+    if bloqueio is not None:
+        return bloqueio
+    with measure_step("http_oficio_pdf_conteudo_inline", {"oficio_id": oficio.pk}):
+        resp = download_documento_or_redirect_pdf_error(
+            request,
+            oficio_id=oficio.pk,
+            formato=DocumentoFormato.PDF,
+            gerar=lambda: gerar_resposta_documento_oficio(oficio, DocumentoFormato.PDF),
+        )
+    if getattr(resp, "status_code", 200) in (301, 302, 303, 307, 308):
+        return resp
+    reference = oficio.numero_formatado.replace("/", "-")
+    filename = build_document_filename(
+        DocumentoTipo.OFICIO,
+        DocumentoFormato.PDF,
+        reference=reference,
+        now=timezone.now(),
+    )
+    body = resp.content
+    return build_pdf_inline_from_file_object(
+        request,
+        file_obj=io.BytesIO(body),
+        file_size=len(body),
+        filename=filename,
+    )
+
+
+@require_GET
+def visualizar_oficio_pdf(request, pk):
+    """Abre o viewer: redireciona para `/documentos/.../visualizar/` se já houver artefato em disco."""
+    oficio = get_oficio_by_id(pk)
+    bloqueio = _redirect_se_oficio_documento_incompleto(request, oficio)
+    if bloqueio is not None:
+        return bloqueio
+    if getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
+        art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
+        if art and artefato_has_readable_pdf(art):
+            return redirect("documentos:artefato_pdf_visualizar", pk=art.pk)
+    reference = oficio.numero_formatado.replace("/", "-")
+    filename = build_document_filename(
+        DocumentoTipo.OFICIO,
+        DocumentoFormato.PDF,
+        reference=reference,
+        now=timezone.now(),
+    )
+    conteudo_url = reverse("oficios:oficio_pdf_conteudo_inline", args=[oficio.pk])
+    return render(
+        request,
+        "documentos/pdf_viewer.html",
+        {
+            "page_title": f"PDF — {filename}",
+            "pdf_conteudo_url": conteudo_url,
+            "pdf_filename": filename,
+            "pdf_js_worker_src": static("vendor/pdfjs/pdf.worker.min.js"),
+            "share_temporario_url": "",
+        },
+    )
+
+
+@require_GET
+def justificativa_pdf_conteudo_inline(request, pk):
+    oficio = get_oficio_by_id(pk)
+    bloqueio = _redirect_se_oficio_documento_incompleto(request, oficio)
+    if bloqueio is not None:
+        return bloqueio
+    with measure_step("http_justificativa_pdf_conteudo_inline", {"oficio_id": oficio.pk}):
+        resp = download_documento_or_redirect_pdf_error(
+            request,
+            oficio_id=oficio.pk,
+            formato=DocumentoFormato.PDF,
+            gerar=lambda: gerar_resposta_justificativa_documento(oficio, DocumentoFormato.PDF),
+        )
+    if getattr(resp, "status_code", 200) in (301, 302, 303, 307, 308):
+        return resp
+    reference = f"{oficio.numero_formatado.replace('/', '-')}-justificativa"
+    filename = build_document_filename(
+        DocumentoTipo.JUSTIFICATIVA,
+        DocumentoFormato.PDF,
+        reference=reference,
+        now=timezone.now(),
+    )
+    body = resp.content
+    return build_pdf_inline_from_file_object(
+        request,
+        file_obj=io.BytesIO(body),
+        file_size=len(body),
+        filename=filename,
+    )
+
+
+@require_GET
+def visualizar_justificativa_pdf(request, pk):
+    oficio = get_oficio_by_id(pk)
+    bloqueio = _redirect_se_oficio_documento_incompleto(request, oficio)
+    if bloqueio is not None:
+        return bloqueio
+    if getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
+        art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.JUSTIFICATIVA.value)
+        if art and artefato_has_readable_pdf(art):
+            return redirect("documentos:artefato_pdf_visualizar", pk=art.pk)
+    reference = f"{oficio.numero_formatado.replace('/', '-')}-justificativa"
+    filename = build_document_filename(
+        DocumentoTipo.JUSTIFICATIVA,
+        DocumentoFormato.PDF,
+        reference=reference,
+        now=timezone.now(),
+    )
+    conteudo_url = reverse("oficios:justificativa_pdf_conteudo_inline", args=[oficio.pk])
+    return render(
+        request,
+        "documentos/pdf_viewer.html",
+        {
+            "page_title": f"PDF justificativa — {filename}",
+            "pdf_conteudo_url": conteudo_url,
+            "pdf_filename": filename,
+            "pdf_js_worker_src": static("vendor/pdfjs/pdf.worker.min.js"),
+            "share_temporario_url": "",
+        },
+    )
 
 
 def baixar_documento(request, pk, formato):

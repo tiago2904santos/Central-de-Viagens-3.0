@@ -26,6 +26,18 @@ urlpatterns = [
     path("<int:pk>/resumo/", views.wizard_resumo, name="wizard_resumo"),
     path("<int:pk>/api/viatura-por-placa/", views.api_viatura_por_placa, name="api_viatura_por_placa"),
     path("<int:pk>/documentos/", views.wizard_documentos, name="wizard_documentos"),
+    path("<int:pk>/documentos/visualizar-pdf/", views.visualizar_oficio_pdf, name="visualizar_pdf_oficio"),
+    path("<int:pk>/documentos/pdf-inline/", views.oficio_pdf_conteudo_inline, name="oficio_pdf_conteudo_inline"),
+    path(
+        "<int:pk>/documentos/visualizar-justificativa-pdf/",
+        views.visualizar_justificativa_pdf,
+        name="visualizar_justificativa_pdf",
+    ),
+    path(
+        "<int:pk>/documentos/justificativa-pdf-inline/",
+        views.justificativa_pdf_conteudo_inline,
+        name="justificativa_pdf_conteudo_inline",
+    ),
     path(
         "<int:pk>/documentos/justificativa/<str:formato>/",
         views.baixar_justificativa_documento,
