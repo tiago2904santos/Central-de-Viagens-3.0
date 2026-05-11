@@ -6,12 +6,14 @@ Contexto plano (flat) para templates DOCX legados (docxtpl), alinhado a
 from __future__ import annotations
 
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Any
 
 from django.utils import timezone
 
 from cadastros.selectors import build_configuracao_context
 from documentos.services.formatters import format_city_uf
+from documentos.services.formatters import format_currency_br
 from documentos.services.formatters import format_document_display
 
 from justificativas.models import Justificativa
@@ -57,6 +59,7 @@ OFICIO_DOCXTPL_KEYS = frozenset(
         "custo",
         "diarias_x",
         "diaria",
+        "valor_total_oficio",
         "destinos_bloco",
         "col_servidor",
         "col_rgcpf",
@@ -354,10 +357,13 @@ def _diarias(oficio: Oficio) -> tuple[str, str]:
         return "", ""
     q = _txt(r.quantidade_diarias)
     if r.valor_diarias is not None:
-        valor = str(r.valor_diarias).replace(".", ",")
+        dec = r.valor_diarias if isinstance(r.valor_diarias, Decimal) else Decimal(str(r.valor_diarias))
+        valor_fmt = format_currency_br(dec)
         extenso = _txt(r.valor_diarias_extenso)
         if extenso:
-            valor = f"{valor} ({extenso})"
+            valor = f"{valor_fmt} ({extenso})"
+        else:
+            valor = valor_fmt
         return q, valor
     return q, ""
 
@@ -396,6 +402,8 @@ def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
         "custo": _custeio_text(oficio),
         "diarias_x": diarias_x,
         "diaria": diaria,
+        # Alias para templates que evoluam o placeholder; mantém o mesmo texto que `diaria`.
+        "valor_total_oficio": diaria,
         "destinos_bloco": _destinos_bloco(oficio),
         "col_servidor": _build_column_lines([v["nome"] for v in viajantes], blank_lines=2),
         "col_rgcpf": _col_rgcpf(viajantes),
