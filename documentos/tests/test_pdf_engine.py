@@ -1,3 +1,5 @@
+import builtins
+import sys
 from unittest import mock
 
 from django.test import SimpleTestCase
@@ -7,6 +9,24 @@ from documentos.services import pdf_engine as pe
 from documentos.services.pdf_engine import PdfEngineResolution
 from documentos.services.pdf_engine import build_pdf_unavailable_message
 from documentos.services.pdf_engine import resolve_pdf_engine
+
+
+class WeasyImportProbeTests(SimpleTestCase):
+    def test_weasy_import_ok_trata_oserror_como_indisponivel(self):
+        real_import = builtins.__import__
+
+        def guarded(name, globals=None, locals=None, fromlist=(), level=0):
+            if name == "weasyprint":
+                raise OSError("cannot load library 'libgobject-2.0-0'")
+            return real_import(name, globals, locals, fromlist, level)
+
+        saved = sys.modules.pop("weasyprint", None)
+        try:
+            with mock.patch.object(builtins, "__import__", guarded):
+                self.assertFalse(pe._weasy_import_ok())
+        finally:
+            if saved is not None:
+                sys.modules["weasyprint"] = saved
 
 
 class ResolvePdfEngineTests(SimpleTestCase):

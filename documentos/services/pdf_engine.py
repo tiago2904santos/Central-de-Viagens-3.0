@@ -48,11 +48,15 @@ def _word_ok() -> bool:
 
 
 def _weasy_import_ok() -> bool:
+    """
+    No Windows (e noutros SO sem GTK/Pango), `import weasyprint` pode levantar
+    `OSError` ao carregar `libgobject` — não só `ImportError`.
+    """
     try:
         import weasyprint  # noqa: F401
 
         return True
-    except ImportError:
+    except (ImportError, OSError):
         return False
 
 
