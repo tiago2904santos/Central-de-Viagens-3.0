@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+  <div class="app-page">
+    <div class="app-page__shell">
+      <h1 class="app-page__title">{{ page_title }}</h1>
+      <p class="app-page__description">
+        <a href="{% url 'oficios:detalhe' oficio.pk %}">Voltar ao ofício</a>
+        · <a href="?format=json">JSON</a>
+      </p>
+      {% if preview.erro %}
+        <p class="text-danger">{{ preview.erro }}</p>
+      {% else %}
+        <p><strong>Variante:</strong> {{ preview.variante_efetiva }}</p>
+        <pre class="app-code-block" style="white-space: pre-wrap;">{{ preview_json }}</pre>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

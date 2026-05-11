@@ -7,4 +7,15 @@ app_name = "termos"
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("oficio/<int:pk>/preview/", views.preview_termo_oficio, name="preview_termo_oficio"),
+    path(
+        "oficio/<int:pk>/servidor/<int:servidor_pk>/<str:formato>/",
+        views.baixar_termo_servidor,
+        name="baixar_termo_servidor",
+    ),
+    path(
+        "oficio/<int:pk>/lote/<str:formato>/",
+        views.baixar_termo_lote_zip,
+        name="baixar_termo_lote_zip",
+    ),
 ]

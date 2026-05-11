@@ -5,9 +5,15 @@
 {% block content %}
   <div class="app-page">
     <div class="app-page__shell">
-      <div class="app-page__list-card app-page__list-card--placeholder">
-        {% include "components/feedback/module_placeholder.html" with title=page_title description=page_description eyebrow="Documentos" status="Depende do núcleo documental" status_class="status-chip--warning" dep_1="Concluir base de modelos e templates de termo" dep_2="Integrar fluxo com ofícios e eventos" dep_3="Padronizar geração e assinatura documental" only %}
-      </div>
+      <h1 class="app-page__title">{{ page_title }}</h1>
+      <p class="app-page__description">{{ page_description }}</p>
+      <p>
+        <a class="btn btn-primary app-btn" href="{{ oficios_url }}">Ir para ofícios</a>
+      </p>
+      <p class="text-muted">
+        Com um ofício completo, use os links na etapa <strong>Documentos</strong> ou as rotas
+        <code>/termos/oficio/&lt;id&gt;/…</code> para preview, download por servidor e lote ZIP.
+      </p>
     </div>
   </div>
 {% endblock %}

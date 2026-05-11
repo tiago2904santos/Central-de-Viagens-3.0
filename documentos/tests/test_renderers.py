@@ -42,8 +42,23 @@ class RenderersTests(SimpleTestCase):
             formato=DocumentoFormato.PDF,
             payload={"numero": "10"},
         )
-        with self.assertRaises(DocumentTemplateNotFound):
-            render_document(request, renderer=PdfRenderer(adapter=lambda req: b"ok"))
+        registry = DocumentTemplateRegistry()
+        registry.register(
+            DocumentTemplateDefinition(
+                tipo=DocumentoTipo.OFICIO,
+                formato=DocumentoFormato.DOCX,
+                template_path="oficio.docx",
+            ),
+        )
+        import documentos.services.renderers as renderers_module
+
+        original_registry = renderers_module.default_template_registry
+        renderers_module.default_template_registry = registry
+        try:
+            with self.assertRaises(DocumentTemplateNotFound):
+                render_document(request, renderer=PdfRenderer(adapter=lambda req: b"ok"))
+        finally:
+            renderers_module.default_template_registry = original_registry
 
     def test_render_document_raises_when_placeholder_required_is_missing(self):
         request = DocumentRenderRequest(
