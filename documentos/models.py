@@ -27,6 +27,9 @@ class DocumentoArtefato(models.Model):
     )
     payload_snapshot = models.JSONField(default=dict, blank=True)
     hash_sha256 = models.CharField(max_length=64)
+    cache_key = models.CharField(max_length=128, db_index=True, blank=True, default="")
+    generator_version = models.CharField(max_length=32, blank=True, default="")
+    engine = models.CharField(max_length=32, blank=True, default="")
     hash_sha256_assinado = models.CharField(max_length=64, blank=True, default="")
     arquivo = models.FileField(upload_to="documentos/gerados/%Y/%m/")
     arquivo_assinado = models.FileField(

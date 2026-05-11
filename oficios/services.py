@@ -12,7 +12,14 @@ from core.utils.masks import format_protocolo
 from core.utils.masks import normalize_protocolo
 import logging
 
+from django.conf import settings as django_settings
+
+from documentos.services.document_cache import build_document_cache_key
+from documentos.services.document_cache import build_template_cache_signature
+from documentos.services.document_cache import get_cached_document_artifact
+from documentos.services.document_cache import read_artifact_file_bytes
 from documentos.services.facade import build_default_facade
+from documentos.services.pdf_engine import resolve_pdf_engine
 from documentos.services.persistence import persist_geracao
 from documentos.services.responses import build_download_response
 from documentos.services.timing import measure_step
@@ -25,6 +32,72 @@ from .documents import build_canonical_document_payload
 from .documents import build_justificativa_payload
 
 logger = logging.getLogger(__name__)
+
+
+def _pdf_attempt_chain(*, prefer_docx_pipeline: bool) -> tuple[str, ...]:
+    explicit = (getattr(django_settings, "DOCUMENTOS_DEFAULT_PDF_ENGINE", "auto") or "auto").strip().lower()
+    return resolve_pdf_engine(
+        explicit_setting=explicit,
+        prefer_docx_pipeline=prefer_docx_pipeline,
+    ).attempt_chain
+
+
+def _document_cache_key(
+    *,
+    tipo: DocumentoTipo,
+    formato: DocumentoFormato,
+    reference: str,
+    payload: dict,
+    docxtpl_context: dict | None,
+    prefer_docx: bool,
+) -> str:
+    chain = _pdf_attempt_chain(prefer_docx_pipeline=prefer_docx) if formato == DocumentoFormato.PDF else ()
+    tpl_sig = build_template_cache_signature(tipo=tipo, formato=formato)
+    return build_document_cache_key(
+        tipo=tipo,
+        formato=formato,
+        reference=reference,
+        payload=payload,
+        docxtpl_context=docxtpl_context,
+        attempt_chain=chain if formato == DocumentoFormato.PDF else (),
+        template_signature=tpl_sig,
+    )
+
+
+def _try_cached_download(
+    *,
+    oficio_id: int,
+    tipo: DocumentoTipo,
+    formato: DocumentoFormato,
+    reference: str,
+    payload: dict,
+    docxtpl_context: dict | None,
+    prefer_docx: bool,
+):
+    if not getattr(django_settings, "DOCUMENTOS_ARTIFACT_CACHE", True):
+        return None
+    key = _document_cache_key(
+        tipo=tipo,
+        formato=formato,
+        reference=reference,
+        payload=payload,
+        docxtpl_context=docxtpl_context,
+        prefer_docx=prefer_docx,
+    )
+    art = get_cached_document_artifact(oficio_id=oficio_id, tipo=tipo, formato=formato, cache_key=key)
+    if art is None:
+        return None
+    content = read_artifact_file_bytes(art)
+    response = build_download_response(
+        content=content,
+        tipo=tipo,
+        formato=formato,
+        reference=reference,
+        cache_hit=True,
+    )
+    response["X-Document-SHA256"] = art.hash_sha256
+    return response
+
 
 from .models import ModeloMotivoOficio
 from .models import Oficio
@@ -352,8 +425,27 @@ def gerar_resposta_documento_oficio(oficio, formato: DocumentoFormato):
     ):
         payload = build_canonical_document_payload(oficio, DocumentoTipo.OFICIO)
         docxtpl = build_oficio_docxtpl_context(oficio)
-        facade = build_default_facade()
         reference = oficio.numero_formatado.replace("/", "-")
+        hit = _try_cached_download(
+            oficio_id=oficio.pk,
+            tipo=DocumentoTipo.OFICIO,
+            formato=formato,
+            reference=reference,
+            payload=payload,
+            docxtpl_context=docxtpl,
+            prefer_docx=True,
+        )
+        if hit is not None:
+            return hit
+        cache_key = _document_cache_key(
+            tipo=DocumentoTipo.OFICIO,
+            formato=formato,
+            reference=reference,
+            payload=payload,
+            docxtpl_context=docxtpl,
+            prefer_docx=True,
+        )
+        facade = build_default_facade()
         doc = facade.gerar(
             tipo=DocumentoTipo.OFICIO,
             formato=formato,
@@ -366,10 +458,17 @@ def gerar_resposta_documento_oficio(oficio, formato: DocumentoFormato):
             tipo=DocumentoTipo.OFICIO,
             formato=formato,
             reference=reference,
+            cache_hit=False,
         )
         response["X-Document-SHA256"] = doc.hash_sha256
         try:
-            persist_geracao(doc, oficio_id=oficio.pk, payload_snapshot=payload)
+            persist_geracao(
+                doc,
+                oficio_id=oficio.pk,
+                payload_snapshot=payload,
+                cache_key=cache_key,
+                engine=doc.pdf_engine_used or "",
+            )
         except Exception:
             logger.exception("Não foi possível persistir artefato documental do ofício.")
         return response
@@ -382,8 +481,27 @@ def gerar_resposta_justificativa_documento(oficio, formato: DocumentoFormato):
     ):
         payload = build_justificativa_payload(oficio)
         docxtpl = build_justificativa_docxtpl_context(oficio)
-        facade = build_default_facade()
         reference = f"{oficio.numero_formatado.replace('/', '-')}-justificativa"
+        hit = _try_cached_download(
+            oficio_id=oficio.pk,
+            tipo=DocumentoTipo.JUSTIFICATIVA,
+            formato=formato,
+            reference=reference,
+            payload=payload,
+            docxtpl_context=docxtpl,
+            prefer_docx=True,
+        )
+        if hit is not None:
+            return hit
+        cache_key = _document_cache_key(
+            tipo=DocumentoTipo.JUSTIFICATIVA,
+            formato=formato,
+            reference=reference,
+            payload=payload,
+            docxtpl_context=docxtpl,
+            prefer_docx=True,
+        )
+        facade = build_default_facade()
         doc = facade.gerar(
             tipo=DocumentoTipo.JUSTIFICATIVA,
             formato=formato,
@@ -396,10 +514,17 @@ def gerar_resposta_justificativa_documento(oficio, formato: DocumentoFormato):
             tipo=DocumentoTipo.JUSTIFICATIVA,
             formato=formato,
             reference=reference,
+            cache_hit=False,
         )
         response["X-Document-SHA256"] = doc.hash_sha256
         try:
-            persist_geracao(doc, oficio_id=oficio.pk, payload_snapshot=payload)
+            persist_geracao(
+                doc,
+                oficio_id=oficio.pk,
+                payload_snapshot=payload,
+                cache_key=cache_key,
+                engine=doc.pdf_engine_used or "",
+            )
         except Exception:
             logger.exception("Não foi possível persistir artefato da justificativa.")
         return response

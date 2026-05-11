@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from django.conf import settings
 
+from documentos.services.adapters.libreoffice_pdf import unoserver_healthcheck
 from documentos.services.adapters.word_pdf import is_word_pdf_available
 from documentos.services.libreoffice_resolve import resolve_libreoffice_binary
 from documentos.services.libreoffice_resolve import sys_platform_is_darwin
@@ -41,6 +42,14 @@ def _os_label() -> str:
 
 def _libreoffice_ok() -> bool:
     return bool(resolve_libreoffice_binary())
+
+
+def _unoserver_ok() -> bool:
+    url = (getattr(settings, "DOCUMENTOS_UNOSERVER_URL", None) or "").strip()
+    if not url:
+        return False
+    timeout = float(getattr(settings, "DOCUMENTOS_UNOSERVER_TIMEOUT_SECONDS", 3) or 3)
+    return unoserver_healthcheck(url, timeout=min(timeout, 2.0))
 
 
 def _word_ok() -> bool:
@@ -83,6 +92,7 @@ def _scan_availability() -> tuple[list[str], list[str]]:
     avail: list[str] = []
     missing: list[str] = []
     for name, ok in (
+        ("unoserver", _unoserver_ok()),
         ("word_com", _word_ok()),
         ("libreoffice", _libreoffice_ok()),
         ("weasyprint", _weasy_import_ok()),
@@ -99,26 +109,28 @@ def _auto_chain(*, prefer_docx_pipeline: bool) -> list[str]:
     osys = platform.system()
     if prefer_docx_pipeline:
         if osys == "Windows":
-            raw = ["word_com", "libreoffice", "weasyprint", "simple_fallback"]
+            raw = ["unoserver", "word_com", "libreoffice", "weasyprint", "simple_fallback"]
         elif sys_platform_is_linux():
-            raw = ["libreoffice", "weasyprint", "simple_fallback"]
+            raw = ["unoserver", "libreoffice", "weasyprint", "simple_fallback"]
         elif sys_platform_is_darwin():
-            raw = ["libreoffice", "weasyprint", "word_com", "simple_fallback"]
+            raw = ["unoserver", "libreoffice", "weasyprint", "word_com", "simple_fallback"]
         else:
-            raw = ["libreoffice", "weasyprint", "simple_fallback"]
+            raw = ["unoserver", "libreoffice", "weasyprint", "simple_fallback"]
     else:
         if osys == "Windows":
-            raw = ["word_com", "libreoffice", "weasyprint", "simple_fallback"]
+            raw = ["unoserver", "word_com", "libreoffice", "weasyprint", "simple_fallback"]
         elif sys_platform_is_linux():
-            raw = ["libreoffice", "weasyprint", "simple_fallback"]
+            raw = ["unoserver", "libreoffice", "weasyprint", "simple_fallback"]
         elif sys_platform_is_darwin():
-            raw = ["libreoffice", "weasyprint", "word_com", "simple_fallback"]
+            raw = ["unoserver", "libreoffice", "weasyprint", "word_com", "simple_fallback"]
         else:
-            raw = ["libreoffice", "weasyprint", "simple_fallback"]
+            raw = ["unoserver", "libreoffice", "weasyprint", "simple_fallback"]
     return [e for e in raw if _engine_available(e)]
 
 
 def _engine_available(name: str) -> bool:
+    if name == "unoserver":
+        return _unoserver_ok()
     if name == "word_com":
         return _word_ok()
     if name == "libreoffice":
@@ -136,7 +148,7 @@ def _explicit_chain(explicit: str, *, auto_fallback: bool) -> list[str]:
         explicit = "simple_fallback"
     if explicit in ("", "auto"):
         return []
-    if explicit not in ("word_com", "libreoffice", "weasyprint", "simple_fallback"):
+    if explicit not in ("word_com", "libreoffice", "weasyprint", "simple_fallback", "unoserver"):
         return []
     out: list[str] = []
     if _engine_available(explicit):
@@ -144,7 +156,7 @@ def _explicit_chain(explicit: str, *, auto_fallback: bool) -> list[str]:
     elif not auto_fallback:
         return []
     if auto_fallback:
-        for e in ("libreoffice", "weasyprint", "word_com", "simple_fallback"):
+        for e in ("unoserver", "libreoffice", "weasyprint", "word_com", "simple_fallback"):
             if e != explicit and _engine_available(e) and e not in out:
                 out.append(e)
     return out

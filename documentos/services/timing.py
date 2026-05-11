@@ -27,12 +27,14 @@ def measure_step(label: str, metadata: dict[str, Any] | None = None) -> Iterator
     finally:
         duration_ms = int((time.perf_counter() - t0) * 1000)
         try:
-            parts = [f"[documentos] etapa={label} duration_ms={duration_ms}"]
+            parts: list[str] = ["[documentos]"]
             for key in sorted(meta.keys()):
                 val = meta[key]
-                if val is None:
+                if val is None or val == "":
                     continue
                 parts.append(f"{key}={val}")
+            parts.append(f"etapa={label}")
+            parts.append(f"duration_ms={duration_ms}")
             logger.info(" ".join(parts))
         except Exception:
             pass

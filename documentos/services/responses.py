@@ -26,6 +26,7 @@ def build_download_response(
     formato: DocumentoFormato,
     reference: str | None = None,
     now: datetime | None = None,
+    cache_hit: bool | None = None,
 ) -> HttpResponse:
     with measure_step(
         "build_download_response",
@@ -34,4 +35,8 @@ def build_download_response(
         filename = build_document_filename(tipo, formato, reference=reference, now=now)
         response = HttpResponse(content, content_type=get_content_type_for_format(formato))
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        if cache_hit is True:
+            response["X-Document-Cache"] = "HIT"
+        elif cache_hit is False:
+            response["X-Document-Cache"] = "MISS"
         return response

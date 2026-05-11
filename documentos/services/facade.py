@@ -11,6 +11,7 @@ from documentos.services.adapters.docxtpl_render import render_docx_bytes
 from documentos.services.adapters.libreoffice_pdf import convert_docx_to_pdf_libreoffice
 from documentos.services.exceptions import DocumentValidationError
 from documentos.services.filenames import build_document_filename
+from documentos.services.libreoffice_resolve import resolve_libreoffice_binary
 from documentos.services.pdf_engine import build_pdf_unavailable_message
 from documentos.services.pdf_engine import resolve_pdf_engine
 from documentos.services.registry import default_document_registry
@@ -19,10 +20,9 @@ from documentos.services.responses import get_content_type_for_format
 from documentos.services.templates import DocumentTemplateDefinition
 from documentos.services.templates import canonical_required_keys
 from documentos.services.templates import default_template_registry
-from documentos.services.types import DocumentoFormato
 from documentos.services.timing import measure_step
+from documentos.services.types import DocumentoFormato
 from documentos.services.types import DocumentoTipo
-from documentos.services.libreoffice_resolve import resolve_libreoffice_binary
 from documentos.services.validators import DocumentValidatorRegistry
 from documentos.services.validators import ensure_required_fields
 
@@ -37,6 +37,7 @@ class DocumentoGerado:
     content_type: str
     conteudo: bytes
     hash_sha256: str
+    pdf_engine_used: str | None = None
 
 
 class DocumentoFacade:
@@ -75,6 +76,7 @@ class DocumentoFacade:
         self._validate_payload(tipo, payload)
         docx_ctx = docxtpl_context if docxtpl_context is not None else payload
         ref = (reference or "").strip()
+        pdf_engine_used: str | None = None
         with measure_step(
             "facade_gerar",
             {"tipo": tipo.value, "formato": formato.value, "reference": ref or "—"},
@@ -82,7 +84,12 @@ class DocumentoFacade:
             if formato == DocumentoFormato.DOCX:
                 conteudo = self._render_docx(template_def, docx_ctx)
             else:
-                conteudo = self._render_pdf(tipo, template_def, payload, docxtpl_context=docxtpl_context)
+                conteudo, pdf_engine_used = self._render_pdf(
+                    tipo,
+                    template_def,
+                    payload,
+                    docxtpl_context=docxtpl_context,
+                )
 
         digest = hashlib.sha256(conteudo).hexdigest()
         nome = build_document_filename(tipo, formato, reference=reference)
@@ -93,6 +100,7 @@ class DocumentoFacade:
             content_type=get_content_type_for_format(formato),
             conteudo=conteudo,
             hash_sha256=digest,
+            pdf_engine_used=pdf_engine_used,
         )
 
     def _validate_payload(
@@ -121,6 +129,17 @@ class DocumentoFacade:
         ):
             return render_docx_bytes(template_path=path, context=payload)
 
+    def _render_docx_bytes_for_tipo(
+        self,
+        tipo: DocumentoTipo,
+        *,
+        docxtpl_context: Mapping[str, object] | None,
+        payload: Mapping[str, object],
+    ) -> bytes:
+        docx_def = self._templates.get(tipo, DocumentoFormato.DOCX)
+        docx_ctx = docxtpl_context if docxtpl_context is not None else payload
+        return self._render_docx(docx_def, docx_ctx)
+
     def _render_pdf(
         self,
         tipo: DocumentoTipo,
@@ -128,9 +147,17 @@ class DocumentoFacade:
         payload: Mapping[str, object],
         *,
         docxtpl_context: Mapping[str, object] | None = None,
-    ) -> bytes:
+    ) -> tuple[bytes, str]:
         explicit = (getattr(settings, "DOCUMENTOS_DEFAULT_PDF_ENGINE", "auto") or "auto").strip().lower()
-        if explicit not in ("auto", "word_com", "libreoffice", "weasyprint", "simple", "simple_fallback"):
+        if explicit not in (
+            "auto",
+            "word_com",
+            "libreoffice",
+            "weasyprint",
+            "simple",
+            "simple_fallback",
+            "unoserver",
+        ):
             raise DocumentValidationError(f"Motor PDF desconhecido: {explicit}")
 
         prefer_docx = docxtpl_context is not None
@@ -150,26 +177,60 @@ class DocumentoFacade:
             if not resolution.attempt_chain:
                 raise DocumentValidationError(build_pdf_unavailable_message(resolution))
 
+            docx_cache: bytes | None = None
+
+            def _docx_bytes() -> bytes:
+                nonlocal docx_cache
+                if docx_cache is None:
+                    docx_cache = self._render_docx_bytes_for_tipo(
+                        tipo,
+                        docxtpl_context=docxtpl_context,
+                        payload=payload,
+                    )
+                return docx_cache
+
             last_error: BaseException | None = None
             for eng in resolution.attempt_chain:
                 try:
                     if eng == "word_com":
                         from documentos.services.adapters.word_pdf import convert_docx_to_pdf_word_com
 
-                        docx_def = self._templates.get(tipo, DocumentoFormato.DOCX)
-                        docx_ctx = docxtpl_context if docxtpl_context is not None else payload
-                        docx_bytes = self._render_docx(docx_def, docx_ctx)
                         with measure_step(
                             "convert_docx_to_pdf",
                             {"engine": "word_com", "tipo": tipo.value},
                         ):
-                            return convert_docx_to_pdf_word_com(docx_bytes)
+                            return convert_docx_to_pdf_word_com(_docx_bytes()), "word_com"
+                    if eng == "unoserver":
+                        from documentos.services.adapters.libreoffice_pdf import convert_docx_to_pdf_unoserver
+
+                        url = getattr(settings, "DOCUMENTOS_UNOSERVER_URL", None) or ""
+                        timeout = float(getattr(settings, "DOCUMENTOS_UNOSERVER_TIMEOUT_SECONDS", 3) or 3)
+                        with measure_step(
+                            "convert_docx_to_pdf",
+                            {"engine": "unoserver", "tipo": tipo.value},
+                        ):
+                            return (
+                                convert_docx_to_pdf_unoserver(
+                                    docx_bytes=_docx_bytes(),
+                                    unoserver_url=url.strip(),
+                                    timeout_seconds=timeout,
+                                ),
+                                "unoserver",
+                            )
                     if eng == "libreoffice":
                         with measure_step(
                             "convert_docx_to_pdf",
                             {"engine": "libreoffice", "tipo": tipo.value},
                         ):
-                            return self._pdf_via_libreoffice(tipo, payload, docxtpl_context=docxtpl_context)
+                            return (
+                                self._pdf_via_libreoffice(
+                                    tipo,
+                                    payload,
+                                    docxtpl_context=docxtpl_context,
+                                    docx_bytes=_docx_bytes(),
+                                ),
+                                "libreoffice",
+                            )
                     if eng == "weasyprint":
                         from documentos.services.adapters.weasyprint_pdf import render_pdf_bytes_weasyprint
 
@@ -177,10 +238,13 @@ class DocumentoFacade:
                             "render_pdf_weasyprint",
                             {"engine": "weasyprint", "tipo": tipo.value},
                         ):
-                            return render_pdf_bytes_weasyprint(
-                                html_template_name=template_def.template_path,
-                                context=payload,
-                                stylesheet_paths=template_def.stylesheet_paths,
+                            return (
+                                render_pdf_bytes_weasyprint(
+                                    html_template_name=template_def.template_path,
+                                    context=payload,
+                                    stylesheet_paths=template_def.stylesheet_paths,
+                                ),
+                                "weasyprint",
                             )
                     if eng == "simple_fallback":
                         from documentos.services.adapters.simple_pdf_fallback import render_simple_pdf_bytes
@@ -189,7 +253,7 @@ class DocumentoFacade:
                             "render_pdf_simple_fallback",
                             {"engine": "simple_fallback", "tipo": tipo.value},
                         ):
-                            return render_simple_pdf_bytes(tipo=tipo, payload=payload)
+                            return render_simple_pdf_bytes(tipo=tipo, payload=payload), "simple_fallback"
                 except Exception as exc:
                     last_error = exc
                     logger.warning("Motor PDF %s falhou para %s: %s", eng, tipo.value, exc, exc_info=True)
@@ -207,10 +271,14 @@ class DocumentoFacade:
         *,
         libreoffice_binary: str | None = None,
         docxtpl_context: Mapping[str, object] | None = None,
+        docx_bytes: bytes | None = None,
     ) -> bytes:
-        docx_def = self._templates.get(tipo, DocumentoFormato.DOCX)
-        docx_ctx = docxtpl_context if docxtpl_context is not None else payload
-        docx_bytes = self._render_docx(docx_def, docx_ctx)
+        if docx_bytes is None:
+            docx_bytes = self._render_docx_bytes_for_tipo(
+                tipo,
+                docxtpl_context=docxtpl_context,
+                payload=payload,
+            )
         binary = (libreoffice_binary or "").strip() or resolve_libreoffice_binary()
         if not binary:
             raise DocumentValidationError(

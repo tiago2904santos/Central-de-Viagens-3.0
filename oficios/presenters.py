@@ -456,6 +456,10 @@ def apresentar_oficio_wizard_documentos_context(oficio):
 
     justificativa_resumo = _montar_justificativa_resumo_documentos(j_et, j_obj, texto_j)
 
+    from oficios.document_generation import get_document_generation_status
+
+    generation_status = get_document_generation_status(oficio)
+
     return {
         "detalhe": detalhe,
         "transporte": transporte,
@@ -476,5 +480,6 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         "valor_diarias": roteiro.valor_diarias if roteiro else None,
         "valor_diarias_display": _format_brl_diarias(roteiro.valor_diarias if roteiro else None),
         "valor_diarias_extenso": (roteiro.valor_diarias_extenso if roteiro else "") or "—",
+        "generation_status": generation_status,
     }
 

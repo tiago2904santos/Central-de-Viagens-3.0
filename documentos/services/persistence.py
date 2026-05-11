@@ -17,12 +17,16 @@ def persist_geracao(
     oficio_id: int | None = None,
     servidor_id: int | None = None,
     payload_snapshot: Mapping[str, Any] | None = None,
+    cache_key: str = "",
+    engine: str = "",
+    generator_version: str = "",
 ) -> DocumentoArtefato | None:
     if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
         return None
     nome = doc.nome_arquivo
     arquivo = ContentFile(doc.conteudo, name=nome)
     payload_snapshot = dict(payload_snapshot or {})
+    gen_ver = generator_version or str(getattr(settings, "DOCUMENTOS_GENERATOR_VERSION", "1") or "1")
     with measure_step(
         "persist_geracao",
         {
@@ -41,6 +45,9 @@ def persist_geracao(
             hash_sha256=doc.hash_sha256,
             arquivo=arquivo,
             assinatura_backend="",
+            cache_key=cache_key or "",
+            engine=engine or "",
+            generator_version=gen_ver,
         )
 
 

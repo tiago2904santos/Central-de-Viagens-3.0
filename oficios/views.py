@@ -425,6 +425,10 @@ def wizard_justificativa(request, pk):
 
 def wizard_documentos(request, pk):
     oficio = get_oficio_by_id(pk)
+    if request.method == "GET":
+        from documentos.services.warm_cache import ensure_document_artifact_cached
+
+        ensure_document_artifact_cached(oficio)
     aval_doc = validar_oficio_para_documento(oficio)
     pendencias = list(aval_doc["pendencias"])
     doc_status = "complete" if aval_doc["status"] == "complete" else "incomplete"
