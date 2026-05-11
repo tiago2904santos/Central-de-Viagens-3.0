@@ -123,30 +123,38 @@ def _fmt_time(dt: datetime | None) -> str:
 
 
 def _build_endereco(inst: dict[str, Any]) -> str:
-    partes = [
-        _txt(inst.get("logradouro")),
-        _txt(inst.get("numero")),
-        _txt(inst.get("bairro")),
-    ]
+    """Endereço institucional em uma linha legível (separador ` - `, cidade/UF normalizada)."""
+    log = _txt(inst.get("logradouro"))
+    log_fmt = format_document_display(log) if log else ""
+    num = _txt(inst.get("numero"))
+    bai = _txt(inst.get("bairro"))
+    bai_fmt = format_document_display(bai) if bai else ""
+    linha1 = " - ".join([p for p in (log_fmt, num, bai_fmt) if p])
+
     cidade = _txt(inst.get("cidade_endereco"))
     uf = _txt(inst.get("uf")).upper()
-    cidade_uf = " / ".join([p for p in (cidade, uf) if p])
-    if cidade_uf:
-        partes.append(cidade_uf)
+    cidade_uf = ""
+    if cidade and uf:
+        cidade_uf = format_city_uf(f"{cidade}/{uf}")
+    elif cidade:
+        cidade_uf = format_document_display(cidade)
+    elif uf:
+        cidade_uf = uf
+
     cep = _txt(inst.get("cep_formatado") or inst.get("cep"))
-    if cep:
-        partes.append(f"CEP {cep}")
-    return ", ".join(p for p in partes if p)
+    cep_part = f"CEP {cep}" if cep else ""
+
+    return " - ".join(x for x in (linha1, cidade_uf, cep_part) if x)
 
 
 def _build_sede(inst: dict[str, Any]) -> str:
     cidade = _txt(inst.get("cidade_endereco"))
     uf = _txt(inst.get("uf")).upper()
     if cidade and uf:
-        return f"{cidade}/{uf}"
+        return format_city_uf(f"{cidade}/{uf}")
     if cidade:
-        return cidade
-    return _txt(inst.get("sede"))
+        return format_document_display(cidade)
+    return format_document_display(_txt(inst.get("sede"))) if _txt(inst.get("sede")) else ""
 
 
 def _assinatura_nome_cargo(inst: dict[str, Any]) -> tuple[str, str]:
@@ -436,7 +444,7 @@ def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
         "armamento": "Sim" if oficio.porte_transporte_armas else "Não",
         "motivo": format_document_display(_txt(oficio.motivo)) if _txt(oficio.motivo) else "",
         "divisao": format_document_display(_txt(inst.get("divisao"))) if _txt(inst.get("divisao")) else "",
-        "email": _txt(inst.get("email")),
+        "email": (_txt(inst.get("email")) or "").lower(),
         "endereco": _build_endereco(inst),
         "telefone": _txt(inst.get("telefone_formatado") or inst.get("telefone")),
         "unidade_rodape": unidade,
@@ -472,7 +480,7 @@ def build_justificativa_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
         "unidade": _hdr(unidade),
         "unidade_rodape": _txt(unidade),
         "endereco": _build_endereco(inst),
-        "email": _txt(inst.get("email")),
+        "email": (_txt(inst.get("email")) or "").lower(),
         "telefone": _txt(inst.get("telefone_formatado") or inst.get("telefone")),
     }
     for key in JUSTIFICATIVA_DOCXTPL_KEYS:
