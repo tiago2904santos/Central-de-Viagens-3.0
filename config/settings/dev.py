@@ -19,6 +19,9 @@ DEBUG = True
 if sys.platform == "win32" and "DOCUMENTOS_SIMPLE_PDF_FALLBACK" not in os.environ:
     DOCUMENTOS_SIMPLE_PDF_FALLBACK = True
 
+if "DOCUMENTOS_PDF_AUTO_FALLBACK" not in os.environ:
+    DOCUMENTOS_PDF_AUTO_FALLBACK = True
+
 required_db_vars = ["DB_NAME", "DB_USER", "DB_PASSWORD"]
 missing_db_vars = [name for name in required_db_vars if not os.getenv(name)]
 

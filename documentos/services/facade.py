@@ -11,6 +11,8 @@ from documentos.services.adapters.docxtpl_render import render_docx_bytes
 from documentos.services.adapters.libreoffice_pdf import convert_docx_to_pdf_libreoffice
 from documentos.services.exceptions import DocumentValidationError
 from documentos.services.filenames import build_document_filename
+from documentos.services.pdf_engine import build_pdf_unavailable_message
+from documentos.services.pdf_engine import resolve_pdf_engine
 from documentos.services.registry import default_document_registry
 from documentos.services.resources_paths import resolve_resource_docx
 from documentos.services.responses import get_content_type_for_format
@@ -117,73 +119,55 @@ class DocumentoFacade:
         *,
         docxtpl_context: Mapping[str, object] | None = None,
     ) -> bytes:
-        engine = (
-            getattr(settings, "DOCUMENTOS_DEFAULT_PDF_ENGINE", "weasyprint") or "weasyprint"
-        ).lower()
-        if engine == "libreoffice":
-            return self._pdf_via_libreoffice(tipo, payload, docxtpl_context=docxtpl_context)
-        if engine == "weasyprint":
-            from documentos.services.adapters.simple_pdf_fallback import render_simple_pdf_bytes
-            from documentos.services.adapters.weasyprint_pdf import render_pdf_bytes_weasyprint
+        explicit = (getattr(settings, "DOCUMENTOS_DEFAULT_PDF_ENGINE", "auto") or "auto").strip().lower()
+        if explicit not in ("auto", "word_com", "libreoffice", "weasyprint", "simple", "simple_fallback"):
+            raise DocumentValidationError(f"Motor PDF desconhecido: {explicit}")
 
-            # Ofício: o HTML do WeasyPrint não recebe o dict plano do docxtpl; gera-se o PDF a partir
-            # do mesmo DOCX preenchido que o utilizador valida (LibreOffice), salvo desactivação explícita.
-            if (
-                getattr(settings, "DOCUMENTOS_OFICIO_PDF_VIA_DOCX", True)
-                and tipo == DocumentoTipo.OFICIO
-                and docxtpl_context is not None
-            ):
-                return self._pdf_via_libreoffice(tipo, payload, docxtpl_context=docxtpl_context)
+        prefer_docx = docxtpl_context is not None
+        if tipo == DocumentoTipo.OFICIO and not getattr(settings, "DOCUMENTOS_OFICIO_PDF_VIA_DOCX", True):
+            prefer_docx = False
 
-            simple_ok = getattr(settings, "DOCUMENTOS_SIMPLE_PDF_FALLBACK", False)
+        resolution = resolve_pdf_engine(
+            explicit_setting=explicit,
+            prefer_docx_pipeline=prefer_docx,
+        )
 
+        if not resolution.attempt_chain:
+            raise DocumentValidationError(build_pdf_unavailable_message(resolution))
+
+        last_error: BaseException | None = None
+        for eng in resolution.attempt_chain:
             try:
-                return render_pdf_bytes_weasyprint(
-                    html_template_name=template_def.template_path,
-                    context=payload,
-                    stylesheet_paths=template_def.stylesheet_paths,
-                )
-            except (OSError, RuntimeError) as exc:
-                lo = resolve_libreoffice_binary()
-                if lo:
-                    try:
-                        logger.warning(
-                            "WeasyPrint indisponível (%s); tentando LibreOffice em %s.",
-                            exc,
-                            lo,
-                        )
-                        return self._pdf_via_libreoffice(
-                            tipo,
-                            payload,
-                            libreoffice_binary=lo,
-                            docxtpl_context=docxtpl_context,
-                        )
-                    except Exception as lo_exc:
-                        logger.warning("LibreOffice falhou: %s", lo_exc, exc_info=True)
-                        if simple_ok:
-                            logger.warning("Emitindo PDF simplificado (fallback de desenvolvimento).")
-                            return render_simple_pdf_bytes(tipo=tipo, payload=payload)
-                        raise RuntimeError(
-                            "WeasyPrint e LibreOffice falharam. Verifique a instalação do LibreOffice "
-                            "ou defina DOCUMENTOS_SIMPLE_PDF_FALLBACK=true para PDF texto simples em dev."
-                        ) from lo_exc
-                if simple_ok:
-                    logger.warning(
-                        "WeasyPrint indisponível (%s); LibreOffice não encontrado; PDF simplificado.",
-                        exc,
+                if eng == "word_com":
+                    from documentos.services.adapters.word_pdf import convert_docx_to_pdf_word_com
+
+                    docx_def = self._templates.get(tipo, DocumentoFormato.DOCX)
+                    docx_ctx = docxtpl_context if docxtpl_context is not None else payload
+                    docx_bytes = self._render_docx(docx_def, docx_ctx)
+                    return convert_docx_to_pdf_word_com(docx_bytes)
+                if eng == "libreoffice":
+                    return self._pdf_via_libreoffice(tipo, payload, docxtpl_context=docxtpl_context)
+                if eng == "weasyprint":
+                    from documentos.services.adapters.weasyprint_pdf import render_pdf_bytes_weasyprint
+
+                    return render_pdf_bytes_weasyprint(
+                        html_template_name=template_def.template_path,
+                        context=payload,
+                        stylesheet_paths=template_def.stylesheet_paths,
                     )
+                if eng == "simple_fallback":
+                    from documentos.services.adapters.simple_pdf_fallback import render_simple_pdf_bytes
+
                     return render_simple_pdf_bytes(tipo=tipo, payload=payload)
-                raise RuntimeError(
-                    "WeasyPrint não carregou as bibliotecas GTK/Pango/Cairo e o LibreOffice "
-                    "não foi encontrado. Opções: instalar o GTK3 runtime para Windows "
-                    "(projeto GTK-for-Windows-Runtime-Environment-Installer no GitHub), "
-                    "ou instalar o LibreOffice (o app tenta detectar soffice.exe automaticamente), "
-                    "ou no .env: DOCUMENTOS_DEFAULT_PDF_ENGINE=libreoffice e "
-                    "DOCUMENTOS_LIBREOFFICE_BINARY apontando para soffice.exe, "
-                    "ou em desenvolvimento Windows use DOCUMENTOS_SIMPLE_PDF_FALLBACK=true "
-                    "(habilitado por padrão em config.settings.dev)."
-                ) from exc
-        raise DocumentValidationError(f"Motor PDF desconhecido: {engine}")
+            except Exception as exc:
+                last_error = exc
+                logger.warning("Motor PDF %s falhou para %s: %s", eng, tipo.value, exc, exc_info=True)
+                continue
+
+        msg = build_pdf_unavailable_message(resolution)
+        if last_error is not None:
+            raise DocumentValidationError(msg) from last_error
+        raise DocumentValidationError(msg)
 
     def _pdf_via_libreoffice(
         self,

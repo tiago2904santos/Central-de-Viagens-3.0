@@ -109,7 +109,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Núcleo documental (DOCX/PDF, conversão opcional, assinatura).
 DOCUMENTOS_RESOURCES_DIR = BASE_DIR / "documentos" / "resources"
 DOCUMENTOS_BASE_URL = os.getenv("DOCUMENTOS_BASE_URL", "").strip() or None
-DOCUMENTOS_DEFAULT_PDF_ENGINE = (os.getenv("DOCUMENTOS_DEFAULT_PDF_ENGINE") or "weasyprint").strip().lower()
+DOCUMENTOS_DEFAULT_PDF_ENGINE = (os.getenv("DOCUMENTOS_DEFAULT_PDF_ENGINE") or "auto").strip().lower()
+DOCUMENTOS_PDF_AUTO_FALLBACK = os.getenv("DOCUMENTOS_PDF_AUTO_FALLBACK", "").lower() in (
+    "1",
+    "true",
+    "yes",
+)
 DOCUMENTOS_ENABLE_LIBREOFFICE = os.getenv("DOCUMENTOS_ENABLE_LIBREOFFICE", "").lower() in (
     "1",
     "true",

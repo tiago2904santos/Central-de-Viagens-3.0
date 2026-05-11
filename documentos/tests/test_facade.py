@@ -6,6 +6,7 @@ from django.test import override_settings
 
 from documentos.services.exceptions import DocumentValidationError
 from documentos.services.facade import DocumentoFacade
+from documentos.services.pdf_engine import PdfEngineResolution
 from documentos.services.templates import DocumentTemplateDefinition
 from documentos.services.templates import DocumentTemplateRegistry
 from documentos.services.types import DocumentoFormato
@@ -52,7 +53,11 @@ class FacadeTests(SimpleTestCase):
         self.assertEqual(out.hash_sha256, hashlib.sha256(b"fake-docx").hexdigest())
         self.assertTrue(out.nome_arquivo.endswith(".docx"))
 
-    @override_settings(DOCUMENTOS_DEFAULT_PDF_ENGINE="weasyprint")
+    @override_settings(
+        DOCUMENTOS_DEFAULT_PDF_ENGINE="auto",
+        DOCUMENTOS_SIMPLE_PDF_FALLBACK=False,
+        DOCUMENTOS_PDF_AUTO_FALLBACK=False,
+    )
     def test_oficio_pdf_com_docxtpl_usa_libreoffice_e_mesmo_contexto(self):
         facade = DocumentoFacade()
         payload = {
@@ -60,14 +65,22 @@ class FacadeTests(SimpleTestCase):
             "oficio": {"numero_formatado": "01/2026"},
         }
         flat = {"oficio": "01/2026", "protocolo": "12.345.678-9", "assunto_linha": "Linha fixa"}
-        with mock.patch.object(facade, "_pdf_via_libreoffice", return_value=b"fake-pdf") as m_lo:
-            with mock.patch.object(facade, "_render_docx", return_value=b"fake-docx"):
-                out = facade.gerar(
-                    tipo=DocumentoTipo.OFICIO,
-                    formato=DocumentoFormato.PDF,
-                    payload=payload,
-                    docxtpl_context=flat,
-                )
+        res = PdfEngineResolution(
+            attempt_chain=("libreoffice",),
+            reason="test",
+            available_engines=("libreoffice",),
+            missing_engines=(),
+            install_hints=(),
+        )
+        with mock.patch("documentos.services.facade.resolve_pdf_engine", return_value=res):
+            with mock.patch.object(facade, "_pdf_via_libreoffice", return_value=b"fake-pdf") as m_lo:
+                with mock.patch.object(facade, "_render_docx", return_value=b"fake-docx"):
+                    out = facade.gerar(
+                        tipo=DocumentoTipo.OFICIO,
+                        formato=DocumentoFormato.PDF,
+                        payload=payload,
+                        docxtpl_context=flat,
+                    )
         m_lo.assert_called_once()
         self.assertIs(m_lo.call_args.kwargs.get("docxtpl_context"), flat)
         self.assertEqual(out.conteudo, b"fake-pdf")
