@@ -20,6 +20,7 @@ from documentos.services.templates import DocumentTemplateDefinition
 from documentos.services.templates import canonical_required_keys
 from documentos.services.templates import default_template_registry
 from documentos.services.types import DocumentoFormato
+from documentos.services.timing import measure_step
 from documentos.services.types import DocumentoTipo
 from documentos.services.libreoffice_resolve import resolve_libreoffice_binary
 from documentos.services.validators import DocumentValidatorRegistry
@@ -73,10 +74,15 @@ class DocumentoFacade:
         template_def = self._templates.get(tipo, formato)
         self._validate_payload(tipo, payload)
         docx_ctx = docxtpl_context if docxtpl_context is not None else payload
-        if formato == DocumentoFormato.DOCX:
-            conteudo = self._render_docx(template_def, docx_ctx)
-        else:
-            conteudo = self._render_pdf(tipo, template_def, payload, docxtpl_context=docxtpl_context)
+        ref = (reference or "").strip()
+        with measure_step(
+            "facade_gerar",
+            {"tipo": tipo.value, "formato": formato.value, "reference": ref or "—"},
+        ):
+            if formato == DocumentoFormato.DOCX:
+                conteudo = self._render_docx(template_def, docx_ctx)
+            else:
+                conteudo = self._render_pdf(tipo, template_def, payload, docxtpl_context=docxtpl_context)
 
         digest = hashlib.sha256(conteudo).hexdigest()
         nome = build_document_filename(tipo, formato, reference=reference)
@@ -109,7 +115,11 @@ class DocumentoFacade:
         path = resolve_resource_docx(template_def.template_path)
         if not path.exists():
             raise FileNotFoundError(f"Template DOCX ausente: {path}")
-        return render_docx_bytes(template_path=path, context=payload)
+        with measure_step(
+            "render_docx",
+            {"template_path": template_def.template_path},
+        ):
+            return render_docx_bytes(template_path=path, context=payload)
 
     def _render_pdf(
         self,
@@ -127,47 +137,68 @@ class DocumentoFacade:
         if tipo == DocumentoTipo.OFICIO and not getattr(settings, "DOCUMENTOS_OFICIO_PDF_VIA_DOCX", True):
             prefer_docx = False
 
-        resolution = resolve_pdf_engine(
-            explicit_setting=explicit,
-            prefer_docx_pipeline=prefer_docx,
-        )
+        with measure_step("_render_pdf", {"tipo": tipo.value}):
+            with measure_step(
+                "resolve_pdf_engine",
+                {"tipo": tipo.value, "explicit": explicit, "prefer_docx": prefer_docx},
+            ):
+                resolution = resolve_pdf_engine(
+                    explicit_setting=explicit,
+                    prefer_docx_pipeline=prefer_docx,
+                )
 
-        if not resolution.attempt_chain:
-            raise DocumentValidationError(build_pdf_unavailable_message(resolution))
+            if not resolution.attempt_chain:
+                raise DocumentValidationError(build_pdf_unavailable_message(resolution))
 
-        last_error: BaseException | None = None
-        for eng in resolution.attempt_chain:
-            try:
-                if eng == "word_com":
-                    from documentos.services.adapters.word_pdf import convert_docx_to_pdf_word_com
+            last_error: BaseException | None = None
+            for eng in resolution.attempt_chain:
+                try:
+                    if eng == "word_com":
+                        from documentos.services.adapters.word_pdf import convert_docx_to_pdf_word_com
 
-                    docx_def = self._templates.get(tipo, DocumentoFormato.DOCX)
-                    docx_ctx = docxtpl_context if docxtpl_context is not None else payload
-                    docx_bytes = self._render_docx(docx_def, docx_ctx)
-                    return convert_docx_to_pdf_word_com(docx_bytes)
-                if eng == "libreoffice":
-                    return self._pdf_via_libreoffice(tipo, payload, docxtpl_context=docxtpl_context)
-                if eng == "weasyprint":
-                    from documentos.services.adapters.weasyprint_pdf import render_pdf_bytes_weasyprint
+                        docx_def = self._templates.get(tipo, DocumentoFormato.DOCX)
+                        docx_ctx = docxtpl_context if docxtpl_context is not None else payload
+                        docx_bytes = self._render_docx(docx_def, docx_ctx)
+                        with measure_step(
+                            "convert_docx_to_pdf",
+                            {"engine": "word_com", "tipo": tipo.value},
+                        ):
+                            return convert_docx_to_pdf_word_com(docx_bytes)
+                    if eng == "libreoffice":
+                        with measure_step(
+                            "convert_docx_to_pdf",
+                            {"engine": "libreoffice", "tipo": tipo.value},
+                        ):
+                            return self._pdf_via_libreoffice(tipo, payload, docxtpl_context=docxtpl_context)
+                    if eng == "weasyprint":
+                        from documentos.services.adapters.weasyprint_pdf import render_pdf_bytes_weasyprint
 
-                    return render_pdf_bytes_weasyprint(
-                        html_template_name=template_def.template_path,
-                        context=payload,
-                        stylesheet_paths=template_def.stylesheet_paths,
-                    )
-                if eng == "simple_fallback":
-                    from documentos.services.adapters.simple_pdf_fallback import render_simple_pdf_bytes
+                        with measure_step(
+                            "render_pdf_weasyprint",
+                            {"engine": "weasyprint", "tipo": tipo.value},
+                        ):
+                            return render_pdf_bytes_weasyprint(
+                                html_template_name=template_def.template_path,
+                                context=payload,
+                                stylesheet_paths=template_def.stylesheet_paths,
+                            )
+                    if eng == "simple_fallback":
+                        from documentos.services.adapters.simple_pdf_fallback import render_simple_pdf_bytes
 
-                    return render_simple_pdf_bytes(tipo=tipo, payload=payload)
-            except Exception as exc:
-                last_error = exc
-                logger.warning("Motor PDF %s falhou para %s: %s", eng, tipo.value, exc, exc_info=True)
-                continue
+                        with measure_step(
+                            "render_pdf_simple_fallback",
+                            {"engine": "simple_fallback", "tipo": tipo.value},
+                        ):
+                            return render_simple_pdf_bytes(tipo=tipo, payload=payload)
+                except Exception as exc:
+                    last_error = exc
+                    logger.warning("Motor PDF %s falhou para %s: %s", eng, tipo.value, exc, exc_info=True)
+                    continue
 
-        msg = build_pdf_unavailable_message(resolution)
-        if last_error is not None:
-            raise DocumentValidationError(msg) from last_error
-        raise DocumentValidationError(msg)
+            msg = build_pdf_unavailable_message(resolution)
+            if last_error is not None:
+                raise DocumentValidationError(msg) from last_error
+            raise DocumentValidationError(msg)
 
     def _pdf_via_libreoffice(
         self,

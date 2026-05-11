@@ -29,6 +29,7 @@ from roteiros.services import (
 
 from cadastros.models import Combustivel
 from documentos.services.downloads import download_documento_or_redirect_pdf_error
+from documentos.services.timing import measure_step
 from documentos.services.types import DocumentoFormato
 from ordens_servico.services import gerar_resposta_ordem_servico_documento
 from planos_trabalho.services import gerar_resposta_plano_trabalho_documento
@@ -519,12 +520,16 @@ def baixar_documento(request, pk, formato):
         messages.error(request, "Documento nao gerado porque o oficio esta incompleto.")
         alvo = redirect_para_corrigir_documento_oficio(oficio)
         return redirect(f"{alvo}?documento_incompleto=1")
-    return download_documento_or_redirect_pdf_error(
-        request,
-        oficio_id=oficio.pk,
-        formato=formato_documento,
-        gerar=lambda: gerar_resposta_documento_oficio(oficio, formato_documento),
-    )
+    with measure_step(
+        "http_baixar_documento",
+        {"oficio_id": oficio.pk, "formato": formato_documento.value},
+    ):
+        return download_documento_or_redirect_pdf_error(
+            request,
+            oficio_id=oficio.pk,
+            formato=formato_documento,
+            gerar=lambda: gerar_resposta_documento_oficio(oficio, formato_documento),
+        )
 
 
 def baixar_justificativa_documento(request, pk, formato):
@@ -539,12 +544,16 @@ def baixar_justificativa_documento(request, pk, formato):
         messages.error(request, "Documento nao gerado porque o oficio esta incompleto.")
         alvo = redirect_para_corrigir_documento_oficio(oficio)
         return redirect(f"{alvo}?documento_incompleto=1")
-    return download_documento_or_redirect_pdf_error(
-        request,
-        oficio_id=oficio.pk,
-        formato=formato_documento,
-        gerar=lambda: gerar_resposta_justificativa_documento(oficio, formato_documento),
-    )
+    with measure_step(
+        "http_baixar_justificativa_documento",
+        {"oficio_id": oficio.pk, "formato": formato_documento.value},
+    ):
+        return download_documento_or_redirect_pdf_error(
+            request,
+            oficio_id=oficio.pk,
+            formato=formato_documento,
+            gerar=lambda: gerar_resposta_justificativa_documento(oficio, formato_documento),
+        )
 
 
 def baixar_plano_trabalho_documento(request, pk, formato):
@@ -559,12 +568,16 @@ def baixar_plano_trabalho_documento(request, pk, formato):
         messages.error(request, "Documento nao gerado porque o oficio esta incompleto.")
         alvo = redirect_para_corrigir_documento_oficio(oficio)
         return redirect(f"{alvo}?documento_incompleto=1")
-    return download_documento_or_redirect_pdf_error(
-        request,
-        oficio_id=oficio.pk,
-        formato=formato_documento,
-        gerar=lambda: gerar_resposta_plano_trabalho_documento(oficio, formato_documento),
-    )
+    with measure_step(
+        "http_baixar_plano_trabalho_documento",
+        {"oficio_id": oficio.pk, "formato": formato_documento.value},
+    ):
+        return download_documento_or_redirect_pdf_error(
+            request,
+            oficio_id=oficio.pk,
+            formato=formato_documento,
+            gerar=lambda: gerar_resposta_plano_trabalho_documento(oficio, formato_documento),
+        )
 
 
 def baixar_ordem_servico_documento(request, pk, formato):
@@ -579,12 +592,16 @@ def baixar_ordem_servico_documento(request, pk, formato):
         messages.error(request, "Documento nao gerado porque o oficio esta incompleto.")
         alvo = redirect_para_corrigir_documento_oficio(oficio)
         return redirect(f"{alvo}?documento_incompleto=1")
-    return download_documento_or_redirect_pdf_error(
-        request,
-        oficio_id=oficio.pk,
-        formato=formato_documento,
-        gerar=lambda: gerar_resposta_ordem_servico_documento(oficio, formato_documento),
-    )
+    with measure_step(
+        "http_baixar_ordem_servico_documento",
+        {"oficio_id": oficio.pk, "formato": formato_documento.value},
+    ):
+        return download_documento_or_redirect_pdf_error(
+            request,
+            oficio_id=oficio.pk,
+            formato=formato_documento,
+            gerar=lambda: gerar_resposta_ordem_servico_documento(oficio, formato_documento),
+        )
 
 
 def excluir(request, pk):

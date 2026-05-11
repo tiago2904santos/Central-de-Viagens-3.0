@@ -12,6 +12,7 @@ from typing import Any
 from django.utils import timezone
 
 from cadastros.selectors import build_configuracao_context
+from documentos.services.timing import measure_step
 from documentos.services.formatters import format_city_uf
 from documentos.services.formatters import format_currency_br
 from documentos.services.formatters import format_document_display
@@ -399,6 +400,12 @@ def _diarias(oficio: Oficio) -> tuple[str, str]:
 
 
 def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
+    oid = getattr(oficio, "pk", None)
+    with measure_step("build_oficio_docxtpl_context", {"oficio_id": oid}):
+        return _build_oficio_docxtpl_context_impl(oficio)
+
+
+def _build_oficio_docxtpl_context_impl(oficio: Oficio) -> dict[str, Any]:
     inst = build_configuracao_context()
     nome_chefia, cargo_chefia = _assinatura_nome_cargo(inst)
     nome_orgao_raw = _txt(inst.get("nome_orgao"))
@@ -471,6 +478,12 @@ def _format_data_extenso(d: date) -> str:
 
 
 def build_justificativa_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
+    oid = getattr(oficio, "pk", None)
+    with measure_step("build_justificativa_docxtpl_context", {"oficio_id": oid}):
+        return _build_justificativa_docxtpl_context_impl(oficio)
+
+
+def _build_justificativa_docxtpl_context_impl(oficio: Oficio) -> dict[str, Any]:
     inst = build_configuracao_context()
     nome_a, cargo_a = _assinatura_nome_cargo(inst)
     unidade = _txt(inst.get("unidade")) or _txt(inst.get("nome_orgao")) or _txt(inst.get("sigla_orgao"))

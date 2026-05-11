@@ -8,6 +8,7 @@ from django.core.files.base import ContentFile
 
 from documentos.models import DocumentoArtefato
 from documentos.services.facade import DocumentoGerado
+from documentos.services.timing import measure_step
 
 
 def persist_geracao(
@@ -22,16 +23,25 @@ def persist_geracao(
     nome = doc.nome_arquivo
     arquivo = ContentFile(doc.conteudo, name=nome)
     payload_snapshot = dict(payload_snapshot or {})
-    return DocumentoArtefato.objects.create(
-        tipo=doc.tipo.value,
-        formato=doc.formato.value,
-        oficio_id=oficio_id,
-        servidor_id=servidor_id,
-        payload_snapshot=payload_snapshot,
-        hash_sha256=doc.hash_sha256,
-        arquivo=arquivo,
-        assinatura_backend="",
-    )
+    with measure_step(
+        "persist_geracao",
+        {
+            "tipo": doc.tipo.value,
+            "formato": doc.formato.value,
+            "oficio_id": oficio_id,
+            "servidor_id": servidor_id,
+        },
+    ):
+        return DocumentoArtefato.objects.create(
+            tipo=doc.tipo.value,
+            formato=doc.formato.value,
+            oficio_id=oficio_id,
+            servidor_id=servidor_id,
+            payload_snapshot=payload_snapshot,
+            hash_sha256=doc.hash_sha256,
+            arquivo=arquivo,
+            assinatura_backend="",
+        )
 
 
 def atualizar_apos_assinatura(

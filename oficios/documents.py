@@ -17,6 +17,7 @@ from cadastros.selectors import build_configuracao_context
 from justificativas.models import Justificativa
 from justificativas.services import oficio_exige_justificativa
 
+from documentos.services.timing import measure_step
 from documentos.services.types import DocumentoTipo
 
 from .models import Oficio
@@ -65,23 +66,28 @@ def build_canonical_document_payload(oficio: Oficio, tipo: DocumentoTipo) -> dic
     """Monta o contexto usado pelos templates registrados em documentos.services.templates."""
     from .services import build_oficio_document_payload
 
-    base = build_oficio_document_payload(oficio)
-    institucional = build_configuracao_context()
-    oficio_bloco = {
-        **base,
-        "roteiro_detalhe": _roteiro_resumo(oficio),
-    }
-    payload: dict[str, Any] = {
-        "institucional": institucional,
-        "oficio": oficio_bloco,
-        "justificativa": _justificativa_bloco(oficio),
-    }
+    oid = getattr(oficio, "pk", None)
+    with measure_step(
+        "build_canonical_document_payload",
+        {"oficio_id": oid, "tipo": tipo.value},
+    ):
+        base = build_oficio_document_payload(oficio)
+        institucional = build_configuracao_context()
+        oficio_bloco = {
+            **base,
+            "roteiro_detalhe": _roteiro_resumo(oficio),
+        }
+        payload: dict[str, Any] = {
+            "institucional": institucional,
+            "oficio": oficio_bloco,
+            "justificativa": _justificativa_bloco(oficio),
+        }
 
-    if tipo == DocumentoTipo.TERMO_AUTORIZACAO:
-        raise ValueError("Use build_termo_payload com participante e variante.")
-    if tipo in (DocumentoTipo.PLANO_TRABALHO, DocumentoTipo.ORDEM_SERVICO):
-        payload["em_elaboracao"] = True
-    return payload
+        if tipo == DocumentoTipo.TERMO_AUTORIZACAO:
+            raise ValueError("Use build_termo_payload com participante e variante.")
+        if tipo in (DocumentoTipo.PLANO_TRABALHO, DocumentoTipo.ORDEM_SERVICO):
+            payload["em_elaboracao"] = True
+        return payload
 
 
 def build_justificativa_payload(oficio: Oficio) -> dict[str, Any]:
