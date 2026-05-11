@@ -127,6 +127,11 @@ class Oficio(TimeStampedModel):
         default="",
         verbose_name="Protocolo do motorista",
     )
+    retificado_documento = models.BooleanField(
+        default=False,
+        verbose_name="Emitir como retificado",
+        help_text="Quando verdadeiro e o ofício seria Autorização por datas, o documento usa o rótulo Retificado.",
+    )
 
     class Meta:
         ordering = ["-data_criacao", "-created_at"]

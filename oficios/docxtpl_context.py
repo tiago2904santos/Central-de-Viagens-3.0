@@ -16,10 +16,8 @@ from justificativas.models import Justificativa
 
 from roteiros.models import RoteiroTrecho
 
+from .assunto_oficio import resolver_assunto_oficio
 from .models import Oficio
-
-ASSUNTO_AUTORIZACAO = "Solicitação de autorização e concessão de diárias."
-ASSUNTO_CONVALIDACAO = "Solicitação de convalidação e concessão de diárias."
 DESTINO_FORA_PARANA = "SESP"
 DESTINO_DENTRO_PARANA = "Gabinete do Delegado Geral Adjunto"
 
@@ -365,6 +363,7 @@ def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
     from core.utils.masks import format_protocolo
 
     protocolo = format_protocolo(oficio.protocolo)
+    assunto_doc = resolver_assunto_oficio(oficio)
 
     ctx: dict[str, Any] = {
         "oficio": oficio.numero_formatado if oficio.numero and oficio.ano else "—",
@@ -392,9 +391,9 @@ def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
         "col_volta_saida": volta_saida,
         "col_volta_chegada": volta_chegada,
         "col_solicitacao": "",
-        "assunto_linha": _txt(oficio.assunto) or ASSUNTO_AUTORIZACAO,
-        "assunto_oficio": "(Autorização)",
-        "assunto_termo": "autorização",
+        "assunto_linha": assunto_doc["assunto_linha"],
+        "assunto_oficio": assunto_doc["assunto_oficio"],
+        "assunto_termo": assunto_doc["assunto_termo"],
         "armamento": "Sim" if oficio.porte_transporte_armas else "Não",
         "motivo": _txt(oficio.motivo),
         "divisao": _hdr(inst.get("divisao")),
