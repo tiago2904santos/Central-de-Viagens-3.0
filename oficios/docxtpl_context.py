@@ -302,21 +302,38 @@ def _custeio_text(oficio: Oficio) -> str:
 
 
 def _motorista_formatado(oficio: Oficio) -> str:
+    from core.utils.masks import format_protocolo
+
+    def _append_refs(linhas: list[str]) -> str:
+        ref = _txt(oficio.motorista_oficio_referencia)
+        if ref:
+            linhas.append(f"Ofício do Motorista: {ref}")
+        prot = _txt(oficio.motorista_protocolo_ref)
+        if prot:
+            prot_fmt = format_protocolo(prot) or prot
+            linhas.append(f"Protocolo do Motorista: {prot_fmt}")
+        return "\n".join(linhas)
+
     if oficio.motorista_id:
         nome = _txt(oficio.motorista.nome)
-        return nome
+        nome_fmt = format_document_display(nome) if nome else ""
+        if not nome_fmt:
+            return ""
+        na_equipe = oficio.servidores.filter(pk=oficio.motorista_id).exists()
+        if na_equipe:
+            return nome_fmt
+        linhas = [nome_fmt]
+        if _txt(oficio.motorista_oficio_referencia) or _txt(oficio.motorista_protocolo_ref):
+            return _append_refs(linhas)
+        return nome_fmt
+
     if oficio.motorista_modo == Oficio.MOTORISTA_MODO_MANUAL:
         nome = _txt(oficio.motorista_manual_nome)
         if not nome:
             return ""
-        linhas = [nome]
-        ref = _txt(oficio.motorista_oficio_referencia)
-        if ref:
-            linhas.append(f"Ofício do motorista: {ref}")
-        prot = _txt(oficio.motorista_protocolo_ref)
-        if prot:
-            linhas.append(f"Protocolo do motorista: {prot}")
-        return "\n".join(linhas)
+        linhas = [format_document_display(nome)]
+        return _append_refs(linhas)
+
     return ""
 
 
