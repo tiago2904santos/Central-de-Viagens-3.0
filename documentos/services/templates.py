@@ -12,6 +12,8 @@ class DocumentTemplateDefinition:
     formato: DocumentoFormato
     template_path: str
     required_placeholders: tuple[str, ...] = ()
+    # Para PDF (WeasyPrint): caminhos relativos ao BASE_DIR ou paths absolutos para CSS.
+    stylesheet_paths: tuple[str, ...] = ()
 
 
 class DocumentTemplateRegistry:
@@ -49,11 +51,39 @@ def build_default_template_registry() -> DocumentTemplateRegistry:
             DocumentTemplateDefinition(
                 tipo=tipo,
                 formato=DocumentoFormato.DOCX,
-                template_path=f"documentos/{tipo.value}.docx",
+                template_path=f"{tipo.value}.docx",
                 required_placeholders=(),
+                stylesheet_paths=(),
+            ),
+        )
+        registry.register(
+            DocumentTemplateDefinition(
+                tipo=tipo,
+                formato=DocumentoFormato.PDF,
+                template_path=f"documentos/pdf/{tipo.value}.html",
+                required_placeholders=(),
+                stylesheet_paths=(
+                    f"templates/documentos/pdf/{tipo.value}.css",
+                    "templates/documentos/pdf/_base.css",
+                ),
             ),
         )
     return registry
+
+
+def canonical_required_keys(tipo: DocumentoTipo) -> tuple[str, ...]:
+    """Chaves obrigatórias no payload canônico usadas pela façade de geração."""
+    return _required_for_tipo(tipo)
+
+
+def _required_for_tipo(tipo: DocumentoTipo) -> tuple[str, ...]:
+    """Chaves mínimas esperadas no payload canônico (validação leve na façade)."""
+    base = ("institucional", "oficio")
+    if tipo == DocumentoTipo.JUSTIFICATIVA:
+        return ("institucional", "oficio", "justificativa")
+    if tipo == DocumentoTipo.TERMO_AUTORIZACAO:
+        return ("institucional", "oficio", "termo")
+    return base
 
 
 default_template_registry = build_default_template_registry()

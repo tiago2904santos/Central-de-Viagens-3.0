@@ -101,3 +101,40 @@ ROUTE_CACHE_ENABLED = os.getenv("ROUTE_CACHE_ENABLED", "true").lower() in ("1", 
 ROUTE_REQUEST_TIMEOUT_SECONDS = int(os.getenv("ROUTE_REQUEST_TIMEOUT_SECONDS", "12"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Armazenamento de artefatos documentais gerados (assinatura, auditoria).
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Núcleo documental (DOCX/PDF, conversão opcional, assinatura).
+DOCUMENTOS_RESOURCES_DIR = BASE_DIR / "documentos" / "resources"
+DOCUMENTOS_BASE_URL = os.getenv("DOCUMENTOS_BASE_URL", "").strip() or None
+DOCUMENTOS_DEFAULT_PDF_ENGINE = (os.getenv("DOCUMENTOS_DEFAULT_PDF_ENGINE") or "weasyprint").strip().lower()
+DOCUMENTOS_ENABLE_LIBREOFFICE = os.getenv("DOCUMENTOS_ENABLE_LIBREOFFICE", "").lower() in (
+    "1",
+    "true",
+    "yes",
+)
+DOCUMENTOS_LIBREOFFICE_BINARY = (os.getenv("DOCUMENTOS_LIBREOFFICE_BINARY") or "").strip() or None
+DOCUMENTOS_UNOSERVER_URL = (os.getenv("DOCUMENTOS_UNOSERVER_URL") or "").strip() or None
+DOCUMENTOS_TMP_DIR = Path(os.getenv("DOCUMENTOS_TMP_DIR", str(BASE_DIR / "media" / "tmp_documentos")))
+DOCUMENTOS_PERSIST_ARTEFATOS = os.getenv("DOCUMENTOS_PERSIST_ARTEFATOS", "true").lower() in (
+    "1",
+    "true",
+    "yes",
+)
+# Último recurso: PDF texto simples (fpdf2), sem fidelidade visual ao HTML — desligado em produção por padrão.
+DOCUMENTOS_SIMPLE_PDF_FALLBACK = os.getenv("DOCUMENTOS_SIMPLE_PDF_FALLBACK", "").lower() in (
+    "1",
+    "true",
+    "yes",
+)
+
+SIGNATURE_BACKEND = (os.getenv("SIGNATURE_BACKEND") or "disabled").strip().lower()
+SIGNATURE_PKCS12_PATH = (os.getenv("SIGNATURE_PKCS12_PATH") or "").strip() or None
+SIGNATURE_PKCS12_PASSWORD = (os.getenv("SIGNATURE_PKCS12_PASSWORD") or "").strip() or None
+SIGNATURE_REASON = os.getenv("SIGNATURE_REASON", "Documento institucional")
+SIGNATURE_LOCATION = os.getenv("SIGNATURE_LOCATION", "")
+SIGNATURE_VISIBLE = os.getenv("SIGNATURE_VISIBLE", "true").lower() in ("1", "true", "yes")
+
+TIMESTAMP_URL = (os.getenv("TIMESTAMP_URL") or "").strip() or None

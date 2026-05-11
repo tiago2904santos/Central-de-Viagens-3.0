@@ -61,6 +61,7 @@ from .services import criar_oficio_rascunho
 from .services import excluir_modelo_motivo
 from .services import excluir_oficio
 from .services import gerar_resposta_documento_oficio
+from .services import gerar_resposta_justificativa_documento
 from .services import garantir_roteiro_vinculado_ao_oficio
 from .services import redirect_para_corrigir_documento_oficio
 from .services import validar_oficio_para_documento
@@ -516,6 +517,21 @@ def baixar_documento(request, pk, formato):
         alvo = redirect_para_corrigir_documento_oficio(oficio)
         return redirect(f"{alvo}?documento_incompleto=1")
     return gerar_resposta_documento_oficio(oficio, formato_documento)
+
+
+def baixar_justificativa_documento(request, pk, formato):
+    oficio = get_oficio_by_id(pk)
+    try:
+        formato_documento = DocumentoFormato(formato)
+    except ValueError as exc:
+        raise Http404("Formato documental nao suportado.") from exc
+
+    avaliacao = validar_oficio_para_documento(oficio)
+    if avaliacao["pendencias"]:
+        messages.error(request, "Documento nao gerado porque o oficio esta incompleto.")
+        alvo = redirect_para_corrigir_documento_oficio(oficio)
+        return redirect(f"{alvo}?documento_incompleto=1")
+    return gerar_resposta_justificativa_documento(oficio, formato_documento)
 
 
 def excluir(request, pk):

@@ -1,3 +1,5 @@
+from .facade import DocumentoGerado
+from .facade import build_default_facade
 from .exceptions import DocumentError
 from .exceptions import DocumentRendererUnavailable
 from .exceptions import DocumentTemplateNotFound
@@ -31,6 +33,8 @@ from .validators import ValidationResult
 from .validators import ensure_required_fields
 
 __all__ = [
+    "DocumentoGerado",
+    "build_default_facade",
     "build_download_response",
     "build_document_filename",
     "default_document_registry",

@@ -123,7 +123,10 @@ def get_configuracao_sistema():
 def build_configuracao_context():
     configuracao = get_configuracao_sistema()
     assinaturas = {}
-    for assinatura in configuracao.assinaturas.select_related("servidor").order_by("tipo", "ordem"):
+    for assinatura in configuracao.assinaturas.select_related("servidor", "servidor__cargo").order_by(
+        "tipo",
+        "ordem",
+    ):
         if not assinatura.ativo or not assinatura.servidor_id:
             continue
         assinaturas.setdefault(assinatura.tipo, []).append(

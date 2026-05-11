@@ -10,9 +10,20 @@ from core.normalizers import normalize_upper
 from core.utils.masks import format_placa
 from core.utils.masks import format_protocolo
 from core.utils.masks import normalize_protocolo
+import logging
+
+from documentos.services.facade import build_default_facade
+from documentos.services.persistence import persist_geracao
 from documentos.services.responses import build_download_response
 from documentos.services.types import DocumentoFormato
 from documentos.services.types import DocumentoTipo
+
+from .docxtpl_context import build_justificativa_docxtpl_context
+from .docxtpl_context import build_oficio_docxtpl_context
+from .documents import build_canonical_document_payload
+from .documents import build_justificativa_payload
+
+logger = logging.getLogger(__name__)
 
 from .models import ModeloMotivoOficio
 from .models import Oficio
@@ -334,19 +345,55 @@ def redirect_para_corrigir_documento_oficio(oficio):
 
 
 def gerar_resposta_documento_oficio(oficio, formato: DocumentoFormato):
-    payload = build_oficio_document_payload(oficio)
+    payload = build_canonical_document_payload(oficio, DocumentoTipo.OFICIO)
+    docxtpl = build_oficio_docxtpl_context(oficio)
+    facade = build_default_facade()
     reference = oficio.numero_formatado.replace("/", "-")
-    content = (
-        f"Oficio {payload['numero_formatado']}\n"
-        f"Protocolo: {payload['protocolo']}\n"
-        f"Motivo: {payload['motivo']}\n"
-    ).encode("utf-8")
-    return build_download_response(
-        content=content,
+    doc = facade.gerar(
+        tipo=DocumentoTipo.OFICIO,
+        formato=formato,
+        payload=payload,
+        reference=reference,
+        docxtpl_context=docxtpl,
+    )
+    response = build_download_response(
+        content=doc.conteudo,
         tipo=DocumentoTipo.OFICIO,
         formato=formato,
         reference=reference,
     )
+    response["X-Document-SHA256"] = doc.hash_sha256
+    try:
+        persist_geracao(doc, oficio_id=oficio.pk, payload_snapshot=payload)
+    except Exception:
+        logger.exception("Não foi possível persistir artefato documental do ofício.")
+    return response
+
+
+def gerar_resposta_justificativa_documento(oficio, formato: DocumentoFormato):
+    payload = build_justificativa_payload(oficio)
+    docxtpl = build_justificativa_docxtpl_context(oficio)
+    facade = build_default_facade()
+    reference = f"{oficio.numero_formatado.replace('/', '-')}-justificativa"
+    doc = facade.gerar(
+        tipo=DocumentoTipo.JUSTIFICATIVA,
+        formato=formato,
+        payload=payload,
+        reference=reference,
+        docxtpl_context=docxtpl,
+    )
+    response = build_download_response(
+        content=doc.conteudo,
+        tipo=DocumentoTipo.JUSTIFICATIVA,
+        formato=formato,
+        reference=reference,
+    )
+    response["X-Document-SHA256"] = doc.hash_sha256
+    try:
+        persist_geracao(doc, oficio_id=oficio.pk, payload_snapshot=payload)
+    except Exception:
+        logger.exception("Não foi possível persistir artefato da justificativa.")
+    return response
 
 
 def _dados_viajantes_from_form(form):

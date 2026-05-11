@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -12,6 +13,11 @@ from .base import *
 
 
 DEBUG = True
+
+# No Windows, WeasyPrint costuma faltar GTK; LibreOffice pode não estar instalado.
+# Habilita PDF mínimo (fpdf2) como último recurso, salvo override explícito no .env.
+if sys.platform == "win32" and "DOCUMENTOS_SIMPLE_PDF_FALLBACK" not in os.environ:
+    DOCUMENTOS_SIMPLE_PDF_FALLBACK = True
 
 required_db_vars = ["DB_NAME", "DB_USER", "DB_PASSWORD"]
 missing_db_vars = [name for name in required_db_vars if not os.getenv(name)]
