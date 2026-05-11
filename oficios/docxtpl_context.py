@@ -11,6 +11,8 @@ from typing import Any
 from django.utils import timezone
 
 from cadastros.selectors import build_configuracao_context
+from documentos.services.formatters import format_city_uf
+from documentos.services.formatters import format_document_display
 
 from justificativas.models import Justificativa
 
@@ -169,14 +171,19 @@ def _assinatura_nome_cargo(inst: dict[str, Any]) -> tuple[str, str]:
 def _orgao_destino(oficio: Oficio) -> str:
     r = getattr(oficio, "roteiro", None)
     if not r:
-        return DESTINO_DENTRO_PARANA
-    for d in r.destinos.select_related("estado"):
-        if d.estado_id and d.estado.sigla != "PR":
-            return DESTINO_FORA_PARANA
-    for t in r.trechos.select_related("destino_estado"):
-        if t.destino_estado_id and t.destino_estado.sigla != "PR":
-            return DESTINO_FORA_PARANA
-    return DESTINO_DENTRO_PARANA
+        raw = DESTINO_DENTRO_PARANA
+    else:
+        raw = DESTINO_DENTRO_PARANA
+        for d in r.destinos.select_related("estado"):
+            if d.estado_id and d.estado.sigla != "PR":
+                raw = DESTINO_FORA_PARANA
+                break
+        else:
+            for t in r.trechos.select_related("destino_estado"):
+                if t.destino_estado_id and t.destino_estado.sigla != "PR":
+                    raw = DESTINO_FORA_PARANA
+                    break
+    return format_document_display(raw)
 
 
 def _build_column_lines(items: list[str], blank_lines: int = 1) -> str:
@@ -192,10 +199,12 @@ def _build_column_lines(items: list[str], blank_lines: int = 1) -> str:
 def _viajantes(oficio: Oficio) -> list[dict[str, str]]:
     out: list[dict[str, str]] = []
     for s in oficio.servidores.select_related("cargo").order_by("nome"):
+        nm = _txt(s.nome)
+        cg = _txt(s.cargo.nome if s.cargo_id else "")
         out.append(
             {
-                "nome": _txt(s.nome),
-                "cargo": _txt(s.cargo.nome if s.cargo_id else ""),
+                "nome": format_document_display(nm) if nm else "",
+                "cargo": format_document_display(cg) if cg else "",
                 "rg": _txt(s.rg_formatado),
                 "cpf": _txt(s.cpf_formatado),
             },
@@ -216,11 +225,11 @@ def _col_rgcpf(viajantes: list[dict[str, str]]) -> str:
 def _trecho_label(t: RoteiroTrecho) -> tuple[str, str]:
     def cidade_sigla(c, e):
         if c and e:
-            return f"{c.nome}/{e.sigla}"
+            return format_city_uf(f"{c.nome}/{e.sigla}")
         if c:
-            return c.nome
+            return format_document_display(c.nome)
         if e:
-            return e.sigla
+            return _txt(e.sigla).upper()
         return ""
 
     orig = cidade_sigla(t.origem_cidade, t.origem_estado)
@@ -265,7 +274,7 @@ def _destinos_bloco(oficio: Oficio) -> str:
     partes: list[str] = []
     for d in r.destinos.select_related("cidade", "estado").order_by("ordem", "pk"):
         if d.cidade_id and d.estado_id:
-            partes.append(f"{d.cidade.nome}/{d.estado.sigla}")
+            partes.append(format_city_uf(f"{d.cidade.nome}/{d.estado.sigla}"))
     return "\n".join(partes) if partes else ""
 
 
@@ -327,11 +336,15 @@ def _veiculo_bloco(oficio: Oficio) -> dict[str, str]:
         if oficio.transporte_combustivel_manual_id:
             comb = _txt(oficio.transporte_combustivel_manual.nome)
         tipo_v = _txt(oficio.get_transporte_tipo_manual_display() if oficio.transporte_tipo_manual else "")
+    modelo_d = format_document_display(modelo) if modelo else ""
+    comb_d = format_document_display(comb) if comb else ""
+    tipo_d = format_document_display(tipo_v) if tipo_v else ""
+    viatura_disp = modelo_d or placa or "—"
     return {
         "placa": placa,
-        "viatura": modelo or placa or "—",
-        "combustivel": comb,
-        "tipo_viatura": tipo_v,
+        "viatura": viatura_disp,
+        "combustivel": comb_d,
+        "tipo_viatura": tipo_d,
     }
 
 
@@ -352,7 +365,8 @@ def _diarias(oficio: Oficio) -> tuple[str, str]:
 def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
     inst = build_configuracao_context()
     nome_chefia, cargo_chefia = _assinatura_nome_cargo(inst)
-    unidade = _txt(inst.get("unidade")) or _txt(inst.get("nome_orgao")) or _txt(inst.get("sigla_orgao"))
+    unidade_raw = _txt(inst.get("unidade")) or _txt(inst.get("nome_orgao")) or _txt(inst.get("sigla_orgao"))
+    unidade = format_document_display(unidade_raw) if unidade_raw else ""
     viajantes = _viajantes(oficio)
     ida, volta = _roteiro_trechos(oficio)
     ida_saida, ida_chegada = _route_columns(ida)
@@ -369,10 +383,10 @@ def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
         "oficio": oficio.numero_formatado if oficio.numero and oficio.ano else "—",
         "data_do_oficio": data_of,
         "protocolo": protocolo,
-        "nome_chefia": nome_chefia,
-        "cargo_chefia": cargo_chefia,
-        "unidade": _txt(unidade),
-        "unidade_cabecalho": _hdr(unidade),
+        "nome_chefia": format_document_display(nome_chefia) if nome_chefia else "",
+        "cargo_chefia": format_document_display(cargo_chefia) if cargo_chefia else "",
+        "unidade": unidade,
+        "unidade_cabecalho": unidade,
         "orgao_destino": _orgao_destino(oficio),
         "placa": v["placa"],
         "viatura": v["viatura"],
@@ -395,12 +409,12 @@ def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
         "assunto_oficio": assunto_doc["assunto_oficio"],
         "assunto_termo": assunto_doc["assunto_termo"],
         "armamento": "Sim" if oficio.porte_transporte_armas else "Não",
-        "motivo": _txt(oficio.motivo),
-        "divisao": _hdr(inst.get("divisao")),
+        "motivo": format_document_display(_txt(oficio.motivo)) if _txt(oficio.motivo) else "",
+        "divisao": format_document_display(_txt(inst.get("divisao"))) if _txt(inst.get("divisao")) else "",
         "email": _txt(inst.get("email")),
         "endereco": _build_endereco(inst),
         "telefone": _txt(inst.get("telefone_formatado") or inst.get("telefone")),
-        "unidade_rodape": _txt(unidade),
+        "unidade_rodape": unidade,
     }
     for key in OFICIO_DOCXTPL_KEYS:
         ctx.setdefault(key, "")
