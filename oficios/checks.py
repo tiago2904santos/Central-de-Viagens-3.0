@@ -8,6 +8,7 @@ from django.urls import NoReverseMatch, reverse
 _WIZARD_ROUTE_TESTS = (
     ("oficios:wizard_justificativa", [1]),
     ("oficios:wizard_documentos", [1]),
+    ("oficios:wizard_assinaturas", [1]),
     ("oficios:wizard_resumo", [1]),
 )
 

@@ -227,3 +227,74 @@
   display: inline-flex;
   margin-inline-start: auto;
 }
+
+.oficios-assinaturas-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+  margin-bottom: var(--space-5, 1.25rem);
+}
+
+.oficios-assinaturas-tabs__btn {
+  border: 1px solid var(--color-border-soft, #e3eaf2);
+  background: var(--color-surface, #fff);
+  color: var(--color-heading, #071a33);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.oficios-assinaturas-tabs__btn:hover {
+  border-color: var(--color-border-strong, #c5d3e3);
+  background: var(--color-surface-muted, #f4f7fb);
+}
+
+.oficios-assinaturas-tabs__btn--active {
+  border-color: var(--color-primary-strong, #0b5cab);
+  background: var(--color-primary-soft, #e8f1fc);
+  color: var(--color-primary-strong, #0b5cab);
+}
+
+.oficios-assinaturas-panel__viewer {
+  min-height: 50vh;
+  margin-top: var(--space-4, 1rem);
+}
+
+.oficios-assinaturas-termo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  margin-bottom: var(--space-3, 0.75rem);
+}
+
+.oficios-assinaturas-termo-toolbar__label {
+  font-weight: 600;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-heading, #071a33);
+}
+
+.oficios-assinaturas-termo-toolbar__select {
+  min-width: 12rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-soft, #e3eaf2);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.oficios-assinaturas-termo-erro {
+  margin-bottom: var(--space-3, 0.75rem);
+}
+
+.oficios-assinaturas-termo-meta {
+  margin-bottom: var(--space-3, 0.75rem);
+}
+
+.oficios-assinaturas-footer {
+  margin-top: var(--space-6, 1.5rem);
+  padding-top: var(--space-4, 1rem);
+  border-top: 1px solid var(--color-border-soft, #e3eaf2);
+}

@@ -266,6 +266,7 @@ def apresentar_oficio_wizard_header(etapa_atual):
         "roteiro": "Roteiro e diárias",
         "justificativa": "Justificativa",
         "documentos": "Documentos",
+        "assinaturas": "Assinaturas",
         "resumo": "Documentos",
     }
     return {
@@ -309,6 +310,7 @@ def apresentar_oficio_wizard_steps(
     roteiro_status=None,
     justificativa_status=None,
     documentos_status=None,
+    assinaturas_status=None,
 ):
     dados_viajantes_status = dados_viajantes_status or "not_started"
     transporte_status = transporte_status or "not_started"
@@ -322,12 +324,15 @@ def apresentar_oficio_wizard_steps(
     else:
         justificativa_status = justificativa_status or "not_started"
     documentos_status = documentos_status or "not_started"
+    if assinaturas_status is None:
+        assinaturas_status = documentos_status
     steps = [
         {"key": "dados_viajantes", "number": 1, "title": "Dados e viajantes"},
         {"key": "transporte", "number": 2, "title": "Transporte"},
         {"key": "roteiro", "number": 3, "title": "Roteiro e diárias"},
         {"key": "justificativa", "number": 4, "title": "Justificativa"},
         {"key": "documentos", "number": 5, "title": "Documentos"},
+        {"key": "assinaturas", "number": 6, "title": "Assinaturas"},
     ]
     for step in steps:
         key = step["key"]
@@ -351,6 +356,10 @@ def apresentar_oficio_wizard_steps(
             step["url"] = reverse("oficios:wizard_documentos", args=[oficio.pk]) if oficio else ""
             step["state"] = "current" if etapa_atual == key else documentos_status
             step["completion_state"] = documentos_status
+        elif key == "assinaturas":
+            step["url"] = reverse("oficios:wizard_assinaturas", args=[oficio.pk]) if oficio else ""
+            step["state"] = "current" if etapa_atual == key else assinaturas_status
+            step["completion_state"] = assinaturas_status
         else:
             step["url"] = ""
             step["state"] = "locked"
