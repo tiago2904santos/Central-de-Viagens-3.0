@@ -490,12 +490,10 @@
             {% elif documentos_ctx.generation_status.oficio_pdf_signature_status == "unsigned" %}
               <span class="oficio-documentos-sig-badge oficio-documentos-sig-badge--unsigned" role="status">PDF sem assinatura digital</span>
             {% endif %}
-            <button
+            <a
               class="btn btn-secondary app-btn app-btn--secondary"
-              type="submit"
-              formmethod="post"
-              formaction="{% url 'oficios:wizard_assinar_pdf_oficio' oficio.pk %}"
-            >Assinar PDF</button>
+              href="{% url 'oficios:wizard_assinar_pdf_oficio' oficio.pk %}"
+            >Assinar PDF</a>
             <button
               class="btn btn-secondary app-btn app-btn--secondary"
               type="button"

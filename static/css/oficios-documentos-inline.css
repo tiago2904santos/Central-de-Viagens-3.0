@@ -157,3 +157,73 @@
 .oficio-documentos-sig-hint code {
   font-size: 0.85em;
 }
+
+.oficio-assinatura-pdf__intro {
+  margin-bottom: var(--space-5, 1.25rem);
+}
+
+.oficio-assinatura-pdf__title {
+  font-size: var(--font-size-xl, 1.25rem);
+  font-weight: 700;
+  color: var(--color-heading, #071a33);
+  margin: 0 0 var(--space-2, 0.5rem);
+}
+
+.oficio-assinatura-pdf__subtitle {
+  margin: 0;
+  color: var(--color-muted, #52657a);
+  font-size: var(--font-size-sm, 0.9375rem);
+  line-height: 1.45;
+}
+
+.oficio-assinatura-pdf__meta {
+  margin-bottom: var(--space-5, 1.25rem);
+}
+
+.oficio-assinatura-pdf__mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  word-break: break-all;
+}
+
+.oficio-assinatura-pdf__hint {
+  margin-top: var(--space-3, 0.75rem);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.oficio-assinatura-pdf__preview {
+  margin-bottom: var(--space-5, 1.25rem);
+}
+
+.oficio-assinatura-pdf__mvp {
+  margin-bottom: var(--space-5, 1.25rem);
+  padding: var(--space-4, 1rem);
+  border-radius: 12px;
+  background: var(--color-surface-muted, #f4f7fb);
+  border: 1px solid var(--color-border-soft, #e3eaf2);
+}
+
+.oficio-assinatura-pdf__mvp-title {
+  margin: 0 0 var(--space-2, 0.5rem);
+  font-size: var(--font-size-md, 1rem);
+  font-weight: 600;
+  color: var(--color-heading, #071a33);
+}
+
+.oficio-assinatura-pdf__mvp-text {
+  margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-muted, #52657a);
+  line-height: 1.45;
+}
+
+.oficio-assinatura-pdf__actions {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+}
+
+.oficio-assinatura-pdf__confirm-form {
+  display: inline-flex;
+  margin-inline-start: auto;
+}

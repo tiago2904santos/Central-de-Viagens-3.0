@@ -34,7 +34,7 @@ from assinaturas.services.verification import verificar_artefato_documento
 from documentos.selectors import get_latest_artefato_pdf_for_oficio
 from documentos.services.downloads import download_documento_or_redirect_pdf_error
 from documentos.services.warm_cache import pdf_artefato_original_acessivel
-from documentos.views import build_assinatura_pdf_http_response
+from documentos.services.signing.workflow import assinar_artefato_pdf
 from documentos.services.responses import build_inline_pdf_response_from_download_response
 from documentos.services.timing import measure_step
 from documentos.services.types import DocumentoFormato
@@ -507,7 +507,6 @@ def _resolver_artefato_pdf_oficio_para_assinatura(request, oficio):
     return art
 
 
-@require_POST
 def wizard_assinar_pdf_oficio(request, pk):
     oficio = get_oficio_by_id(pk)
     if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
@@ -519,7 +518,47 @@ def wizard_assinar_pdf_oficio(request, pk):
     art = _resolver_artefato_pdf_oficio_para_assinatura(request, oficio)
     if art is None:
         return redirect(reverse("oficios:wizard_documentos", args=[pk]))
-    return build_assinatura_pdf_http_response(request, art)
+
+    if request.method == "POST":
+        try:
+            assinar_artefato_pdf(request, art)
+        except Exception as exc:  # noqa: BLE001
+            messages.error(request, f"Não foi possível assinar o PDF: {exc}")
+            return redirect(reverse("oficios:wizard_documentos", args=[pk]))
+        messages.success(request, "PDF assinado com sucesso.")
+        return redirect(reverse("oficios:wizard_documentos", args=[pk]))
+
+    aval_doc = validar_oficio_para_documento(oficio)
+    doc_status = "complete" if aval_doc["status"] == "complete" else "incomplete"
+    dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)
+    transp_av = avaliar_oficio_transporte(oficio)
+    roteiro_av = _wizard_roteiro_step_status(oficio)
+    pdf_preview_url = reverse("documentos:artefato_pdf_conteudo", args=[art.pk])
+    pdf_visualizar_url = reverse("documentos:artefato_pdf_visualizar", args=[art.pk])
+    ja_assinado = bool((art.hash_sha256_assinado or "").strip() and getattr(art.arquivo_assinado, "name", ""))
+
+    return render(
+        request,
+        "oficios/wizard_assinatura_pdf.html",
+        {
+            "page_title": "Assinar PDF",
+            "wizard_header": apresentar_oficio_wizard_header("documentos"),
+            "wizard_steps": apresentar_oficio_wizard_steps(
+                oficio=oficio,
+                etapa_atual="documentos",
+                dados_viajantes_status=dados_av["status"],
+                transporte_status=transp_av["status"],
+                roteiro_status=roteiro_av,
+                documentos_status=doc_status,
+            ),
+            "wizard_summary": apresentar_oficio_wizard_summary(oficio),
+            "oficio": oficio,
+            "artefato": art,
+            "pdf_preview_url": pdf_preview_url,
+            "pdf_visualizar_url": pdf_visualizar_url,
+            "ja_assinado": ja_assinado,
+        },
+    )
 
 
 @require_GET
