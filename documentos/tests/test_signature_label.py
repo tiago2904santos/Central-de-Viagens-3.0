@@ -13,6 +13,7 @@ from documentos.services.signing.label_overlay import aplicar_etiqueta_assinatur
 from documentos.services.signing.position import SignaturePositionNormalizada
 from documentos.services.signing.position import parse_signature_position_from_post
 from documentos.services.signing.workflow import assinar_artefato_pdf
+from documentos.services.signing.workflow import contar_paginas_pdf_artefato
 from oficios.models import Oficio
 
 
@@ -156,5 +157,18 @@ class WizardAssinaturaCamposEtiquetaTests(TestCase):
         request.user = self.user
         out = assinar_artefato_pdf(request, self.art, signature_position=pos)
         self.assertIn("pdf_bytes", out)
+        self.assertIn(b"DOCUMENTO ASSINADO", out["pdf_bytes"])
+
+    def test_contar_paginas_antes_de_assinar_nao_esvazia_leitura(self):
+        """Mesma ordem da view: contar páginas (read) e depois assinar (read de novo)."""
+        from django.test import RequestFactory
+
+        self.assertGreaterEqual(contar_paginas_pdf_artefato(self.art), 1)
+        pos = SignaturePositionNormalizada(0, 0.1, 0.1, 0.45, 0.12)
+        rf = RequestFactory()
+        request = rf.get("/")
+        request.META["HTTP_HOST"] = "testserver"
+        request.user = self.user
+        out = assinar_artefato_pdf(request, self.art, signature_position=pos)
         self.assertIn(b"DOCUMENTO ASSINADO", out["pdf_bytes"])
 
