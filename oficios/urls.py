@@ -31,6 +31,16 @@ urlpatterns = [
         views.baixar_justificativa_documento,
         name="baixar_justificativa_documento",
     ),
+    path(
+        "<int:pk>/documentos/plano-trabalho/<str:formato>/",
+        views.baixar_plano_trabalho_documento,
+        name="baixar_plano_trabalho_documento",
+    ),
+    path(
+        "<int:pk>/documentos/ordem-servico/<str:formato>/",
+        views.baixar_ordem_servico_documento,
+        name="baixar_ordem_servico_documento",
+    ),
     path("<int:pk>/documentos/<str:formato>/", views.baixar_documento, name="baixar_documento"),
     path("<int:pk>/excluir/", views.excluir, name="excluir"),
 ]

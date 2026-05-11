@@ -1,5 +1,10 @@
 """
 Payloads canônicos para o núcleo documental (templates DOCX/PDF).
+
+Os modelos DOCX ``termo_autorizacao.docx``, ``plano_trabalho.docx`` e ``ordem_servico.docx``
+usam placeholders **aninhados** (ex.: ``{{ oficio.numero_formatado }}``, ``{{ termo.participante.nome }}``).
+Para esses tipos, a ``DocumentoFacade`` recebe o payload canónico diretamente (sem ``docxtpl_context`` plano).
+O ofício e a justificativa legados usam chaves planas e ``oficios.docxtpl_context``.
 """
 
 from __future__ import annotations

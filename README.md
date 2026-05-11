@@ -38,6 +38,10 @@ Se a politica de execucao bloquear scripts, use o CMD.
 pip install -r requirements/dev.txt
 ```
 
+## Geração de documentos (DOCX / PDF)
+
+Variáveis de ambiente, motores WeasyPrint vs LibreOffice, placeholders planos vs aninhados e fallback em Windows estão descritos em [docs/documentos.md](docs/documentos.md).
+
 ## Configurar .env
 
 Copie `.env.example` para `.env` e ajuste as variaveis locais:

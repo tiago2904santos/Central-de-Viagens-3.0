@@ -4,6 +4,8 @@
     <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'docx' %}">DOCX</a>
     <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">PDF</a>
     <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_justificativa_documento' oficio.pk 'pdf' %}">Justificativa PDF</a>
+    <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_plano_trabalho_documento' oficio.pk 'docx' %}">Plano DOCX</a>
+    <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_ordem_servico_documento' oficio.pk 'docx' %}">Ordem serviço DOCX</a>
     <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'termos:preview_termo_oficio' oficio.pk %}">Termos</a>
   {% endif %}
   <button class="btn btn-secondary app-btn app-btn--secondary" type="submit" name="action" value="save_draft">Salvar rascunho</button>

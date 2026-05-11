@@ -49,6 +49,7 @@ def gerar_termo_um(
     )
     ref = f"{oficio.numero_formatado.replace('/', '-')}-termo-{servidor.pk}"
     facade = build_default_facade()
+    # DOCX do termo segue placeholders aninhados ({{ oficio.* }}, {{ termo.participante.* }}).
     return facade.gerar(
         tipo=DocumentoTipo.TERMO_AUTORIZACAO,
         formato=formato,
