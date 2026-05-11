@@ -8,10 +8,14 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.http import require_GET
 
 from cadastros.models import Servidor
 
+from documentos.services.responses import build_inline_pdf_response
 from documentos.services.types import DocumentoFormato
+from documentos.services.types import DocumentoTipo
 
 from oficios.selectors import get_oficio_by_id
 from oficios.services import redirect_para_corrigir_documento_oficio
@@ -62,6 +66,31 @@ def preview_termo_oficio(request, pk):
             "preview_json": json.dumps(ctx, cls=DjangoJSONEncoder, ensure_ascii=False, indent=2),
             "validacao": aval,
         },
+    )
+
+
+@require_GET
+def termo_servidor_pdf_inline(request, pk, servidor_pk):
+    oficio = get_oficio_by_id(pk)
+    aval = validar_oficio_para_documento(oficio)
+    if aval["pendencias"]:
+        messages.error(request, "Termo nao gerado: oficio incompleto.")
+        return redirect(f"{redirect_para_corrigir_documento_oficio(oficio)}?documento_incompleto=1")
+
+    servidor = get_object_or_404(Servidor, pk=servidor_pk)
+    if not oficio.servidores.filter(pk=servidor.pk).exists():
+        raise Http404("Servidor nao participa deste oficio.")
+
+    modo = request.GET.get("semipreenchido") == "1"
+    doc = gerar_termo_um(oficio, servidor, DocumentoFormato.PDF, modo_semipreenchido=modo)
+    ref = f"{oficio.numero_formatado.replace('/', '-')}-termo-{servidor.pk}"
+    return build_inline_pdf_response(
+        request,
+        content=doc.conteudo,
+        tipo=DocumentoTipo.TERMO_AUTORIZACAO,
+        reference=ref,
+        now=timezone.now(),
+        x_document_sha256=doc.hash_sha256,
     )
 
 

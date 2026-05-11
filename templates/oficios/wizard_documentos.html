@@ -1,4 +1,10 @@
 {% extends "oficios/wizard_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/oficios-documentos-inline.css' %}">
+{% endblock %}
 
 {% block wizard_content %}
   {% if mostrar_pendencias %}
@@ -19,6 +25,101 @@
       </div>
     </section>
   {% endif %}
+
+  <section class="document-inline-stack" aria-labelledby="documentos-conferencia-title">
+    <h2 class="document-inline-stack__heading" id="documentos-conferencia-title">Documentos para conferência</h2>
+
+    {% with di=documentos_ctx.documentos_inline %}
+      <details class="document-inline-card" open>
+        <summary class="document-inline-card__header">
+          <span class="document-inline-card__title">{{ di.oficio.titulo }}</span>
+          <span class="document-inline-card__badge">Inline</span>
+        </summary>
+        <div class="document-inline-card__body">
+          {% if di.oficio.disponivel %}
+            <div class="document-inline-viewer">
+              <iframe
+                class="document-inline-viewer__frame"
+                src="{{ di.oficio.url }}"
+                title="Visualização do ofício em PDF"
+                loading="lazy"
+              ></iframe>
+            </div>
+            <div class="document-inline-actions">
+              <a class="document-inline-actions__link" href="{{ di.oficio.url }}" target="_blank" rel="noopener">Abrir em nova aba</a>
+              <a class="document-inline-actions__link" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">Baixar PDF</a>
+            </div>
+          {% else %}
+            <p class="document-inline-empty">{{ di.oficio.mensagem }}</p>
+          {% endif %}
+        </div>
+      </details>
+
+      <details class="document-inline-card document-inline-card--lazy" data-lazy-inline>
+        <summary class="document-inline-card__header">
+          <span class="document-inline-card__title">{{ di.justificativa.titulo }}</span>
+          <span class="document-inline-card__badge">Inline</span>
+        </summary>
+        <div class="document-inline-card__body">
+          {% if di.justificativa.disponivel %}
+            <div class="document-inline-viewer">
+              <iframe
+                class="document-inline-viewer__frame"
+                data-src="{{ di.justificativa.url }}"
+                title="Visualização da justificativa em PDF"
+                loading="lazy"
+              ></iframe>
+            </div>
+            <div class="document-inline-actions">
+              <a class="document-inline-actions__link" href="{{ di.justificativa.url }}" target="_blank" rel="noopener">Abrir em nova aba</a>
+              <a class="document-inline-actions__link" href="{% url 'oficios:baixar_justificativa_documento' oficio.pk 'pdf' %}">Baixar PDF</a>
+            </div>
+          {% else %}
+            <p class="document-inline-empty">{{ di.justificativa.mensagem }}</p>
+          {% endif %}
+        </div>
+      </details>
+
+      <details class="document-inline-card document-inline-card--termos">
+        <summary class="document-inline-card__header">
+          <span class="document-inline-card__title">Termos de Autorização</span>
+          <span class="document-inline-card__badge">Inline</span>
+        </summary>
+        <div class="document-inline-card__body document-inline-card__body--termos">
+          {% if di.termos_vazio %}
+            <p class="document-inline-empty">Nenhum viajante vinculado ao ofício para gerar termos.</p>
+          {% else %}
+            {% for t in di.termos %}
+              <details class="document-inline-card document-inline-card--nested document-inline-card--lazy" data-lazy-inline>
+                <summary class="document-inline-card__header">
+                  <span class="document-inline-card__title">{{ t.titulo }}</span>
+                  <span class="document-inline-card__badge">Inline</span>
+                </summary>
+                <div class="document-inline-card__body">
+                  {% if t.disponivel %}
+                    <div class="document-inline-viewer">
+                      <iframe
+                        class="document-inline-viewer__frame"
+                        data-src="{{ t.url }}"
+                        title="Termo de autorização — {{ t.servidor_nome }}"
+                        loading="lazy"
+                      ></iframe>
+                    </div>
+                    <div class="document-inline-actions">
+                      <a class="document-inline-actions__link" href="{{ t.url }}" target="_blank" rel="noopener">Abrir em nova aba</a>
+                      <a class="document-inline-actions__link" href="{% url 'termos:baixar_termo_servidor' oficio.pk t.servidor_pk 'pdf' %}">Baixar PDF</a>
+                    </div>
+                  {% else %}
+                    <p class="document-inline-empty">{{ di.mensagem_indisponivel }}</p>
+                  {% endif %}
+                </div>
+              </details>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </details>
+    {% endwith %}
+  </section>
 
   <div class="oficio-documentos-grid">
     <article class="oficio-documentos-card oficio-documentos-card--admin">
@@ -381,13 +482,7 @@
       {% else %}
         <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">PDF</a>
       {% endif %}
-      {% if documentos_ctx.oficio_pdf_visualizar_url %}
-        <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ documentos_ctx.oficio_pdf_visualizar_url }}" target="_blank" rel="noopener">Visualizar PDF</a>
-      {% endif %}
       <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_justificativa_documento' oficio.pk 'pdf' %}">Justificativa PDF</a>
-      {% if documentos_ctx.justificativa_pdf_visualizar_url %}
-        <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ documentos_ctx.justificativa_pdf_visualizar_url }}" target="_blank" rel="noopener">Visualizar justificativa</a>
-      {% endif %}
       <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_plano_trabalho_documento' oficio.pk 'docx' %}">Plano DOCX</a>
       <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_ordem_servico_documento' oficio.pk 'docx' %}">Ordem serviço DOCX</a>
       <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'termos:preview_termo_oficio' oficio.pk %}">Termos</a>
@@ -402,4 +497,9 @@
   {% if documentos_ctx.generation_status %}
     <p class="doc-muted oficio-documentos-pdf-hint" role="status">{{ documentos_ctx.generation_status.pdf_message }}</p>
   {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+  <script src="{% static 'js/pages/oficios-documentos-inline.js' %}" defer></script>
 {% endblock %}

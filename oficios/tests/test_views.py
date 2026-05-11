@@ -1,5 +1,7 @@
-from django.contrib.auth import get_user_model
 from pathlib import Path
+from unittest import mock
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -80,6 +82,20 @@ class OficioViewsTests(TestCase):
         Oficio.objects.create(numero=1, ano=timezone.localdate().year, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
         response = self.client.get(reverse("oficios:index"))
         self.assertContains(response, "Rascunho")
+
+    def test_lista_inclui_link_visualizar_documento(self):
+        oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
+        response = self.client.get(reverse("oficios:index"))
+        self.assertContains(response, "Visualizar documento")
+        self.assertContains(response, reverse("oficios:wizard_documentos", args=[oficio.pk]))
+
+    @mock.patch("documentos.services.warm_cache.ensure_document_artifact_cached")
+    def test_wizard_documentos_exibe_secao_conferencia(self, _m_cache):
+        oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
+        response = self.client.get(reverse("oficios:wizard_documentos", args=[oficio.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Documentos para conferência")
+        self.assertNotContains(response, "Visualizar documento")
 
     def test_get_detalhe_retorna_200(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)

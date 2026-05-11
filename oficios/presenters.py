@@ -231,16 +231,25 @@ def apresentar_opcoes_documentais_oficio(oficio):
     ]
 
 
-def apresentar_acoes_oficio(*, detalhe_url: str, editar_url: str, excluir_url: str):
-    return [
-        action
-        for action in [
-            build_action("Abrir", detalhe_url),
+def apresentar_acoes_oficio(
+    *,
+    detalhe_url: str,
+    editar_url: str,
+    excluir_url: str,
+    visualizar_documento_url: str | None = None,
+):
+    actions = [
+        build_action("Abrir", detalhe_url),
+    ]
+    if visualizar_documento_url:
+        actions.append(build_action("Visualizar documento", visualizar_documento_url))
+    actions.extend(
+        [
             build_edit_action(editar_url),
             build_delete_action(excluir_url),
-        ]
-        if action
-    ]
+        ],
+    )
+    return [a for a in actions if a]
 
 
 def apresentar_oficio_wizard_header(etapa_atual):
@@ -395,7 +404,6 @@ def apresentar_linha_lista_simples_modelo_motivo(modelo, edit_url="#", delete_ur
 
 def apresentar_oficio_wizard_documentos_context(oficio):
     """Dados exibidos na etapa 5 (documentos / resumo final)."""
-    from django.conf import settings
     from django.urls import reverse
     from django.utils import timezone
 
@@ -458,31 +466,51 @@ def apresentar_oficio_wizard_documentos_context(oficio):
 
     justificativa_resumo = _montar_justificativa_resumo_documentos(j_et, j_obj, texto_j)
 
-    from documentos.selectors import get_latest_artefato_pdf_for_oficio
-    from documentos.services.access import artefato_has_readable_pdf
-    from documentos.services.types import DocumentoTipo
-
     from oficios.document_generation import get_document_generation_status
+    from oficios.services import validar_oficio_para_documento
 
     generation_status = get_document_generation_status(oficio)
 
-    persist = getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False)
-    oficio_art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
-    just_art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.JUSTIFICATIVA.value)
+    pendencias_doc = list(validar_oficio_para_documento(oficio).get("pendencias") or [])
+    doc_ok = not pendencias_doc
+    pdf_ok = bool(generation_status.get("pdf_available"))
+    disponivel = doc_ok and pdf_ok
+    if not doc_ok:
+        doc_msg = "Complete o ofício para gerar e consultar os documentos."
+    elif not pdf_ok:
+        doc_msg = generation_status.get("pdf_message") or "PDF indisponível."
+    else:
+        doc_msg = ""
 
-    oficio_pdf_visualizar_url = None
-    if generation_status.get("pdf_available") and generation_status.get("docx_available"):
-        if persist and oficio_art and artefato_has_readable_pdf(oficio_art):
-            oficio_pdf_visualizar_url = reverse("documentos:artefato_pdf_visualizar", args=[oficio_art.pk])
-        else:
-            oficio_pdf_visualizar_url = reverse("oficios:visualizar_pdf_oficio", args=[oficio.pk])
+    termos_items = []
+    for servidor in oficio.servidores.order_by("nome"):
+        termos_items.append(
+            {
+                "titulo": f"Termo de Autorização — {servidor.nome}",
+                "servidor_nome": servidor.nome,
+                "servidor_pk": servidor.pk,
+                "url": reverse("termos:termo_servidor_pdf_inline", args=[oficio.pk, servidor.pk]),
+                "disponivel": disponivel,
+            },
+        )
 
-    justificativa_pdf_visualizar_url = None
-    if generation_status.get("pdf_available") and generation_status.get("docx_available"):
-        if persist and just_art and artefato_has_readable_pdf(just_art):
-            justificativa_pdf_visualizar_url = reverse("documentos:artefato_pdf_visualizar", args=[just_art.pk])
-        else:
-            justificativa_pdf_visualizar_url = reverse("oficios:visualizar_justificativa_pdf", args=[oficio.pk])
+    documentos_inline = {
+        "oficio": {
+            "titulo": "Documento original (Ofício)",
+            "url": reverse("oficios:oficio_pdf_inline", args=[oficio.pk]),
+            "disponivel": disponivel,
+            "mensagem": doc_msg,
+        },
+        "justificativa": {
+            "titulo": "Justificativa",
+            "url": reverse("oficios:justificativa_pdf_inline", args=[oficio.pk]),
+            "disponivel": disponivel,
+            "mensagem": doc_msg,
+        },
+        "termos": termos_items,
+        "termos_vazio": not termos_items,
+        "mensagem_indisponivel": doc_msg,
+    }
 
     return {
         "detalhe": detalhe,
@@ -505,7 +533,6 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         "valor_diarias_display": _format_brl_diarias(roteiro.valor_diarias if roteiro else None),
         "valor_diarias_extenso": (roteiro.valor_diarias_extenso if roteiro else "") or "—",
         "generation_status": generation_status,
-        "oficio_pdf_visualizar_url": oficio_pdf_visualizar_url,
-        "justificativa_pdf_visualizar_url": justificativa_pdf_visualizar_url,
+        "documentos_inline": documentos_inline,
     }
 
