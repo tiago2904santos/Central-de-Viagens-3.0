@@ -17,7 +17,11 @@ class ServicoAssinaturaPDF:
         return assinar_pdf_final(pdf_bytes)
 
 
-def assinar_pdf_final(pdf_bytes: bytes) -> tuple[bytes, dict[str, Any]]:
+def assinar_pdf_final(
+    pdf_bytes: bytes,
+    *,
+    signature_position: dict[str, Any] | None = None,
+) -> tuple[bytes, dict[str, Any]]:
     backend = (getattr(settings, "SIGNATURE_BACKEND", "disabled") or "disabled").lower()
     sha_in = hashlib.sha256(pdf_bytes).hexdigest()
     if backend == "disabled":
@@ -27,15 +31,25 @@ def assinar_pdf_final(pdf_bytes: bytes) -> tuple[bytes, dict[str, Any]]:
             "sha256_in": sha_in,
             "sha256_out": sha_in,
             "visible": False,
+            "signature_position": signature_position,
         }
     if backend == "pkcs12":
-        signed, meta = _assinar_pkcs12(pdf_bytes, sha256_in=sha_in)
+        signed, meta = _assinar_pkcs12(
+            pdf_bytes,
+            sha256_in=sha_in,
+            signature_position=signature_position,
+        )
         meta.setdefault("field_name", FIELD_NAME_DEFAULT)
         return signed, meta
     raise ValueError(f"Backend de assinatura não suportado: {backend}")
 
 
-def _assinar_pkcs12(pdf_bytes: bytes, *, sha256_in: str) -> tuple[bytes, dict[str, Any]]:
+def _assinar_pkcs12(
+    pdf_bytes: bytes,
+    *,
+    sha256_in: str,
+    signature_position: dict[str, Any] | None = None,
+) -> tuple[bytes, dict[str, Any]]:
     path = getattr(settings, "SIGNATURE_PKCS12_PATH", None)
     if not path:
         raise RuntimeError("SIGNATURE_PKCS12_PATH não configurado.")
@@ -61,6 +75,8 @@ def _assinar_pkcs12(pdf_bytes: bytes, *, sha256_in: str) -> tuple[bytes, dict[st
     field_name = getattr(settings, "SIGNATURE_FIELD_NAME", None) or FIELD_NAME_DEFAULT
 
     appended_visible = False
+    if signature_position:
+        visible = False
     if visible:
         try:
             fields.append_signature_field(
@@ -95,4 +111,5 @@ def _assinar_pkcs12(pdf_bytes: bytes, *, sha256_in: str) -> tuple[bytes, dict[st
         "visible": bool(visible and appended_visible),
         "reason": reason or "",
         "location": location or "",
+        "signature_position": signature_position,
     }

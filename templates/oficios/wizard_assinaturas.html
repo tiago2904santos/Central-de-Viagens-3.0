@@ -92,24 +92,60 @@
                           <dd class="oficio-assinatura-pdf__mono">{% if painel_oficio.artefato.hash_sha256_assinado %}{{ painel_oficio.artefato.hash_sha256_assinado }}{% else %}—{% endif %}</dd>
                         </div>
                       </dl>
-                      <p class="oficio-assinatura-pdf__mvp-text">
-                        A assinatura será aplicada na posição padrão do sistema (MVP).
+                      <p class="assinatura-oficio-instrucao doc-muted">
+                        Arraste a etiqueta para o local exato onde a assinatura deve aparecer no PDF.
                       </p>
-                      <div class="document-inline-viewer oficios-assinaturas-panel__viewer">
-                        <iframe
-                          class="document-inline-viewer__frame"
-                          src="{{ painel_oficio.pdf_preview_url }}"
-                          title="Pré-visualização do ofício em PDF"
-                          loading="lazy"
-                        ></iframe>
-                      </div>
-                      <div class="form-actions app-form-actions oficio-assinatura-pdf__actions">
-                        <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ painel_oficio.pdf_visualizar_url }}" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
-                        <form method="post" action="{% url 'oficios:wizard_assinaturas' oficio.pk %}" class="oficio-assinatura-pdf__confirm-form">
-                          {% csrf_token %}
-                          <input type="hidden" name="documento_alvo" value="oficio">
-                          <button class="btn btn-primary app-btn app-btn--primary" type="submit">Confirmar assinatura</button>
-                        </form>
+                      <div class="assinatura-oficio-layout">
+                        <div class="assinatura-oficio-layout__main">
+                          <div
+                            class="assinatura-pdf-editor"
+                            id="assinatura-pdf-editor"
+                            data-pdf-url="{{ painel_oficio.pdf_preview_url }}"
+                            data-signer-name="{{ painel_oficio.assinante_display|default:'' }}"
+                            data-verification-url="{{ painel_oficio.verificacao_url }}"
+                            data-verification-code="{{ painel_oficio.verificacao_codigo }}"
+                            data-worker-src="{% static 'vendor/pdfjs/pdf.worker.min.js' %}"
+                          >
+                            <div class="assinatura-pdf-editor__toolbar">
+                              <span class="assinatura-pdf-editor__meta" id="assinatura-pdf-meta">Página —</span>
+                              <div class="assinatura-pdf-editor__zoom">
+                                <button type="button" class="btn btn-secondary app-btn app-btn--secondary" id="assinatura-zoom-out" aria-label="Diminuir zoom">−</button>
+                                <button type="button" class="btn btn-secondary app-btn app-btn--secondary" id="assinatura-zoom-reset">100%</button>
+                                <button type="button" class="btn btn-secondary app-btn app-btn--secondary" id="assinatura-zoom-in" aria-label="Aumentar zoom">+</button>
+                              </div>
+                            </div>
+                            <div class="assinatura-pdf-editor__scroller" id="assinatura-editor-scroll">
+                              <div class="assinatura-pdf-editor__pages" id="assinatura-pages-column"></div>
+                            </div>
+                          </div>
+                          <p id="assinatura-pdf-error" class="assinatura-pdf-error" role="alert" hidden></p>
+                          <div class="form-actions app-form-actions oficio-assinatura-pdf__actions assinatura-oficio-actions">
+                            <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ painel_oficio.pdf_visualizar_url }}" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
+                            <form method="post" action="{% url 'oficios:wizard_assinaturas' oficio.pk %}" class="oficio-assinatura-pdf__confirm-form" id="form-assinar-oficio">
+                              {% csrf_token %}
+                              <input type="hidden" name="documento_alvo" value="oficio">
+                              <input type="hidden" name="sig_x" id="sig-x" value="0.58" autocomplete="off">
+                              <input type="hidden" name="sig_y" id="sig-y" value="0.78" autocomplete="off">
+                              <input type="hidden" name="sig_w" id="sig-w" value="0.34" autocomplete="off">
+                              <input type="hidden" name="sig_h" id="sig-h" value="0.11" autocomplete="off">
+                              <input type="hidden" name="sig_page" id="sig-page" value="-1" autocomplete="off">
+                              <button class="btn btn-primary app-btn app-btn--primary" type="submit">Confirmar assinatura</button>
+                            </form>
+                          </div>
+                        </div>
+                        <aside class="assinatura-oficio-layout__aside" aria-label="Pré-visualização do bloco de autenticação">
+                          <h3 class="assinatura-oficio-aside__title">Bloco de autenticação</h3>
+                          <div class="assinatura-label assinatura-label--preview" aria-hidden="true">
+                            <div class="assinatura-label__logo" aria-hidden="true">PCPR</div>
+                            <div class="assinatura-label__body">
+                              <div class="assinatura-label__title">DOCUMENTO ASSINADO ELETRONICAMENTE</div>
+                              <div class="assinatura-label__name">{{ painel_oficio.assinante_display|default:"—" }}</div>
+                              <div class="assinatura-label__meta">Verifique em: {{ painel_oficio.verificacao_url }}</div>
+                              <div class="assinatura-label__code">Código: {{ painel_oficio.verificacao_codigo }}</div>
+                              <div class="assinatura-label__qr" aria-hidden="true"></div>
+                            </div>
+                          </div>
+                        </aside>
                       </div>
                     {% endif %}
                   </div>
@@ -164,6 +200,11 @@
                         <form method="post" action="{% url 'oficios:wizard_assinaturas' oficio.pk %}" class="oficio-assinatura-pdf__confirm-form">
                           {% csrf_token %}
                           <input type="hidden" name="documento_alvo" value="justificativa">
+                          <input type="hidden" name="sig_x" value="0.58" autocomplete="off">
+                          <input type="hidden" name="sig_y" value="0.78" autocomplete="off">
+                          <input type="hidden" name="sig_w" value="0.34" autocomplete="off">
+                          <input type="hidden" name="sig_h" value="0.11" autocomplete="off">
+                          <input type="hidden" name="sig_page" value="-1" autocomplete="off">
                           <button class="btn btn-primary app-btn app-btn--primary" type="submit">Confirmar assinatura</button>
                         </form>
                       </div>
@@ -227,6 +268,11 @@
                       {% csrf_token %}
                       <input type="hidden" name="documento_alvo" value="termo">
                       <input type="hidden" name="servidor_id" id="termo-servidor-id-input" value="{% firstof servidor_termo_pk '' %}">
+                      <input type="hidden" name="sig_x" value="0.58" autocomplete="off">
+                      <input type="hidden" name="sig_y" value="0.78" autocomplete="off">
+                      <input type="hidden" name="sig_w" value="0.34" autocomplete="off">
+                      <input type="hidden" name="sig_h" value="0.11" autocomplete="off">
+                      <input type="hidden" name="sig_page" value="-1" autocomplete="off">
                       <button class="btn btn-primary app-btn app-btn--primary" type="submit" id="termo-submit-btn">Confirmar assinatura</button>
                     </form>
                   </div>
@@ -253,6 +299,8 @@
 
 {% block extra_js %}
   {{ block.super }}
+  <script src="{% static 'vendor/pdfjs/pdf.min.js' %}"></script>
+  <script type="module" src="{% static 'js/pages/assinatura-pdf.js' %}"></script>
   <script src="{% static 'js/pages/oficios-documentos-inline.js' %}" defer></script>
   <script src="{% static 'js/pages/oficios-assinaturas-wizard.js' %}" defer></script>
 {% endblock %}

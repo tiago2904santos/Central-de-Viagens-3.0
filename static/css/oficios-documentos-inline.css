@@ -298,3 +298,197 @@
   padding-top: var(--space-4, 1rem);
   border-top: 1px solid var(--color-border-soft, #e3eaf2);
 }
+
+.assinatura-oficio-instrucao {
+  margin-bottom: var(--space-4, 1rem);
+}
+
+.assinatura-oficio-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: var(--space-5, 1.25rem);
+  align-items: flex-start;
+}
+
+@media (max-width: 960px) {
+  .assinatura-oficio-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .assinatura-oficio-layout__aside {
+    position: static;
+  }
+}
+
+.assinatura-oficio-layout__main {
+  min-width: 0;
+}
+
+.assinatura-oficio-layout__aside {
+  position: sticky;
+  top: var(--space-3, 0.75rem);
+  padding: var(--space-4, 1rem);
+  border-radius: 14px;
+  border: 1px solid var(--color-border-soft, #e3eaf2);
+  background: var(--color-surface-muted, #f8fafc);
+}
+
+.assinatura-oficio-aside__title {
+  margin: 0 0 var(--space-3, 0.75rem);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 700;
+  color: var(--color-heading, #071a33);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.assinatura-oficio-actions {
+  margin-top: var(--space-4, 1rem);
+}
+
+.assinatura-pdf-editor {
+  border: 1px solid var(--color-border-soft, #e3eaf2);
+  border-radius: 14px;
+  background: var(--color-surface-muted, #eef2f7);
+  overflow: hidden;
+}
+
+.assinatura-pdf-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+  background: var(--color-surface, #fff);
+  border-bottom: 1px solid var(--color-border-soft, #e3eaf2);
+}
+
+.assinatura-pdf-editor__meta {
+  font-size: var(--font-size-sm, 0.8125rem);
+  color: var(--color-muted, #52657a);
+}
+
+.assinatura-pdf-editor__zoom {
+  display: flex;
+  gap: var(--space-2, 0.5rem);
+  flex-wrap: wrap;
+}
+
+.assinatura-pdf-editor__scroller {
+  max-height: min(72vh, 820px);
+  overflow: auto;
+  padding: var(--space-4, 1rem);
+}
+
+.assinatura-pdf-editor__pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4, 1rem);
+}
+
+.assinatura-page-wrap {
+  position: relative;
+  display: inline-block;
+  box-shadow: 0 4px 18px rgba(7, 26, 51, 0.12);
+  border-radius: 4px;
+  overflow: visible;
+  background: #fff;
+}
+
+.assinatura-page-canvas {
+  display: block;
+  vertical-align: top;
+}
+
+.assinatura-label {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  z-index: 3;
+  cursor: move;
+  user-select: none;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(7, 26, 51, 0.18);
+}
+
+.assinatura-label--preview {
+  position: relative;
+  cursor: default;
+  box-shadow: 0 2px 8px rgba(7, 26, 51, 0.1);
+}
+
+.assinatura-label--draggable:active {
+  cursor: grabbing;
+  box-shadow: 0 5px 16px rgba(7, 26, 51, 0.22);
+}
+
+.assinatura-label__logo {
+  flex: 0 0 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: #082042;
+  text-align: center;
+  padding: 0 0.15rem;
+}
+
+.assinatura-label__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.35rem 0.45rem 0.35rem 0.35rem;
+  background: #0b2b4a;
+  color: #fff;
+}
+
+.assinatura-label__title {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  margin-bottom: 0.12rem;
+}
+
+.assinatura-label__name {
+  font-size: 0.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assinatura-label__meta {
+  font-size: 0.42rem;
+  opacity: 0.92;
+  line-height: 1.15;
+  word-break: break-all;
+  max-height: 2.2em;
+  overflow: hidden;
+}
+
+.assinatura-label__code {
+  font-size: 0.42rem;
+  margin-top: 0.08rem;
+  opacity: 0.88;
+}
+
+.assinatura-label__qr {
+  flex: 0 0 2.4rem;
+  background: #fff;
+}
+
+.assinatura-pdf-error {
+  margin-top: var(--space-3, 0.75rem);
+  color: #b42318;
+  font-size: var(--font-size-sm, 0.875rem);
+}

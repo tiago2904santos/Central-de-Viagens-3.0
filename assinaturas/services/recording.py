@@ -28,7 +28,12 @@ def registrar_assinatura_concluida(artefato: DocumentoArtefato, meta: dict[str, 
         hash_documento_assinado=hash_out,
         signature_field_name=field_name,
         evidencias=dict(meta),
-        appearance={"visible": bool(meta.get("visible")), "reason": meta.get("reason", ""), "location": meta.get("location", "")},
+        appearance={
+            "visible": bool(meta.get("visible")),
+            "reason": meta.get("reason", ""),
+            "location": meta.get("location", ""),
+            "signature_position": meta.get("signature_position"),
+        },
     )
     EventoAssinatura.objects.create(
         assinatura=reg,

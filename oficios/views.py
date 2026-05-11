@@ -40,7 +40,9 @@ from documentos.selectors import get_latest_artefato_pdf_termo
 from documentos.services.persistence import persist_geracao
 from documentos.services.downloads import download_documento_or_redirect_pdf_error
 from documentos.services.warm_cache import pdf_artefato_original_acessivel
+from documentos.services.signing.position import parse_signature_position_from_post
 from documentos.services.signing.workflow import assinar_artefato_pdf
+from documentos.services.signing.workflow import contar_paginas_pdf_artefato
 from documentos.services.responses import build_inline_pdf_response_from_download_response
 from documentos.services.timing import measure_step
 from documentos.services.types import DocumentoFormato
@@ -641,6 +643,23 @@ def _resolver_artefato_pdf_termo_para_assinatura(request, oficio, servidor: Serv
     return prev["artefato"]
 
 
+def _enriquecer_painel_etiqueta_assinatura(request, painel: dict) -> None:
+    if not painel.get("disponivel") or painel.get("erro"):
+        return
+    art = painel.get("artefato")
+    if not art:
+        return
+    nomes = ""
+    u = getattr(request, "user", None)
+    if u is not None and getattr(u, "is_authenticated", False):
+        nomes = ((getattr(u, "get_full_name", lambda: "")() or "").strip() or getattr(u, "get_username", lambda: "")() or "").strip()
+    painel["assinante_display"] = nomes
+    painel["verificacao_url"] = request.build_absolute_uri(
+        reverse("documentos:artefato_pdf_visualizar", args=[art.pk]),
+    )
+    painel["verificacao_codigo"] = (art.hash_sha256 or "")[:12]
+
+
 def _painel_contexto_de_artefato(art) -> dict:
     if art is None:
         return {
@@ -678,7 +697,9 @@ def _wizard_assinaturas_executar_post(request, oficio, documento_alvo: str, serv
     if art is None:
         return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
     try:
-        assinar_artefato_pdf(request, art)
+        n_pages = contar_paginas_pdf_artefato(art)
+        sig_pos = parse_signature_position_from_post(request.POST, num_pages=n_pages)
+        assinar_artefato_pdf(request, art, signature_position=sig_pos)
     except Exception as exc:  # noqa: BLE001
         messages.error(request, f"Não foi possível assinar o PDF: {exc}")
         return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
@@ -719,6 +740,7 @@ def wizard_assinaturas_documentos(request, pk):
     pj = _preview_artefato_pdf_justificativa(oficio)
     painel_oficio = _painel_contexto_de_artefato(po["artefato"])
     painel_oficio["erro"] = _mensagem_preview_assinatura(po["erro"], po.get("detalhe")) if po["erro"] else ""
+    _enriquecer_painel_etiqueta_assinatura(request, painel_oficio)
 
     painel_justificativa = _painel_contexto_de_artefato(pj["artefato"])
     painel_justificativa["erro"] = _mensagem_preview_assinatura(pj["erro"], pj.get("detalhe")) if pj["erro"] else ""
