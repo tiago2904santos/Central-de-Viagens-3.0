@@ -77,8 +77,11 @@ OFICIO_DOCXTPL_KEYS = frozenset(
         "armamento",
         "motivo",
         "divisao",
+        "divisao_cabecalho",
         "email",
         "endereco",
+        "nome_orgao",
+        "nome_orgao_cabecalho",
         "telefone",
         "unidade_rodape",
     },
@@ -398,7 +401,10 @@ def _diarias(oficio: Oficio) -> tuple[str, str]:
 def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
     inst = build_configuracao_context()
     nome_chefia, cargo_chefia = _assinatura_nome_cargo(inst)
-    unidade_raw = _txt(inst.get("unidade")) or _txt(inst.get("nome_orgao")) or _txt(inst.get("sigla_orgao"))
+    nome_orgao_raw = _txt(inst.get("nome_orgao"))
+    unidade_campo_raw = _txt(inst.get("unidade"))
+    sigla_raw = _txt(inst.get("sigla_orgao"))
+    unidade_raw = unidade_campo_raw or nome_orgao_raw or sigla_raw
     unidade = format_document_display(unidade_raw) if unidade_raw else ""
     viajantes = _viajantes(oficio)
     ida, volta = _roteiro_trechos(oficio)
@@ -418,8 +424,10 @@ def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
         "protocolo": protocolo,
         "nome_chefia": format_document_display(nome_chefia) if nome_chefia else "",
         "cargo_chefia": format_document_display(cargo_chefia) if cargo_chefia else "",
+        "nome_orgao": format_document_display(nome_orgao_raw) if nome_orgao_raw else "",
+        "nome_orgao_cabecalho": _hdr(nome_orgao_raw),
         "unidade": unidade,
-        "unidade_cabecalho": unidade,
+        "unidade_cabecalho": _hdr(unidade_campo_raw),
         "orgao_destino": _orgao_destino(oficio),
         "placa": v["placa"],
         "viatura": v["viatura"],
@@ -446,6 +454,7 @@ def build_oficio_docxtpl_context(oficio: Oficio) -> dict[str, Any]:
         "armamento": "Sim" if oficio.porte_transporte_armas else "Não",
         "motivo": format_document_display(_txt(oficio.motivo)) if _txt(oficio.motivo) else "",
         "divisao": format_document_display(_txt(inst.get("divisao"))) if _txt(inst.get("divisao")) else "",
+        "divisao_cabecalho": _hdr(inst.get("divisao")),
         "email": (_txt(inst.get("email")) or "").lower(),
         "endereco": _build_endereco(inst),
         "telefone": _txt(inst.get("telefone_formatado") or inst.get("telefone")),
