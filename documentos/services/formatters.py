@@ -209,3 +209,17 @@ def format_currency_br(value: object) -> str:
     int_fmt = grouped[::-1]
     body = f"R${int_fmt},{frac}"
     return f"-{body}" if neg else body
+
+
+def format_valor_extenso_display(value: object) -> str:
+    """
+    Valor por extenso para leitura em documento: evita o texto todo em maiúsculas
+    vindas do legado ou de rotinas numéricas; fica em frase normal com só a
+    primeira letra maiúscula (ex.: «Cento e cinquenta reais»).
+    """
+    s = str(value or "").strip()
+    if not s:
+        return ""
+    s = re.sub(r"\s+", " ", s)
+    lower = s.lower()
+    return lower[0].upper() + lower[1:] if lower else ""

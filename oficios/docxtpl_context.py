@@ -15,6 +15,7 @@ from cadastros.selectors import build_configuracao_context
 from documentos.services.formatters import format_city_uf
 from documentos.services.formatters import format_currency_br
 from documentos.services.formatters import format_document_display
+from documentos.services.formatters import format_valor_extenso_display
 
 from justificativas.models import Justificativa
 
@@ -387,7 +388,7 @@ def _diarias(oficio: Oficio) -> tuple[str, str]:
         valor_fmt = format_currency_br(dec)
         extenso = _txt(r.valor_diarias_extenso)
         if extenso:
-            valor = f"{valor_fmt} ({extenso})"
+            valor = f"{valor_fmt} ({format_valor_extenso_display(extenso)})"
         else:
             valor = valor_fmt
         return q, valor

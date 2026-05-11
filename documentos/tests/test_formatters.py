@@ -6,6 +6,7 @@ from documentos.services.formatters import (
     format_city_uf,
     format_currency_br,
     format_document_display,
+    format_valor_extenso_display,
     preserve_known_acronyms,
 )
 
@@ -36,6 +37,20 @@ class FormatCityUfTests(SimpleTestCase):
 class PreserveAcronymsTests(SimpleTestCase):
     def test_token_with_punctuation(self):
         self.assertEqual(preserve_known_acronyms("(pr)"), "(PR)")
+
+
+class FormatValorExtensoTests(SimpleTestCase):
+    def test_maiusculas_para_frase(self):
+        self.assertEqual(
+            format_valor_extenso_display("CENTO E CINQUENTA REAIS"),
+            "Cento e cinquenta reais",
+        )
+
+    def test_normaliza_espacos(self):
+        self.assertEqual(
+            format_valor_extenso_display("CEM   REAIS"),
+            "Cem reais",
+        )
 
 
 class FormatCurrencyBrTests(SimpleTestCase):

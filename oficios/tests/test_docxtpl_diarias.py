@@ -31,4 +31,4 @@ class DiariasDocxtplTests(TestCase):
         oficio = Oficio.objects.create(roteiro=roteiro)
         ctx = build_oficio_docxtpl_context(oficio)
         self.assertIn("R$100,00", ctx["diaria"])
-        self.assertIn("(CEM REAIS)", ctx["diaria"])
+        self.assertIn("(Cem reais)", ctx["diaria"])

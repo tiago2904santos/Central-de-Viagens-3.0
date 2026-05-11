@@ -119,7 +119,7 @@ class RegressaoOficio935ContextoTests(TestCase):
         self.assertIn(" - ", ctx["endereco"])
         self.assertTrue(ctx["diaria"].startswith("R$1.935,42"))
         self.assertEqual(ctx["valor_total_oficio"], ctx["diaria"])
-        self.assertIn("UM MIL NOVECENTOS", ctx["diaria"])
+        self.assertIn("Um mil novecentos", ctx["diaria"])
         self.assertIn("Motorista Externo 935", ctx["motorista_formatado"])
         self.assertIn("Ofício do Motorista: 7/2026", ctx["motorista_formatado"])
         self.assertIn("Protocolo do Motorista:", ctx["motorista_formatado"])
