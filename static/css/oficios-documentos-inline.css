@@ -26,7 +26,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3, 0.75rem);
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
   padding: var(--space-4, 1rem) var(--space-4, 1rem);
   cursor: pointer;
   list-style: none;
@@ -39,20 +40,18 @@
 .document-inline-card__title {
   font-weight: 600;
   color: var(--color-heading, #071a33);
-  flex: 1;
+  flex: 1 1 12rem;
+  min-width: 0;
   text-align: left;
 }
 
-.document-inline-card__badge {
-  font-size: var(--font-size-xs, 0.75rem);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-muted-strong, #334c63);
-  background: var(--color-surface-muted, #f8fafd);
-  border: 1px solid var(--color-border-soft, #e3eaf2);
-  border-radius: 999px;
-  padding: 0.2rem 0.55rem;
+.document-inline-card__header-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-3, 0.75rem);
+  flex: 0 1 auto;
 }
 
 .document-inline-card__body {
@@ -97,15 +96,29 @@
   margin-top: var(--space-3, 0.75rem);
 }
 
-.document-inline-actions__link {
-  font-size: var(--font-size-sm, 0.875rem);
-  color: var(--color-secondary, #155b9a);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.document-inline-actions--header {
+  margin-top: 0;
+  gap: var(--space-2, 0.5rem);
 }
 
-.document-inline-actions__link:hover {
-  color: var(--color-secondary-hover, #0f477a);
+.document-inline-actions__btn {
+  font-size: var(--font-size-sm, 0.875rem);
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+@media (max-width: 480px) {
+  .document-inline-actions--header {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .document-inline-actions--header .document-inline-actions__btn {
+    flex: 1 1 auto;
+    text-align: center;
+    justify-content: center;
+  }
 }
 
 .document-inline-empty {
@@ -113,4 +126,34 @@
   padding: var(--space-3, 0.75rem);
   color: var(--color-muted, #52657a);
   font-size: var(--font-size-sm, 0.875rem);
+}
+
+.oficio-documentos-sig-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: var(--font-size-sm, 0.8125rem);
+  font-weight: 600;
+  margin-inline: 0.25rem;
+}
+
+.oficio-documentos-sig-badge--unsigned {
+  background: var(--color-surface-muted, #eef2f7);
+  color: var(--color-muted, #52657a);
+}
+
+.oficio-documentos-sig-badge--signed {
+  background: var(--color-success-soft, #e6f6ec);
+  color: var(--color-success-strong, #0d5c2f);
+}
+
+.oficio-documentos-sig-hint {
+  margin-inline: 0.25rem;
+  max-width: 22rem;
+  line-height: 1.35;
+}
+
+.oficio-documentos-sig-hint code {
+  font-size: 0.85em;
 }

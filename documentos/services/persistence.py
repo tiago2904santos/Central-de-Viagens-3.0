@@ -1,14 +1,67 @@
 from __future__ import annotations
 
+import datetime
+import enum
 import hashlib
+import json
+import uuid
+from decimal import Decimal
 from typing import Any, Mapping
 
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.db.models import Model
+from django.db.models.query import QuerySet
 
 from documentos.models import DocumentoArtefato
 from documentos.services.facade import DocumentoGerado
 from documentos.services.timing import measure_step
+
+_MAX_SNAPSHOT_DEPTH = 48
+
+
+def _sanear_objeto_para_json(val: Any, *, _depth: int = 0) -> Any:
+    """
+    Converte valores arbitrários do contexto/payload documental em tipos aceites por JSONField
+    (inclui instâncias de modelos Django aninhados, QuerySets, datas, etc.).
+    """
+    if _depth > _MAX_SNAPSHOT_DEPTH:
+        return "<profundidade-maxima>"
+    if val is None or isinstance(val, (str, int, float, bool)):
+        return val
+    if isinstance(val, enum.Enum):
+        return val.value
+    if isinstance(val, (datetime.date, datetime.datetime)):
+        return val.isoformat()
+    if isinstance(val, datetime.time):
+        return val.isoformat()
+    if isinstance(val, Decimal):
+        return str(val)
+    if isinstance(val, uuid.UUID):
+        return str(val)
+    if isinstance(val, bytes):
+        return val.decode("utf-8", errors="replace")
+    if isinstance(val, bytearray):
+        return bytes(val).decode("utf-8", errors="replace")
+    if isinstance(val, memoryview):
+        return val.tobytes().decode("utf-8", errors="replace")
+    if isinstance(val, Model):
+        return str(val)
+    if isinstance(val, QuerySet):
+        return [_sanear_objeto_para_json(x, _depth=_depth + 1) for x in val[:2000]]
+    if isinstance(val, dict):
+        return {str(k): _sanear_objeto_para_json(v, _depth=_depth + 1) for k, v in val.items()}
+    if isinstance(val, (list, tuple)):
+        return [_sanear_objeto_para_json(x, _depth=_depth + 1) for x in val]
+    if isinstance(val, set):
+        return [_sanear_objeto_para_json(x, _depth=_depth + 1) for x in sorted(val, key=lambda x: str(x))]
+    return str(val)
+
+
+def _payload_snapshot_json_seguro(snapshot: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Garante estrutura compatível com JSONField e com o adaptador JSON do psycopg."""
+    raw = _sanear_objeto_para_json(dict(snapshot or {}))
+    return json.loads(json.dumps(raw, default=str))
 
 
 def persist_geracao(
@@ -25,7 +78,7 @@ def persist_geracao(
         return None
     nome = doc.nome_arquivo
     arquivo = ContentFile(doc.conteudo, name=nome)
-    payload_snapshot = dict(payload_snapshot or {})
+    payload_snapshot = _payload_snapshot_json_seguro(payload_snapshot)
     gen_ver = generator_version or str(getattr(settings, "DOCUMENTOS_GENERATOR_VERSION", "1") or "1")
     with measure_step(
         "persist_geracao",

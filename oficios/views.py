@@ -1,5 +1,6 @@
 import re
 
+from django.conf import settings
 from django.contrib import messages
 from django.http import Http404
 from django.http import JsonResponse
@@ -28,7 +29,12 @@ from roteiros.services import (
 )
 
 from cadastros.models import Combustivel
+from assinaturas.services.recording import registrar_verificacao_artefato
+from assinaturas.services.verification import verificar_artefato_documento
+from documentos.selectors import get_latest_artefato_pdf_for_oficio
 from documentos.services.downloads import download_documento_or_redirect_pdf_error
+from documentos.services.warm_cache import pdf_artefato_original_acessivel
+from documentos.views import build_assinatura_pdf_http_response
 from documentos.services.responses import build_inline_pdf_response_from_download_response
 from documentos.services.timing import measure_step
 from documentos.services.types import DocumentoFormato
@@ -46,7 +52,6 @@ from .presenters import apresentar_oficio_wizard_documentos_context
 from .presenters import apresentar_oficio_wizard_header
 from .presenters import apresentar_oficio_wizard_summary
 from .presenters import apresentar_oficio_wizard_steps
-from .presenters import apresentar_pagina_detalhe_oficio
 from .selectors import get_oficio_by_id
 from .selectors import get_modelo_motivo_by_id
 from .selectors import buscar_viaturas_para_oficio
@@ -210,7 +215,6 @@ def index(request):
     for oficio in oficios:
         card = apresentar_oficio_card(oficio)
         card["actions"] = apresentar_acoes_oficio(
-            detalhe_url=reverse("oficios:detalhe", args=[oficio.pk]),
             editar_url=reverse("oficios:editar", args=[oficio.pk]),
             excluir_url=reverse("oficios:excluir", args=[oficio.pk]),
             visualizar_documento_url=reverse("oficios:wizard_documentos", args=[oficio.pk]),
@@ -238,21 +242,9 @@ def novo(request):
 
 
 def detalhe(request, pk):
-    oficio = get_oficio_by_id(pk)
-    detail = apresentar_pagina_detalhe_oficio(oficio)
-    return render(
-        request,
-        "oficios/detail.html",
-        {
-            "page_title": f"Ofício {detail['numero_formatado']}",
-            "page_description": "Detalhes do ofício e vínculos mínimos de contexto.",
-            "oficio": oficio,
-            "detail": detail,
-            "edit_url": reverse("oficios:editar", args=[oficio.pk]),
-            "delete_url": reverse("oficios:excluir", args=[oficio.pk]),
-            "back_url": reverse("oficios:index"),
-        },
-    )
+    """Compatibilidade de URLs antigas: a listagem e o fluxo usam apenas o wizard de edição."""
+    get_oficio_by_id(pk)
+    return redirect("oficios:dados_viajantes", pk=pk)
 
 
 def editar(request, pk):
@@ -447,7 +439,7 @@ def wizard_documentos(request, pk):
             oficio.status = Oficio.STATUS_FINALIZADO
             oficio.save(update_fields=["status", "updated_at"])
             messages.success(request, "Ofício finalizado com sucesso.")
-            return redirect("oficios:detalhe", pk=pk)
+            return redirect("oficios:index")
         messages.success(request, "Rascunho salvo.")
         return redirect("oficios:wizard_documentos", pk=pk)
 
@@ -484,6 +476,76 @@ def wizard_documentos(request, pk):
 def wizard_resumo(request, pk):
     """Compatibilidade: `/resumo/` é alias da etapa 5 — mesmo conteúdo de `wizard_documentos`."""
     return wizard_documentos(request, pk)
+
+
+def _resolver_artefato_pdf_oficio_para_assinatura(request, oficio):
+    """
+    Devolve o último DocumentoArtefato PDF do ofício, gerando-o no servidor se ainda não existir.
+    Não exige download manual pelo utilizador.
+    """
+    if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
+        return None
+    aval = validar_oficio_para_documento(oficio)
+    if aval.get("pendencias"):
+        messages.error(request, "Complete o ofício antes de assinar o PDF.")
+        return None
+    art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
+    if art is not None and pdf_artefato_original_acessivel(art):
+        return art
+    try:
+        gerar_resposta_documento_oficio(oficio, DocumentoFormato.PDF)
+    except Exception as exc:  # noqa: BLE001
+        messages.error(request, f"Não foi possível preparar o PDF do ofício: {exc}")
+        return None
+    art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
+    if art is None or not pdf_artefato_original_acessivel(art):
+        messages.error(
+            request,
+            "Não foi possível obter o PDF persistido do ofício. Verifique o motor de PDF (LibreOffice / Word) e tente novamente.",
+        )
+        return None
+    return art
+
+
+@require_POST
+def wizard_assinar_pdf_oficio(request, pk):
+    oficio = get_oficio_by_id(pk)
+    if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
+        messages.error(
+            request,
+            "Assinatura digital requer DOCUMENTOS_PERSIST_ARTEFATOS=true no ambiente.",
+        )
+        return redirect(reverse("oficios:wizard_documentos", args=[pk]))
+    art = _resolver_artefato_pdf_oficio_para_assinatura(request, oficio)
+    if art is None:
+        return redirect(reverse("oficios:wizard_documentos", args=[pk]))
+    return build_assinatura_pdf_http_response(request, art)
+
+
+@require_GET
+def wizard_verificar_pdf_oficio(request, pk):
+    oficio = get_oficio_by_id(pk)
+    if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
+        return JsonResponse(
+            {"ok": False, "reason": "persist_disabled", "detail": "DOCUMENTOS_PERSIST_ARTEFATOS está desligado."},
+            status=422,
+        )
+    aval = validar_oficio_para_documento(oficio)
+    if aval.get("pendencias"):
+        raise Http404()
+    art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
+    if art is None or not pdf_artefato_original_acessivel(art):
+        try:
+            gerar_resposta_documento_oficio(oficio, DocumentoFormato.PDF)
+        except Exception as exc:  # noqa: BLE001
+            return JsonResponse({"ok": False, "reason": "pdf_prepare_error", "detail": str(exc)}, status=422)
+        art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
+    if art is None or not pdf_artefato_original_acessivel(art):
+        return JsonResponse({"ok": False, "reason": "no_file"}, status=422)
+    resultado = verificar_artefato_documento(art)
+    registrar_verificacao_artefato(art, resultado)
+    status = 200 if resultado.get("ok") else 422
+    return JsonResponse(resultado, status=status)
 
 
 @require_GET

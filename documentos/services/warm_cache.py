@@ -14,12 +14,38 @@ from documentos.services.types import DocumentoTipo
 logger = logging.getLogger(__name__)
 
 
+def pdf_artefato_original_acessivel(artefato) -> bool:
+    arq = getattr(artefato, "arquivo", None)
+    if arq is None or not getattr(arq, "name", ""):
+        return False
+    try:
+        return bool(arq.storage.exists(arq.name))
+    except OSError:
+        return False
+
+
 def ensure_document_artifact_cached(oficio, *, tipo: DocumentoTipo = DocumentoTipo.OFICIO) -> None:
     """
     Garante PDF em cache para o ofício completo (best-effort; falhas de motor não rebentam a view).
+
+    Em `dev.py` a pré-geração global pode estar desligada (`DOCUMENTOS_PREGENERATE_PDF=false`)
+    para não bloquear o GET; com persistência de artefatos ativa ainda assim tentamos **uma**
+    geração quando não existe `DocumentoArtefato` PDF válido, para o wizard mostrar Assinar/Verificar.
     """
-    if not getattr(settings, "DOCUMENTOS_PREGENERATE_PDF", True):
+    pre = getattr(settings, "DOCUMENTOS_PREGENERATE_PDF", True)
+    persist = getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False)
+
+    need_warm = bool(pre)
+    if not need_warm and persist and tipo == DocumentoTipo.OFICIO:
+        from documentos.selectors import get_latest_artefato_pdf_for_oficio
+
+        latest = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
+        if latest is None or not pdf_artefato_original_acessivel(latest):
+            need_warm = True
+
+    if not need_warm:
         return None
+
     from oficios.services import validar_oficio_para_documento
 
     if validar_oficio_para_documento(oficio).get("pendencias"):

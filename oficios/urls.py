@@ -26,6 +26,8 @@ urlpatterns = [
     path("<int:pk>/resumo/", views.wizard_resumo, name="wizard_resumo"),
     path("<int:pk>/api/viatura-por-placa/", views.api_viatura_por_placa, name="api_viatura_por_placa"),
     path("<int:pk>/documentos/", views.wizard_documentos, name="wizard_documentos"),
+    path("<int:pk>/documentos/assinar-pdf/", views.wizard_assinar_pdf_oficio, name="wizard_assinar_pdf_oficio"),
+    path("<int:pk>/documentos/verificar-pdf/", views.wizard_verificar_pdf_oficio, name="wizard_verificar_pdf_oficio"),
     path("<int:pk>/documentos/oficio-pdf-inline/", views.oficio_pdf_inline, name="oficio_pdf_inline"),
     path(
         "<int:pk>/documentos/justificativa-pdf-inline/",

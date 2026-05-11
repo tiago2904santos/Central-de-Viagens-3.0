@@ -33,7 +33,14 @@
       <details class="document-inline-card" open>
         <summary class="document-inline-card__header">
           <span class="document-inline-card__title">{{ di.oficio.titulo }}</span>
-          <span class="document-inline-card__badge">Inline</span>
+          {% if di.oficio.disponivel %}
+            <span class="document-inline-card__header-end">
+              <span class="document-inline-actions document-inline-actions--header" aria-label="Ações do documento">
+                <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{{ di.oficio.url }}" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
+                <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">Baixar PDF</a>
+              </span>
+            </span>
+          {% endif %}
         </summary>
         <div class="document-inline-card__body">
           {% if di.oficio.disponivel %}
@@ -45,10 +52,6 @@
                 loading="lazy"
               ></iframe>
             </div>
-            <div class="document-inline-actions">
-              <a class="document-inline-actions__link" href="{{ di.oficio.url }}" target="_blank" rel="noopener">Abrir em nova aba</a>
-              <a class="document-inline-actions__link" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">Baixar PDF</a>
-            </div>
           {% else %}
             <p class="document-inline-empty">{{ di.oficio.mensagem }}</p>
           {% endif %}
@@ -58,7 +61,14 @@
       <details class="document-inline-card document-inline-card--lazy" data-lazy-inline>
         <summary class="document-inline-card__header">
           <span class="document-inline-card__title">{{ di.justificativa.titulo }}</span>
-          <span class="document-inline-card__badge">Inline</span>
+          {% if di.justificativa.disponivel %}
+            <span class="document-inline-card__header-end">
+              <span class="document-inline-actions document-inline-actions--header" aria-label="Ações do documento">
+                <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{{ di.justificativa.url }}" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
+                <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{% url 'oficios:baixar_justificativa_documento' oficio.pk 'pdf' %}">Baixar PDF</a>
+              </span>
+            </span>
+          {% endif %}
         </summary>
         <div class="document-inline-card__body">
           {% if di.justificativa.disponivel %}
@@ -70,10 +80,6 @@
                 loading="lazy"
               ></iframe>
             </div>
-            <div class="document-inline-actions">
-              <a class="document-inline-actions__link" href="{{ di.justificativa.url }}" target="_blank" rel="noopener">Abrir em nova aba</a>
-              <a class="document-inline-actions__link" href="{% url 'oficios:baixar_justificativa_documento' oficio.pk 'pdf' %}">Baixar PDF</a>
-            </div>
           {% else %}
             <p class="document-inline-empty">{{ di.justificativa.mensagem }}</p>
           {% endif %}
@@ -83,7 +89,6 @@
       <details class="document-inline-card document-inline-card--termos">
         <summary class="document-inline-card__header">
           <span class="document-inline-card__title">Termos de Autorização</span>
-          <span class="document-inline-card__badge">Inline</span>
         </summary>
         <div class="document-inline-card__body document-inline-card__body--termos">
           {% if di.termos_vazio %}
@@ -93,7 +98,14 @@
               <details class="document-inline-card document-inline-card--nested document-inline-card--lazy" data-lazy-inline>
                 <summary class="document-inline-card__header">
                   <span class="document-inline-card__title">{{ t.titulo }}</span>
-                  <span class="document-inline-card__badge">Inline</span>
+                  {% if t.disponivel %}
+                    <span class="document-inline-card__header-end">
+                      <span class="document-inline-actions document-inline-actions--header" aria-label="Ações do termo">
+                        <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{{ t.url }}" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
+                        <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{% url 'termos:baixar_termo_servidor' oficio.pk t.servidor_pk 'pdf' %}">Baixar PDF</a>
+                      </span>
+                    </span>
+                  {% endif %}
                 </summary>
                 <div class="document-inline-card__body">
                   {% if t.disponivel %}
@@ -104,10 +116,6 @@
                         title="Termo de autorização — {{ t.servidor_nome }}"
                         loading="lazy"
                       ></iframe>
-                    </div>
-                    <div class="document-inline-actions">
-                      <a class="document-inline-actions__link" href="{{ t.url }}" target="_blank" rel="noopener">Abrir em nova aba</a>
-                      <a class="document-inline-actions__link" href="{% url 'termos:baixar_termo_servidor' oficio.pk t.servidor_pk 'pdf' %}">Baixar PDF</a>
                     </div>
                   {% else %}
                     <p class="document-inline-empty">{{ di.mensagem_indisponivel }}</p>
@@ -476,6 +484,28 @@
       {% if documentos_ctx.generation_status %}
         {% if documentos_ctx.generation_status.pdf_available %}
           <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">{{ documentos_ctx.generation_status.pdf_link_label }}</a>
+          {% if documentos_ctx.generation_status.oficio_pdf_botoes_assinatura and documentos_ctx.documentos_inline.oficio.disponivel %}
+            {% if documentos_ctx.generation_status.oficio_pdf_signature_status == "signed" %}
+              <span class="oficio-documentos-sig-badge oficio-documentos-sig-badge--signed" role="status">PDF assinado</span>
+            {% elif documentos_ctx.generation_status.oficio_pdf_signature_status == "unsigned" %}
+              <span class="oficio-documentos-sig-badge oficio-documentos-sig-badge--unsigned" role="status">PDF sem assinatura digital</span>
+            {% endif %}
+            <button
+              class="btn btn-secondary app-btn app-btn--secondary"
+              type="submit"
+              formmethod="post"
+              formaction="{% url 'oficios:wizard_assinar_pdf_oficio' oficio.pk %}"
+            >Assinar PDF</button>
+            <button
+              class="btn btn-secondary app-btn app-btn--secondary"
+              type="button"
+              data-verify-oficio-pdf-url="{% url 'oficios:wizard_verificar_pdf_oficio' oficio.pk %}"
+            >Verificar assinatura</button>
+          {% elif documentos_ctx.documentos_inline.oficio.disponivel and documentos_ctx.generation_status.pdf_available %}
+            {% if not documentos_ctx.generation_status.documentos_persist_artefatos %}
+              <span class="doc-muted oficio-documentos-sig-hint" role="note">Assinatura digital desativada: defina <code>DOCUMENTOS_PERSIST_ARTEFATOS=true</code> no ambiente.</span>
+            {% endif %}
+          {% endif %}
         {% else %}
           <span class="btn btn-secondary app-btn app-btn--secondary oficio-documentos-pdf-btn--muted" role="note" title="{{ documentos_ctx.generation_status.pdf_message }}">PDF indisponível</span>
         {% endif %}

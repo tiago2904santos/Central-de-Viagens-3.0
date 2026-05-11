@@ -233,16 +233,23 @@ def apresentar_opcoes_documentais_oficio(oficio):
 
 def apresentar_acoes_oficio(
     *,
-    detalhe_url: str,
     editar_url: str,
     excluir_url: str,
     visualizar_documento_url: str | None = None,
+    visualizar_documento_nova_aba: bool = False,
+    detalhe_url: str | None = None,
 ):
-    actions = [
-        build_action("Abrir", detalhe_url),
-    ]
+    """`detalhe_url` é aceito mas ignorado (compatibilidade com chamadas antigas)."""
+    actions = []
     if visualizar_documento_url:
-        actions.append(build_action("Visualizar documento", visualizar_documento_url))
+        actions.append(
+            build_action(
+                "Visualizar documento",
+                visualizar_documento_url,
+                link_target="_blank" if visualizar_documento_nova_aba else None,
+                link_rel="noopener noreferrer" if visualizar_documento_nova_aba else None,
+            )
+        )
     actions.extend(
         [
             build_edit_action(editar_url),

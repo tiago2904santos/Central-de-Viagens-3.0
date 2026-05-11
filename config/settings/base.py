@@ -145,5 +145,6 @@ SIGNATURE_PKCS12_PASSWORD = (os.getenv("SIGNATURE_PKCS12_PASSWORD") or "").strip
 SIGNATURE_REASON = os.getenv("SIGNATURE_REASON", "Documento institucional")
 SIGNATURE_LOCATION = os.getenv("SIGNATURE_LOCATION", "")
 SIGNATURE_VISIBLE = os.getenv("SIGNATURE_VISIBLE", "true").lower() in ("1", "true", "yes")
+SIGNATURE_FIELD_NAME = (os.getenv("SIGNATURE_FIELD_NAME") or "AssinaturaCentralViagens").strip()
 
 TIMESTAMP_URL = (os.getenv("TIMESTAMP_URL") or "").strip() or None

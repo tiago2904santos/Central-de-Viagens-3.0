@@ -1,4 +1,13 @@
-def build_action(label, url, variant="secondary", method="get", icon=None):
+def build_action(
+    label,
+    url,
+    variant="secondary",
+    method="get",
+    icon=None,
+    *,
+    link_target=None,
+    link_rel=None,
+):
     if not url:
         return None
     if url in {"#", "javascript:void(0)", "javascript:void(0);"}:
@@ -11,6 +20,10 @@ def build_action(label, url, variant="secondary", method="get", icon=None):
     }
     if icon:
         payload["icon"] = icon
+    if link_target:
+        payload["link_target"] = link_target
+    if link_rel:
+        payload["link_rel"] = link_rel
     return payload
 
 

@@ -47,6 +47,7 @@ def get_document_generation_status(oficio: Oficio) -> dict[str, Any]:
     pdf_cached = False
     cache_status = "n/a"
     last_generated_at: str | None = None
+    art_cached: Any = None
 
     if complete and pdf_available and getattr(settings, "DOCUMENTOS_ARTIFACT_CACHE", True):
         payload = build_canonical_document_payload(oficio, DocumentoTipo.OFICIO)
@@ -62,16 +63,32 @@ def get_document_generation_status(oficio: Oficio) -> dict[str, Any]:
             attempt_chain=resolution.attempt_chain,
             template_signature=tpl_sig,
         )
-        art = get_cached_document_artifact(
+        art_cached = get_cached_document_artifact(
             oficio_id=oficio.pk,
             tipo=DocumentoTipo.OFICIO,
             formato=DocumentoFormato.PDF,
             cache_key=key,
         )
-        pdf_cached = art is not None
+        pdf_cached = art_cached is not None
         cache_status = "HIT" if pdf_cached else "MISS"
-        if art is not None and art.criado_em:
-            last_generated_at = art.criado_em.isoformat()
+        if art_cached is not None and art_cached.criado_em:
+            last_generated_at = art_cached.criado_em.isoformat()
+
+    # Cache MISS ainda pode haver PDF persistido (ex.: gerado antes sem bater a chave atual):
+    # expõe o último artefato para a barra "Assinar / Verificar" do wizard.
+    if (
+        art_cached is None
+        and complete
+        and pdf_available
+        and getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False)
+    ):
+        from documentos.selectors import get_latest_artefato_pdf_for_oficio
+
+        from documentos.services.warm_cache import pdf_artefato_original_acessivel
+
+        cand = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
+        if cand is not None and pdf_artefato_original_acessivel(cand):
+            art_cached = cand
 
     if not pdf_available:
         pdf_message = "PDF indisponível: configure Word, LibreOffice ou unoserver."
@@ -89,7 +106,7 @@ def get_document_generation_status(oficio: Oficio) -> dict[str, Any]:
         last_generated_at=last_generated_at,
         cache_status=cache_status,
     )
-    return {
+    out: dict[str, Any] = {
         "docx_available": st.docx_available,
         "pdf_available": st.pdf_available,
         "pdf_cached": st.pdf_cached,
@@ -98,4 +115,21 @@ def get_document_generation_status(oficio: Oficio) -> dict[str, Any]:
         "last_generated_at": st.last_generated_at,
         "cache_status": st.cache_status,
         "pdf_link_label": "PDF" if st.pdf_cached else "Gerar PDF",
+        "documentos_persist_artefatos": bool(getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False)),
+        "oficio_pdf_botoes_assinatura": bool(
+            complete
+            and pdf_available
+            and getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False),
+        ),
     }
+    if art_cached is not None:
+        out["oficio_pdf_artefato_id"] = str(art_cached.pk)
+        has_signed = False
+        try:
+            ass = art_cached.arquivo_assinado
+            if ass and getattr(ass, "name", ""):
+                has_signed = bool(ass.storage.exists(ass.name))
+        except OSError:
+            has_signed = False
+        out["oficio_pdf_signature_status"] = "signed" if has_signed else "unsigned"
+    return out

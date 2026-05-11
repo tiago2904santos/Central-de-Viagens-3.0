@@ -11,6 +11,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
+from assinaturas.services.recording import registrar_assinatura_concluida
+
 from .models import DocumentoArtefato
 from .services import default_document_registry
 from .services.access import artefato_pdf_download_filename
@@ -93,16 +95,21 @@ def artefato_pdf_visualizar(request, pk):
     )
 
 
-@require_POST
-def assinar_artefato_documento(request, pk):
-    artefato = get_object_or_404(DocumentoArtefato, pk=pk)
-    if artefato.formato != "pdf":
-        raise Http404("Apenas PDF pode ser assinado digitalmente neste fluxo.")
+def build_assinatura_pdf_http_response(request, artefato: DocumentoArtefato) -> HttpResponse:
+    """Gera resposta HTTP com o PDF assinado (bytes finais + cabeçalhos)."""
+    ensure_request_may_view_artefato_pdf(request, artefato)
     pdf_bytes = artefato.arquivo.read()
     signed, meta = assinar_pdf_final(pdf_bytes)
     atualizar_apos_assinatura(artefato, pdf_assinado=signed, backend=str(meta.get("backend", "")))
+    registrar_assinatura_concluida(artefato, meta)
     nome = f"assinado_{artefato.tipo}.pdf"
     response = HttpResponse(signed, content_type="application/pdf")
     response["Content-Disposition"] = f'attachment; filename="{nome}"'
     response["X-Signature-Backend"] = meta.get("backend", "")
     return response
+
+
+@require_POST
+def assinar_artefato_documento(request, pk):
+    artefato = get_object_or_404(DocumentoArtefato, pk=pk)
+    return build_assinatura_pdf_http_response(request, artefato)

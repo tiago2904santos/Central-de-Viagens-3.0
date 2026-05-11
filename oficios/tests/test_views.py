@@ -83,11 +83,16 @@ class OficioViewsTests(TestCase):
         response = self.client.get(reverse("oficios:index"))
         self.assertContains(response, "Rascunho")
 
-    def test_lista_inclui_link_visualizar_documento(self):
+    def test_lista_visualizar_documento_aponta_para_etapa_documentos(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
+        oficio.servidores.add(self.servidor)
         response = self.client.get(reverse("oficios:index"))
         self.assertContains(response, "Visualizar documento")
         self.assertContains(response, reverse("oficios:wizard_documentos", args=[oficio.pk]))
+        self.assertNotContains(
+            response,
+            reverse("termos:termo_servidor_pdf_inline", args=[oficio.pk, self.servidor.pk]),
+        )
 
     @mock.patch("documentos.services.warm_cache.ensure_document_artifact_cached")
     def test_wizard_documentos_exibe_secao_conferencia(self, _m_cache):
@@ -97,10 +102,11 @@ class OficioViewsTests(TestCase):
         self.assertContains(response, "Documentos para conferência")
         self.assertNotContains(response, "Visualizar documento")
 
-    def test_get_detalhe_retorna_200(self):
+    def test_get_detalhe_redireciona_para_dados_viajantes(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
-        response = self.client.get(reverse("oficios:detalhe", args=[oficio.pk]))
-        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse("oficios:detalhe", args=[oficio.pk]), follow=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("oficios:dados_viajantes", args=[oficio.pk]))
 
     def test_get_editar_redireciona_para_dados_viajantes(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)

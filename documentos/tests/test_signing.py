@@ -9,3 +9,5 @@ class SigningTests(SimpleTestCase):
         out, meta = assinar_pdf_final(b)
         self.assertEqual(out, b)
         self.assertEqual(meta.get("backend"), "disabled")
+        self.assertEqual(meta.get("sha256_in"), meta.get("sha256_out"))
+        self.assertIn("field_name", meta)

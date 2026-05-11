@@ -24,7 +24,7 @@
   {% if card.actions %}
     <div class="oficio-card__actions">
       {% for action in card.actions %}
-        {% include "components/buttons/action_button.html" with href=action.href label=action.label variant=action.variant method=action.method confirm=action.confirm only %}
+        {% include "components/buttons/action_button.html" with href=action.href label=action.label variant=action.variant method=action.method confirm=action.confirm link_target=action.link_target|default:'' link_rel=action.link_rel|default:'' only %}
       {% endfor %}
     </div>
   {% endif %}

@@ -25,7 +25,6 @@
   box-sizing: border-box;
   color: var(--theme-text-body);
   min-height: min(100vh, 100%);
-  padding: var(--space-2) var(--space-7) var(--space-6);
   width: 100%;
 }
 
