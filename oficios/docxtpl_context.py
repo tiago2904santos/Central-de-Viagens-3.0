@@ -22,6 +22,7 @@ from roteiros.models import RoteiroTrecho
 
 from .assunto_oficio import resolver_assunto_oficio
 from .models import Oficio
+
 DESTINO_FORA_PARANA = "SESP"
 DESTINO_DENTRO_PARANA = "Gabinete do Delegado Geral Adjunto"
 
