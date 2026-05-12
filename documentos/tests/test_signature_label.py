@@ -123,7 +123,7 @@ class WizardAssinaturaCamposEtiquetaTests(TestCase):
             url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
             r = self.client.get(url)
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, "Assinaturas digitais")
+        self.assertContains(r, "Central de assinaturas")
         self.assertNotContains(r, 'name="sig_x"')
         self.assertNotContains(r, "assinatura-pdf.js")
         self.assertNotContains(r, 'id="assinatura-pdf-editor"')
