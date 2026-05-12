@@ -1,0 +1,35 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ page_title|default:"Assinatura de documento" }}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+  <link rel="stylesheet" href="{% static 'css/signature-public.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="signature-public-page">
+  <header class="signature-public-header">
+    <div class="signature-public-brand">
+      <div class="signature-public-brand__mark" aria-hidden="true">CV</div>
+      <div>
+        <strong>Central de Viagens</strong>
+        <span>Policia Civil do Parana</span>
+      </div>
+    </div>
+    <div class="signature-public-header__meta">
+      <span>Assinatura eletronica de documento</span>
+      <strong>{% block header_status %}Ambiente seguro{% endblock %}</strong>
+    </div>
+  </header>
+
+  <main class="signature-public-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

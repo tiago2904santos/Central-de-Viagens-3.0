@@ -82,8 +82,10 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         self.assertIn("text/html", r["Content-Type"])
         disp = r.get("Content-Disposition") or ""
         self.assertNotIn("attachment", disp.lower())
-        self.assertContains(r, "Confirmar assinatura")
+        self.assertContains(r, "Gerar solicitação")
         self.assertContains(r, "Assinaturas digitais")
+        self.assertNotContains(r, "Confirmar assinatura")
+        self.assertNotContains(r, "Arraste a etiqueta")
         self.assertTemplateUsed(r, "oficios/wizard_assinaturas.html")
 
     @mock.patch("documentos.services.signing.workflow.assinar_pdf_final")

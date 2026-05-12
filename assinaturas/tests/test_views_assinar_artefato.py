@@ -86,16 +86,19 @@ class PedidoAssinaturaDocumentoViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(PedidoAssinaturaDocumento.objects.exists())
 
-    def test_tela_pedido_redireciona_anonimo_para_login(self):
+    def test_token_valido_abre_pagina_publica_e_marca_visualizada(self):
         client = Client()
         client.force_login(self.user)
         client.get(reverse("assinaturas:gerar-link-assinatura", kwargs={"artefato_id": self.art.pk}))
         pedido = PedidoAssinaturaDocumento.objects.get()
 
-        response = Client().get(reverse("assinaturas:assinar-pedido", kwargs={"token": pedido.token}))
+        response = Client().get(reverse("assinaturas:assinatura-token", kwargs={"token": pedido.token}), HTTP_USER_AGENT="UA")
 
-        self.assertEqual(response.status_code, 302)
-        self.assertIn("/login", response.headers["Location"])
+        self.assertEqual(response.status_code, 200)
+        pedido.refresh_from_db()
+        self.assertEqual(pedido.status, PedidoAssinaturaDocumento.STATUS_VISUALIZADA)
+        self.assertTrue(pedido.visualizado_em)
+        self.assertEqual(pedido.user_agent_visualizacao, "UA")
 
     def test_tela_pedido_nao_tem_inputs_manuais_de_assinante(self):
         client = Client()
@@ -103,7 +106,7 @@ class PedidoAssinaturaDocumentoViewTests(TestCase):
         client.get(reverse("assinaturas:gerar-link-assinatura", kwargs={"artefato_id": self.art.pk}))
         pedido = PedidoAssinaturaDocumento.objects.get()
 
-        response = client.get(reverse("assinaturas:assinar-pedido", kwargs={"token": pedido.token}))
+        response = client.get(reverse("assinaturas:assinatura-token", kwargs={"token": pedido.token}))
 
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
@@ -112,49 +115,85 @@ class PedidoAssinaturaDocumentoViewTests(TestCase):
         self.assertNotIn('name="email_assinante"', html)
         self.assertIn('name="sig_x"', html)
         self.assertIn('name="sig_page"', html)
+        self.assertNotIn("sidebar", html.lower())
+        self.assertNotIn("wizard_stepper", html)
+        self.assertNotIn("Dados da assinatura", html)
+        self.assertIn("signature-document-shell", html)
+        self.assertIn("assinatura-pdf-editor", html)
+        self.assertIn("Ajustar largura", html)
+        self.assertIn("DOCUMENTO A SER ASSINADO ELETRONICAMENTE", html)
+        self.assertIn("Confirmar assinatura", html)
+        self.assertIn("Recusar assinatura", html)
         self.assertContains(response, "CHEFIA TESTE")
 
-    def test_post_pedido_usa_snapshot_e_redireciona_verificacao(self):
+    def test_post_token_usa_snapshot_e_redireciona_sucesso(self):
         client = Client()
         client.force_login(self.user)
         client.get(reverse("assinaturas:gerar-link-assinatura", kwargs={"artefato_id": self.art.pk}))
         pedido = PedidoAssinaturaDocumento.objects.get()
 
-        response = client.post(
-            reverse("assinaturas:assinar-pedido", kwargs={"token": pedido.token}),
+        response = Client().post(
+            reverse("assinaturas:assinatura-token-confirmar", kwargs={"token": pedido.token}),
             {
+                "ciencia": "1",
                 "sig_x": "0.37",
                 "sig_y": "0.8",
-                "sig_w": "0.269",
-                "sig_h": "0.067",
+                "sig_w": "0.253",
+                "sig_h": "0.068",
                 "sig_page": "-1",
                 "nome_assinante": "Nome Ignorado",
                 "cpf_assinante": "00000000000",
                 "email_assinante": "ignorado@example.test",
             },
+            REMOTE_ADDR="127.0.0.9",
+            HTTP_USER_AGENT="ASSINATURA-UA",
         )
 
         self.assertEqual(response.status_code, 302)
-        self.assertIn("/assinaturas/verificar/", response.headers.get("Location", ""))
+        self.assertIn("/assinaturas/sucesso/", response.headers.get("Location", ""))
         pedido.refresh_from_db()
         self.art.refresh_from_db()
         self.assertEqual(pedido.status, PedidoAssinaturaDocumento.STATUS_ASSINADO)
         self.assertTrue(pedido.assinatura_id)
+        self.assertEqual(pedido.posicao_etiqueta_json["box_x"], 0.37)
+        self.assertEqual(pedido.ip_assinatura, "127.0.0.9")
+        self.assertEqual(pedido.user_agent, "ASSINATURA-UA")
         self.assertTrue(self.art.arquivo_assinado.name)
         assinatura = AssinaturaDigital.objects.get()
         self.assertEqual(assinatura.nome_assinante, "CHEFIA TESTE")
         self.assertEqual(assinatura.cpf_assinante, "12345678901")
         self.assertNotEqual(assinatura.nome_assinante, "Nome Ignorado")
 
-    def test_usuario_diferente_recebe_403_quando_pedido_tem_usuario_assinante(self):
+    def test_rota_legacy_pedidos_token_redireciona_para_pagina_publica(self):
         client = Client()
         client.force_login(self.user)
         client.get(reverse("assinaturas:gerar-link-assinatura", kwargs={"artefato_id": self.art.pk}))
         pedido = PedidoAssinaturaDocumento.objects.get()
-        outro = get_user_model().objects.create_user(username="outro", password="p" * 12)
-        pedido.assinante_usuario = outro
-        pedido.save(update_fields=["assinante_usuario"])
 
-        response = client.get(reverse("assinaturas:assinar-pedido", kwargs={"token": pedido.token}))
+        response = Client().get(reverse("assinaturas:assinar-pedido", kwargs={"token": pedido.token}))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(f"/assinaturas/assinar/{pedido.token}/", response.headers["Location"])
+
+    def test_token_recusado_bloqueia_assinatura_posterior(self):
+        client = Client()
+        client.force_login(self.user)
+        client.get(reverse("assinaturas:gerar-link-assinatura", kwargs={"artefato_id": self.art.pk}))
+        pedido = PedidoAssinaturaDocumento.objects.get()
+
+        response = Client().post(
+            reverse("assinaturas:assinatura-token-recusar", kwargs={"token": pedido.token}),
+            {"motivo": "Nao concordo"},
+        )
 
         self.assertEqual(response.status_code, 403)
+        pedido.refresh_from_db()
+        self.assertEqual(pedido.status, PedidoAssinaturaDocumento.STATUS_RECUSADA)
+        self.assertTrue(pedido.recusado_em)
+        self.assertEqual(pedido.motivo_recusa, "Nao concordo")
+
+        blocked = Client().post(
+            reverse("assinaturas:assinatura-token-confirmar", kwargs={"token": pedido.token}),
+            {"ciencia": "1"},
+        )
+        self.assertEqual(blocked.status_code, 403)

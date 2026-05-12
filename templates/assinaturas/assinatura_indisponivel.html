@@ -1,35 +1,22 @@
-{% load static %}
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ page_title }}</title>
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/assinaturas.css' %}">
-</head>
-<body class="assinatura-publica-body">
-  <main class="assinatura-publica assinatura-publica--narrow">
-    <header class="assinatura-publica__header">
-      <div>
-        <p class="assinatura-publica__brand">Central de Viagens</p>
-        <h1>Assinatura indisponível</h1>
-      </div>
-    </header>
-    <p class="assinatura-publica__message">{{ mensagem }}</p>
-    {% if pedido %}
-      <section class="assinatura-publica__summary assinatura-publica__summary--stack">
-        <div>
-          <span>Status</span>
-          <strong>{{ pedido.get_status_display }}</strong>
-        </div>
-        <div>
-          <span>Documento</span>
-          <strong>{{ pedido.tipo_documento|default:"Documento" }}</strong>
-        </div>
-      </section>
-    {% endif %}
-  </main>
-</body>
-</html>
+{% extends "assinaturas/base_publica_assinatura.html" %}
+
+{% block title %}Assinatura indisponivel{% endblock %}
+{% block header_status %}Link indisponivel{% endblock %}
+
+{% block content %}
+<section class="signature-result signature-result--warning">
+  <p class="signature-kicker">Assinatura indisponivel</p>
+  <h1>Este link de assinatura nao esta mais disponivel.</h1>
+  <p>{{ mensagem|default:"Entre em contato com o setor responsavel." }}</p>
+</section>
+
+{% if pedido %}
+  <section class="signature-context-bar signature-context-bar--result">
+    <div class="signature-context-grid">
+      <div><span>Status</span><strong class="signature-status-badge">{{ pedido.get_status_display }}</strong></div>
+      <div><span>Documento</span><strong>{{ public_context.document_label|default:pedido.tipo_documento }}</strong></div>
+      <div><span>Codigo do pedido</span><strong>{{ public_context.public_code }}</strong></div>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

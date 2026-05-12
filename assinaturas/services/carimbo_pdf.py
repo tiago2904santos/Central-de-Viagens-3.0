@@ -43,6 +43,10 @@ class DadosCarimbo:
     data_hora_assinatura: datetime
     codigo_verificacao: str
     url_validacao: str
+    cargo_assinante: str = ""
+    documento_label: str = ""
+    hash_curto: str = ""
+    organizacao_label: str = "Central de Viagens - PCPR"
 
 
 @dataclass(frozen=True)
@@ -255,22 +259,26 @@ def _draw_signature_stamp_content(
         text_width,
         (5.2, 5.0, 4.8, 4.6),
     )
-    for line, font_size in (
+    linhas = [
         (dados_carimbo.nome_assinante, name_size),
         (f"CPF: {dados_carimbo.cpf_mascarado}", 5.2),
-        (f"Data: {data_formatada}", 5.2),
-    ):
+    ]
+    if dados_carimbo.cargo_assinante:
+        linhas.append((f"Cargo: {dados_carimbo.cargo_assinante}", 4.8))
+    linhas.extend(
+        [
+            (f"Data: {data_formatada}", 5.0),
+            (f"Codigo: {dados_carimbo.codigo_verificacao}", 4.8),
+        ]
+    )
+    for line, font_size in linhas[:4]:
         c.setFont(SIGNATURE_LABEL_FONT_BODY, font_size)
-        c.drawString(text_left, y, line)
+        c.drawString(text_left, y, _ellipsize_to_width(line, SIGNATURE_LABEL_FONT_BODY, font_size, text_width))
         y -= 8
 
-    link_size = 4.4
-    link_linha = _validation_link_text(
-        dados_carimbo.url_validacao,
-        SIGNATURE_LABEL_FONT_BODY,
-        link_size,
-        text_width,
-    )
+    link_size = 4.2
+    hash_label = f"Hash: {dados_carimbo.hash_curto}" if dados_carimbo.hash_curto else dados_carimbo.organizacao_label
+    link_linha = _ellipsize_to_width(hash_label, SIGNATURE_LABEL_FONT_BODY, link_size, text_width)
     c.setFont(SIGNATURE_LABEL_FONT_BODY, link_size)
     c.drawString(text_left, y, link_linha)
     _ = padding  # reservado para alinhamentos futuros
@@ -288,7 +296,7 @@ def renderizar_aparencia_assinatura(dados_carimbo: DadosCarimbo, width: float, h
 def calculate_signature_stamp_box(page_width: float, page_height: float, posicao: dict) -> tuple[float, float, float, float]:
     box_w = SIGNATURE_LABEL_WIDTH_PT
     box_h = SIGNATURE_LABEL_HEIGHT_PT
-    left = (page_width - box_w) / 2
+    left = page_width * float(posicao.get("box_x", 0.37))
     bottom = page_height - (page_height * posicao["box_y"]) - box_h
     left = min(max(left, 8.0), page_width - box_w - 8.0)
     bottom = min(max(bottom, SIGNATURE_LABEL_MIN_BOTTOM_PT), page_height - box_h - 8.0)

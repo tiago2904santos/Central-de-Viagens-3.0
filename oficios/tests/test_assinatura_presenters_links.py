@@ -54,4 +54,6 @@ class AssinaturaPresentersLinksTests(TestCase):
             expira_em=timezone.now() + timedelta(days=1),
         )
         u = assinatura_urls_artefato(art)
-        self.assertIn(f"/assinaturas/pedidos/{pedido.token}/assinar/", u["assinar"])
+        self.assertEqual(u["assinar"], "")
+        self.assertIn(f"/assinaturas/assinar/{pedido.token}/", u["pedido"])
+        self.assertIn(f"/assinaturas/pedidos/{pedido.token}/revogar/", u["revogar"])

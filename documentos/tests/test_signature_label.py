@@ -116,18 +116,18 @@ class WizardAssinaturaCamposEtiquetaTests(TestCase):
     def _validacao_limpa():
         return {"status": "complete", "pendencias": [], "checks": {}}
 
-    def test_get_pagina_inclui_campos_sig_e_js_modulo(self):
+    def test_get_pagina_e_central_sem_editor_de_assinatura(self):
         from unittest import mock
 
         with mock.patch("oficios.views.validar_oficio_para_documento", return_value=self._validacao_limpa()):
             url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
             r = self.client.get(url)
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'name="sig_x"')
-        self.assertContains(r, 'id="sig-x"')
-        self.assertContains(r, "assinatura-pdf.js")
-        self.assertContains(r, 'id="assinatura-pdf-editor"')
-        self.assertContains(r, 'id="assinatura-pages-column"')
+        self.assertContains(r, "Assinaturas digitais")
+        self.assertNotContains(r, 'name="sig_x"')
+        self.assertNotContains(r, "assinatura-pdf.js")
+        self.assertNotContains(r, 'id="assinatura-pdf-editor"')
+        self.assertNotContains(r, "Arraste a etiqueta")
 
     def test_post_gera_pedido_sem_assinar_diretamente(self):
         from unittest import mock

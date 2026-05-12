@@ -1,40 +1,25 @@
-{% load static %}
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ page_title }}</title>
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/assinaturas.css' %}">
-</head>
-<body class="assinatura-publica-body">
-  <main class="assinatura-publica assinatura-publica--narrow">
-    <header class="assinatura-publica__header">
-      <div>
-        <p class="assinatura-publica__brand">Central de Viagens</p>
-        <h1>Documento assinado com sucesso</h1>
-      </div>
-    </header>
-    <section class="assinatura-publica__summary assinatura-publica__summary--stack">
-      <div>
-        <span>Código</span>
-        <strong>{{ assinatura.codigo_verificacao }}</strong>
-      </div>
-      <div>
-        <span>Data/hora</span>
-        <strong>{{ pedido.assinado_em|date:"d/m/Y H:i" }}</strong>
-      </div>
-      <div>
-        <span>Hash do documento assinado</span>
-        <strong class="mono">{{ pedido.hash_documento_assinado }}</strong>
-      </div>
-      <div>
-        <span>Destinatário</span>
-        <strong>{{ pedido.nome_assinante_snapshot }}</strong>
-      </div>
-    </section>
-  </main>
-</body>
-</html>
+{% extends "assinaturas/base_publica_assinatura.html" %}
+
+{% block title %}Documento assinado{% endblock %}
+{% block header_status %}Assinatura concluida{% endblock %}
+
+{% block content %}
+<section class="signature-result signature-result--success">
+  <p class="signature-kicker">Concluido</p>
+  <h1>Documento assinado com sucesso</h1>
+  <p>Este link nao permite nova assinatura para o mesmo pedido.</p>
+</section>
+
+<section class="signature-context-bar signature-context-bar--result">
+  <div class="signature-context-grid">
+    <div><span>Documento</span><strong>{{ public_context.document_label|default:"Documento" }}</strong></div>
+    <div><span>Assinante</span><strong>{{ public_context.signer_name }}</strong></div>
+    <div><span>Data/hora</span><strong>{{ pedido.assinado_em|date:"d/m/Y H:i" }}</strong></div>
+    <div><span>Codigo de verificacao</span><strong>{{ assinatura.codigo_verificacao }}</strong></div>
+    <div class="signature-context-grid__wide"><span>Hash do documento assinado</span><strong class="mono">{{ pedido.hash_documento_assinado }}</strong></div>
+  </div>
+  <div class="signature-result-actions">
+    <a class="signature-primary-button" href="{% url 'assinaturas:assinatura-pdf-assinado' assinatura.pk %}" target="_blank" rel="noopener">Visualizar PDF assinado</a>
+  </div>
+</section>
+{% endblock %}

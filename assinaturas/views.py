@@ -23,6 +23,8 @@ from assinaturas.services.assinatura_artefato import assinatura_arquivo_esta_int
 from assinaturas.services.assinatura_artefato import mascarar_cpf_assinatura
 from assinaturas.services.codigos import normalizar_codigo_verificacao
 from assinaturas.services.hash import calcular_sha256_bytes
+from assinaturas.services.assinatura_label_presenter import build_signature_label_context
+from assinaturas.services.assinatura_label_presenter import build_signature_public_context
 from assinaturas.services.pedidos import criar_ou_obter_pedido_assinatura
 from assinaturas.services.pedidos import url_publica_pedido_assinatura
 from assinaturas.services.recording import registrar_assinatura_concluida
@@ -150,8 +152,22 @@ def _render_pedido_indisponivel(request, pedido: PedidoAssinaturaDocumento, mens
     return render(
         request,
         "assinaturas/assinatura_indisponivel.html",
-        {"page_title": "Assinatura indisponivel", "pedido": pedido, "mensagem": mensagem},
+        {
+            "page_title": "Assinatura indisponivel",
+            "pedido": pedido,
+            "mensagem": mensagem,
+            "public_context": build_signature_public_context(pedido) if pedido else {},
+        },
         status=status,
+    )
+
+
+def _render_token_invalido(request, mensagem: str = "Este link de assinatura nao esta disponivel."):
+    return render(
+        request,
+        "assinaturas/assinatura_indisponivel.html",
+        {"page_title": "Assinatura indisponivel", "pedido": None, "mensagem": mensagem, "public_context": {}},
+        status=404,
     )
 
 
@@ -190,7 +206,7 @@ def gerar_link_assinatura(request, artefato_id):
             artefato,
             criado_por=request.user,
             request=request,
-            forcar_novo=request.POST.get("forcar_novo") == "1",
+            forcar_novo=(request.POST.get("forcar_novo") or request.GET.get("forcar_novo")) == "1",
         )
     except AssinanteNaoConfiguradoError as exc:
         messages.error(request, str(exc))
@@ -225,7 +241,7 @@ def _pedido_403_se_usuario_incorreto(request, pedido: PedidoAssinaturaDocumento)
         raise PermissionDenied("Este pedido de assinatura pertence a outro usuário.")
 
 
-@login_required
+@login_not_required
 @require_http_methods(["GET", "POST"])
 def assinar_pedido(request, token):
     return redirect(reverse("assinaturas:assinatura-token", kwargs={"token": token}))
@@ -234,7 +250,10 @@ def assinar_pedido(request, token):
 @login_not_required
 @require_GET
 def assinatura_token(request, token):
-    pedido = _pedido_por_token(token)
+    try:
+        pedido = _pedido_por_token(token)
+    except Http404:
+        return _render_token_invalido(request, "Token de assinatura invalido.")
     if _marcar_expirado_se_preciso(pedido):
         return _render_pedido_indisponivel(request, pedido, "Este link de assinatura expirou.")
     if pedido.status == PedidoAssinaturaDocumento.STATUS_ASSINADO:
@@ -265,6 +284,8 @@ def assinatura_token(request, token):
             "artefato": pedido.artefato,
             "cpf_mascarado": mascarar_cpf_assinatura(pedido.cpf_assinante_snapshot),
             "pdf_url": reverse("assinaturas:assinatura-token-pdf-original", kwargs={"token": pedido.token}),
+            "public_context": build_signature_public_context(pedido),
+            "label_context": build_signature_label_context(pedido),
         },
     )
 
@@ -272,24 +293,23 @@ def assinatura_token(request, token):
 @login_not_required
 @require_POST
 def assinatura_token_confirmar(request, token):
-    pedido = _pedido_por_token(token)
+    try:
+        pedido = _pedido_por_token(token)
+    except Http404:
+        return _render_token_invalido(request, "Token de assinatura invalido.")
     if _marcar_expirado_se_preciso(pedido) or not _pedido_pode_assinar(pedido):
         return _render_pedido_indisponivel(request, pedido, "Este link nao permite nova assinatura.")
-    if request.POST.get("ciencia") != "1" or request.POST.get("identidade") != "1":
-        return HttpResponseForbidden("Confirme a ciencia e a identidade antes de assinar.")
+    if request.POST.get("ciencia") != "1":
+        return HttpResponseForbidden("Confirme a ciencia antes de assinar.")
     artefato = pedido.artefato
-    pos = {
-        "box_x": 0.58,
-        "box_y": 0.78,
-        "box_w": 0.34,
-        "box_h": 0.11,
-        "page_index": -1,
-    }
+    pos = _posicao_from_post(request.POST)
     ass = assinar_artefato_com_etiqueta(
         artefato,
         nome_assinante=pedido.nome_assinante_snapshot,
         cpf_assinante=pedido.cpf_assinante_snapshot,
         email_assinante=pedido.email_assinante_snapshot,
+        cargo_assinante=pedido.cargo_assinante_snapshot,
+        documento_label=build_signature_public_context(pedido).get("document_label", ""),
         usuario=request.user if getattr(request.user, "is_authenticated", False) else None,
         request=request,
         posicao=pos,
@@ -325,7 +345,10 @@ def assinatura_token_confirmar(request, token):
 @login_not_required
 @require_POST
 def assinatura_token_recusar(request, token):
-    pedido = _pedido_por_token(token)
+    try:
+        pedido = _pedido_por_token(token)
+    except Http404:
+        return _render_token_invalido(request, "Token de assinatura invalido.")
     if _marcar_expirado_se_preciso(pedido) or not _pedido_pode_assinar(pedido):
         return _render_pedido_indisponivel(request, pedido, "Este link nao permite recusa.")
     pedido.status = PedidoAssinaturaDocumento.STATUS_RECUSADA
@@ -343,13 +366,22 @@ def assinatura_token_recusar(request, token):
 @login_not_required
 @require_GET
 def assinatura_sucesso(request, token):
-    pedido = _pedido_por_token(token)
+    try:
+        pedido = _pedido_por_token(token)
+    except Http404:
+        return _render_token_invalido(request, "Token de assinatura invalido.")
     if pedido.status != PedidoAssinaturaDocumento.STATUS_ASSINADO or not pedido.assinatura_id:
         return _render_pedido_indisponivel(request, pedido, "Esta assinatura ainda nao foi concluida.", status=404)
     return render(
         request,
         "assinaturas/assinatura_sucesso.html",
-        {"page_title": "Documento assinado", "pedido": pedido, "assinatura": pedido.assinatura},
+        {
+            "page_title": "Documento assinado",
+            "pedido": pedido,
+            "assinatura": pedido.assinatura,
+            "public_context": build_signature_public_context(pedido),
+            "label_context": build_signature_label_context(pedido, signed=True),
+        },
     )
 
 

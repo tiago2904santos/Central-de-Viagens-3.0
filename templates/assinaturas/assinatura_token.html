@@ -1,69 +1,136 @@
+{% extends "assinaturas/base_publica_assinatura.html" %}
 {% load static %}
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ page_title }}</title>
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
-  <link rel="stylesheet" href="{% static 'css/assinaturas.css' %}">
-</head>
-<body class="assinatura-publica-body">
-  <main class="assinatura-publica">
-    <header class="assinatura-publica__header">
-      <div>
-        <p class="assinatura-publica__brand">Central de Viagens</p>
-        <h1>Assinatura digital de documento</h1>
-      </div>
-    </header>
 
-    <section class="assinatura-publica__summary" aria-label="Dados da assinatura">
-      <div>
-        <span>Documento</span>
-        <strong>{{ artefato.tipo|default:"Documento" }}</strong>
-      </div>
-      <div>
-        <span>Destinatário</span>
-        <strong>{{ pedido.nome_assinante_snapshot }}</strong>
-      </div>
-      <div>
-        <span>CPF</span>
-        <strong>{{ cpf_mascarado }}</strong>
-      </div>
-      <div>
-        <span>Status</span>
-        <strong>{{ pedido.get_status_display }}</strong>
-      </div>
-    </section>
+{% block title %}{{ page_title }}{% endblock %}
+{% block header_status %}Link valido{% endblock %}
 
-    <section class="assinatura-publica__viewer" aria-label="Documento para assinatura">
-      <iframe src="{{ pdf_url }}" title="Documento para assinatura"></iframe>
-    </section>
+{% block content %}
+<section class="signature-hero" aria-label="Resumo da solicitacao">
+  <div>
+    <p class="signature-kicker">Assinatura pendente</p>
+    <h1>{{ public_context.document_label|default:"Documento para assinatura" }}</h1>
+    <p>Revise integralmente o documento antes de confirmar a assinatura eletronica.</p>
+  </div>
+  <button type="button" class="signature-link-button" data-signature-details-open>Ver detalhes da assinatura</button>
+</section>
 
-    <section class="assinatura-publica__actions" aria-label="Confirmação">
-      <form method="post" action="{% url 'assinaturas:assinatura-token-confirmar' pedido.token %}" class="assinatura-publica__form">
-        {% csrf_token %}
-        <label class="assinatura-publica__check">
-          <input type="checkbox" name="ciencia" value="1" required>
-          <span>Declaro que li o documento.</span>
-        </label>
-        <label class="assinatura-publica__check">
-          <input type="checkbox" name="identidade" value="1" required>
-          <span>Confirmo que sou o destinatário desta assinatura.</span>
-        </label>
-        <div class="assinatura-publica__buttons">
-          <button type="submit" class="btn btn-primary app-btn app-btn--primary">Assinar documento</button>
-        </div>
-      </form>
-      <form method="post" action="{% url 'assinaturas:assinatura-token-recusar' pedido.token %}" class="assinatura-publica__recusa">
-        {% csrf_token %}
-        <label for="motivo-recusa">Motivo da recusa</label>
-        <textarea id="motivo-recusa" name="motivo" rows="3"></textarea>
-        <button type="submit" class="btn btn-secondary app-btn app-btn--secondary">Recusar assinatura</button>
-      </form>
-    </section>
-  </main>
-</body>
-</html>
+<section class="signature-context-bar" aria-label="Dados principais da assinatura">
+  <div class="signature-context-grid">
+    <div><span>Documento</span><strong>{{ public_context.document_label|default:"Documento" }}</strong></div>
+    <div><span>Assinante</span><strong>{{ public_context.signer_name }}</strong></div>
+    <div><span>CPF</span><strong>{{ public_context.signer_cpf_masked }}</strong></div>
+    <div><span>Status</span><strong class="signature-status-badge">{{ public_context.status_label }}</strong></div>
+    <div><span>Expira em</span><strong>{{ public_context.expires_at|date:"d/m/Y H:i" }}</strong></div>
+    <div><span>Codigo do pedido</span><strong>{{ public_context.public_code }}</strong></div>
+  </div>
+</section>
+
+<form method="post" action="{% url 'assinaturas:assinatura-token-confirmar' pedido.token %}" id="signature-public-form" class="signature-document-shell">
+  {% csrf_token %}
+  <input type="hidden" name="sig_x" id="sig-x" value="0.58" autocomplete="off">
+  <input type="hidden" name="sig_y" id="sig-y" value="0.78" autocomplete="off">
+  <input type="hidden" name="sig_w" id="sig-w" value="0.253" autocomplete="off">
+  <input type="hidden" name="sig_h" id="sig-h" value="0.068" autocomplete="off">
+  <input type="hidden" name="sig_page" id="sig-page" value="-1" autocomplete="off">
+
+  <section
+    class="signature-pdf-viewer"
+    id="assinatura-pdf-editor"
+    data-pdf-url="{{ pdf_url }}"
+    data-form-id="signature-public-form"
+    data-signer-name="{{ label_context.signer_name }}"
+    data-signer-cpf="{{ label_context.signer_cpf_masked }}"
+    data-signer-role="{{ label_context.signer_role }}"
+    data-document-label="{{ label_context.document_label }}"
+    data-label-title="{{ label_context.title }}"
+    data-label-status="{{ label_context.status_label }}"
+    data-verification-code="{{ label_context.verification_code }}"
+    data-organization-label="{{ label_context.organization_label }}"
+    data-worker-src="{% static 'vendor/pdfjs/pdf.worker.min.js' %}"
+    aria-label="Documento para leitura e assinatura"
+  >
+    <div class="signature-pdf-toolbar">
+      <div>
+        <strong id="assinatura-pdf-meta">Carregando PDF...</strong>
+        <span id="assinatura-pdf-error" class="signature-pdf-error" role="alert" hidden></span>
+      </div>
+      <div class="signature-pdf-toolbar__actions" aria-label="Controles de zoom">
+        <button type="button" class="signature-icon-button" id="assinatura-zoom-out" aria-label="Diminuir zoom">-</button>
+        <button type="button" class="signature-fit-button" id="assinatura-zoom-reset">Ajustar largura</button>
+        <button type="button" class="signature-icon-button" id="assinatura-zoom-in" aria-label="Aumentar zoom">+</button>
+      </div>
+    </div>
+    <div class="signature-pdf-scroller" id="assinatura-editor-scroll">
+      <div class="signature-pdf-pages" id="assinatura-pages-column"></div>
+    </div>
+  </section>
+
+  <section class="signature-actions-bar" aria-label="Acoes da assinatura">
+    <label class="signature-consent">
+      <input type="checkbox" name="ciencia" value="1" id="signature-consent-checkbox" required>
+      <span>Li e conferi o documento acima e confirmo que desejo assina-lo eletronicamente.</span>
+    </label>
+    <div class="signature-actions-bar__buttons">
+      <button type="button" class="signature-danger-button" data-signature-refuse-open>Recusar assinatura</button>
+      <button type="button" class="signature-primary-button" id="signature-confirm-open" disabled>Confirmar assinatura</button>
+    </div>
+  </section>
+
+  <dialog class="signature-confirmation-modal" id="signature-confirmation-modal">
+    <div class="signature-modal__body">
+      <p class="signature-kicker">Confirmacao final</p>
+      <h2>Assinar documento agora?</h2>
+      <dl class="signature-modal-facts">
+        <div><dt>Assinante</dt><dd>{{ public_context.signer_name }}</dd></div>
+        <div><dt>Documento</dt><dd>{{ public_context.document_label|default:"Documento" }}</dd></div>
+      </dl>
+      <p>A assinatura sera registrada com IP, data/hora oficial e identificacao do navegador. Apos assinado, o documento nao podera ser alterado sem nova assinatura.</p>
+      <div class="signature-modal__actions">
+        <button type="button" class="signature-link-button" data-modal-close>Voltar</button>
+        <button type="submit" class="signature-primary-button">Assinar agora</button>
+      </div>
+    </div>
+  </dialog>
+</form>
+
+<dialog class="signature-confirmation-modal" id="signature-refuse-modal">
+  <form method="post" action="{% url 'assinaturas:assinatura-token-recusar' pedido.token %}" class="signature-modal__body">
+    {% csrf_token %}
+    <p class="signature-kicker">Recusa de assinatura</p>
+    <h2>Recusar assinatura</h2>
+    <label class="signature-field">
+      <span>Motivo da recusa</span>
+      <textarea name="motivo" rows="4"></textarea>
+    </label>
+    <div class="signature-modal__actions">
+      <button type="button" class="signature-link-button" data-modal-close>Voltar</button>
+      <button type="submit" class="signature-danger-button">Recusar assinatura</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="signature-confirmation-modal" id="signature-details-modal">
+  <div class="signature-modal__body signature-modal__body--wide">
+    <p class="signature-kicker">Detalhes da assinatura</p>
+    <h2>Informacoes de seguranca</h2>
+    <dl class="signature-detail-grid">
+      <div><dt>Hash original</dt><dd class="mono">{{ public_context.original_hash|default:"Indisponivel" }}</dd></div>
+      <div><dt>Criado em</dt><dd>{{ public_context.created_at|date:"d/m/Y H:i" }}</dd></div>
+      <div><dt>Documento vinculado</dt><dd>{{ public_context.linked_document }}</dd></div>
+      <div><dt>Oficio vinculado</dt><dd>{{ public_context.linked_oficio|default:"Nao informado" }}</dd></div>
+      <div><dt>Responsavel interno</dt><dd>{{ public_context.internal_responsible|default:"Nao informado" }}</dd></div>
+      <div><dt>Metodo</dt><dd>{{ public_context.signature_method }}</dd></div>
+    </dl>
+    <p>O IP, a data/hora oficial e o navegador serao registrados no momento da assinatura.</p>
+    <div class="signature-modal__actions">
+      <button type="button" class="signature-primary-button" data-modal-close>Entendi</button>
+    </div>
+  </div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'vendor/pdfjs/pdf.min.js' %}"></script>
+  <script type="module" src="{% static 'js/pages/assinatura-pdf.js' %}"></script>
+  <script src="{% static 'js/pages/signature-public.js' %}"></script>
+{% endblock %}

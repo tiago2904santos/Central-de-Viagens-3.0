@@ -57,6 +57,8 @@ def assinar_artefato_com_etiqueta(
     nome_assinante: str,
     cpf_assinante: str = "",
     email_assinante: str = "",
+    cargo_assinante: str = "",
+    documento_label: str = "",
     usuario: AbstractBaseUser | None = None,
     metodo_autenticacao: str = "validacao_cpf",
     request: HttpRequest | None = None,
@@ -74,6 +76,9 @@ def assinar_artefato_com_etiqueta(
         data_hora_assinatura=timezone.now(),
         codigo_verificacao=codigo_verificacao,
         url_validacao=url_validacao,
+        cargo_assinante=cargo_assinante,
+        documento_label=documento_label,
+        hash_curto=hash_original[:12],
     )
 
     pdf_assinado, position_meta = aplicar_carimbo_pdf(pdf_bytes, dados, posicao)
