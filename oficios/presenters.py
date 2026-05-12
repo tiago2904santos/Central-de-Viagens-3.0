@@ -504,8 +504,17 @@ def apresentar_oficio_wizard_documentos_context(oficio):
             {
                 "titulo": f"Termo de Autorização — {servidor.nome}",
                 "servidor_nome": servidor.nome,
+                "servidor_id": servidor.pk,
                 "servidor_pk": servidor.pk,
-                "url": reverse("termos:termo_servidor_pdf_inline", args=[oficio.pk, servidor.pk]),
+                "inline_url": reverse("termos:termo_servidor_pdf_inline", args=[oficio.pk, servidor.pk]),
+                "download_pdf_url": reverse(
+                    "termos:baixar_termo_servidor",
+                    args=[oficio.pk, servidor.pk, "pdf"],
+                ),
+                "download_docx_url": reverse(
+                    "termos:baixar_termo_servidor",
+                    args=[oficio.pk, servidor.pk, "docx"],
+                ),
                 "disponivel": disponivel,
             },
         )

@@ -102,6 +102,49 @@ class OficioViewsTests(TestCase):
         self.assertContains(response, "Documentos para conferência")
         self.assertNotContains(response, "Visualizar documento")
 
+    @mock.patch("documentos.services.warm_cache.ensure_document_artifact_cached")
+    @mock.patch("oficios.services.validar_oficio_para_documento", return_value={"status": "complete", "pendencias": []})
+    @mock.patch("oficios.views.validar_oficio_para_documento", return_value={"status": "complete", "pendencias": []})
+    @mock.patch(
+        "oficios.document_generation.get_document_generation_status",
+        return_value={
+            "docx_available": True,
+            "pdf_available": True,
+            "pdf_cached": False,
+            "pdf_engine": "test",
+            "pdf_message": "",
+            "pdf_link_label": "PDF",
+            "documentos_persist_artefatos": False,
+            "oficio_pdf_botoes_assinatura": False,
+        },
+    )
+    def test_wizard_documentos_termos_apontam_para_pdf_inline(
+        self,
+        _m_generation,
+        _m_view_val,
+        _m_service_val,
+        _m_cache,
+    ):
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            motivo="Motivo",
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+        )
+        oficio.servidores.add(self.servidor)
+        response = self.client.get(reverse("oficios:wizard_documentos", args=[oficio.pk]))
+        inline_url = reverse("termos:termo_servidor_pdf_inline", args=[oficio.pk, self.servidor.pk])
+        self.assertContains(response, inline_url)
+        self.assertContains(response, f'data-src="{inline_url}"')
+        self.assertContains(
+            response,
+            reverse("termos:baixar_termo_servidor", args=[oficio.pk, self.servidor.pk, "pdf"]),
+        )
+        self.assertContains(
+            response,
+            reverse("termos:baixar_termo_servidor", args=[oficio.pk, self.servidor.pk, "docx"]),
+        )
+
     def test_get_detalhe_redireciona_para_dados_viajantes(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)
         response = self.client.get(reverse("oficios:detalhe", args=[oficio.pk]), follow=False)

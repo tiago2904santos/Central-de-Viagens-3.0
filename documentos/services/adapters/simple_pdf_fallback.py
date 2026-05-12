@@ -64,11 +64,26 @@ def _as_lines(payload: Mapping[str, object]) -> list[str]:
 
     termo = payload.get("termo")
     if isinstance(termo, dict):
-        lines.append("=== Termo ===")
-        lines.append(f"variante: {_ascii_fold(termo.get('variante'))}")
+        lines.append("=== Termo de Autorizacao ===")
         p = termo.get("participante")
         if isinstance(p, dict):
-            lines.append(f"participante: {_ascii_fold(p.get('nome'))} — {_ascii_fold(p.get('cpf', ''))}")
+            lines.append(f"Servidor: {_ascii_fold(p.get('nome'))}")
+            lines.append(f"CPF: {_ascii_fold(p.get('cpf_formatado') or p.get('cpf', ''))}")
+        viagem = termo.get("viagem")
+        if isinstance(viagem, dict):
+            lines.append(f"Destino: {_ascii_fold(viagem.get('destinos_texto'))}")
+            lines.append(f"Periodo: {_ascii_fold(viagem.get('periodo'))}")
+        transporte = termo.get("transporte")
+        if isinstance(transporte, dict):
+            lines.append(
+                "Transporte: "
+                f"{_ascii_fold(transporte.get('placa'))} / {_ascii_fold(transporte.get('motorista'))}"
+            )
+        textos = termo.get("textos")
+        if isinstance(textos, dict):
+            for key in ("corpo_autorizacao", "declaracao"):
+                if textos.get(key):
+                    lines.append(_ascii_fold(textos[key]))
 
     return lines or ["(sem dados no payload)"]
 
@@ -88,7 +103,10 @@ def render_simple_pdf_bytes(*, tipo: DocumentoTipo, payload: Mapping[str, object
     pdf.set_font("Helvetica", size=11)
     usable_w = getattr(pdf, "epw", pdf.w - pdf.l_margin - pdf.r_margin)
 
-    title = f"Documento: {tipo.value} (fallback dev — sem layout institucional)"
+    if tipo == DocumentoTipo.TERMO_AUTORIZACAO:
+        title = "TERMO DE AUTORIZACAO"
+    else:
+        title = f"Documento: {tipo.value} (fallback dev — sem layout institucional)"
     pdf.set_font_size(14)
     pdf.multi_cell(usable_w, 8, _ascii_fold(title))
     pdf.ln(4)

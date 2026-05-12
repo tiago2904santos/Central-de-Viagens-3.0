@@ -101,8 +101,9 @@
                   {% if t.disponivel %}
                     <span class="document-inline-card__header-end">
                       <span class="document-inline-actions document-inline-actions--header" aria-label="Ações do termo">
-                        <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{{ t.url }}" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
-                        <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{% url 'termos:baixar_termo_servidor' oficio.pk t.servidor_pk 'pdf' %}">Baixar PDF</a>
+                        <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{{ t.inline_url }}" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
+                        <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{{ t.download_pdf_url }}">Baixar PDF</a>
+                        <a class="btn btn-secondary app-btn app-btn--secondary document-inline-actions__btn" href="{{ t.download_docx_url }}">Baixar DOCX</a>
                       </span>
                     </span>
                   {% endif %}
@@ -112,7 +113,7 @@
                     <div class="document-inline-viewer">
                       <iframe
                         class="document-inline-viewer__frame"
-                        data-src="{{ t.url }}"
+                        data-src="{{ t.inline_url }}"
                         title="Termo de autorização — {{ t.servidor_nome }}"
                         loading="lazy"
                       ></iframe>

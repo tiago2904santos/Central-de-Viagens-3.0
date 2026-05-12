@@ -81,8 +81,7 @@ def termo_servidor_pdf_inline(request, pk, servidor_pk):
     if not oficio.servidores.filter(pk=servidor.pk).exists():
         raise Http404("Servidor nao participa deste oficio.")
 
-    modo = request.GET.get("semipreenchido") == "1"
-    doc = gerar_termo_um(oficio, servidor, DocumentoFormato.PDF, modo_semipreenchido=modo)
+    doc = gerar_termo_um(oficio, servidor, DocumentoFormato.PDF)
     ref = f"{oficio.numero_formatado.replace('/', '-')}-termo-{servidor.pk}"
     return build_inline_pdf_response(
         request,
@@ -110,10 +109,10 @@ def baixar_termo_servidor(request, pk, servidor_pk, formato):
     if not oficio.servidores.filter(pk=servidor.pk).exists():
         raise Http404("Servidor nao participa deste oficio.")
 
-    modo = request.GET.get("semipreenchido") == "1"
-    doc = gerar_termo_um(oficio, servidor, fmt, modo_semipreenchido=modo)
+    doc = gerar_termo_um(oficio, servidor, fmt)
     response = HttpResponse(doc.conteudo, content_type=doc.content_type)
     response["Content-Disposition"] = f'attachment; filename="{doc.nome_arquivo}"'
+    response["X-Content-Type-Options"] = "nosniff"
     response["X-Document-SHA256"] = doc.hash_sha256
     return response
 
