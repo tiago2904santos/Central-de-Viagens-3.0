@@ -649,15 +649,28 @@ def _enriquecer_painel_etiqueta_assinatura(request, painel: dict) -> None:
     art = painel.get("artefato")
     if not art:
         return
+    from assinaturas.presenters import assinatura_status_artefato
+    from assinaturas.presenters import assinatura_urls_artefato
+    from assinaturas.presenters import assinatura_ultima_valida
+
     nomes = ""
     u = getattr(request, "user", None)
     if u is not None and getattr(u, "is_authenticated", False):
         nomes = ((getattr(u, "get_full_name", lambda: "")() or "").strip() or getattr(u, "get_username", lambda: "")() or "").strip()
     painel["assinante_display"] = nomes
-    painel["verificacao_url"] = request.build_absolute_uri(
-        reverse("documentos:artefato_pdf_visualizar", args=[art.pk]),
-    )
-    painel["verificacao_codigo"] = (art.hash_sha256 or "")[:12]
+    painel["etiqueta_status"] = assinatura_status_artefato(art)
+    painel["etiqueta_urls"] = assinatura_urls_artefato(art, request=request)
+    reg = assinatura_ultima_valida(art)
+    if reg is not None and reg.codigo_verificacao:
+        painel["verificacao_url"] = request.build_absolute_uri(
+            reverse("assinaturas:assinatura-verificar-codigo", kwargs={"codigo": reg.codigo_verificacao}),
+        )
+        painel["verificacao_codigo"] = reg.codigo_verificacao
+    else:
+        painel["verificacao_url"] = request.build_absolute_uri(
+            reverse("documentos:artefato_pdf_visualizar", args=[art.pk]),
+        )
+        painel["verificacao_codigo"] = (art.hash_sha256 or "")[:12]
 
 
 def _painel_contexto_de_artefato(art) -> dict:
@@ -744,6 +757,7 @@ def wizard_assinaturas_documentos(request, pk):
 
     painel_justificativa = _painel_contexto_de_artefato(pj["artefato"])
     painel_justificativa["erro"] = _mensagem_preview_assinatura(pj["erro"], pj.get("detalhe")) if pj["erro"] else ""
+    _enriquecer_painel_etiqueta_assinatura(request, painel_justificativa)
 
     termos_linhas = []
     servidor_termo_pk = None
@@ -756,6 +770,7 @@ def wizard_assinaturas_documentos(request, pk):
             "erro": _mensagem_preview_assinatura(pt["erro"], pt.get("detalhe")) if pt["erro"] else "",
         }
         linha.update(_painel_contexto_de_artefato(pt["artefato"]))
+        _enriquecer_painel_etiqueta_assinatura(request, linha)
         termos_linhas.append(linha)
     if raw_srv.isdigit():
         servidor_termo_pk = int(raw_srv)

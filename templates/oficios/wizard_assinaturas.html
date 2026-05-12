@@ -92,6 +92,7 @@
                           <dd class="oficio-assinatura-pdf__mono">{% if painel_oficio.artefato.hash_sha256_assinado %}{{ painel_oficio.artefato.hash_sha256_assinado }}{% else %}—{% endif %}</dd>
                         </div>
                       </dl>
+                      {% include "oficios/partials/assinatura_etiqueta_actions.html" with painel=painel_oficio only %}
                       <p class="assinatura-oficio-instrucao doc-muted">
                         Arraste a etiqueta para o local exato onde a assinatura deve aparecer no PDF.
                       </p>
@@ -187,6 +188,7 @@
                           <dd class="oficio-assinatura-pdf__mono">{% if painel_justificativa.artefato.hash_sha256_assinado %}{{ painel_justificativa.artefato.hash_sha256_assinado }}{% else %}—{% endif %}</dd>
                         </div>
                       </dl>
+                      {% include "oficios/partials/assinatura_etiqueta_actions.html" with painel=painel_justificativa only %}
                       <div class="document-inline-viewer oficios-assinaturas-panel__viewer">
                         <iframe
                           class="document-inline-viewer__frame"

@@ -134,9 +134,8 @@
   flex-shrink: 0;
 }
 
-.assinatura-professional-preview__body {
-  font-size: 0.8rem;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.oficio-assinatura-etiqueta-links--wrap {
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
