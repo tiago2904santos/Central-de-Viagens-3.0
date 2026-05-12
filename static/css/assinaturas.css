@@ -139,3 +139,230 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+.assinatura-pedido {
+  padding-block: var(--space-6, 1.5rem);
+}
+
+.assinatura-pedido__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4, 1rem);
+  margin-bottom: var(--space-5, 1.25rem);
+}
+
+.assinatura-pedido__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  gap: var(--space-5, 1.25rem);
+  align-items: start;
+}
+
+.assinatura-pedido__viewer,
+.assinatura-pedido__aside {
+  min-width: 0;
+}
+
+.assinatura-pedido__aside {
+  position: sticky;
+  top: var(--space-4, 1rem);
+}
+
+.assinatura-pedido-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+  padding: var(--space-5, 1.25rem);
+  border: 1px solid var(--color-border-soft, #e3eaf2);
+  border-radius: 8px;
+  background: var(--color-surface, #fff);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.06));
+}
+
+.assinatura-pedido-card__title {
+  margin: 0;
+  font-size: var(--font-size-lg, 1.125rem);
+  color: var(--color-heading, #071a33);
+}
+
+.assinatura-pedido-card__facts {
+  display: grid;
+  gap: var(--space-3, 0.75rem);
+  margin: 0;
+}
+
+.assinatura-pedido-card__facts div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.assinatura-pedido-card__facts dt {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 700;
+  color: var(--color-muted, #52657a);
+  text-transform: uppercase;
+}
+
+.assinatura-pedido-card__facts dd {
+  margin: 0;
+  color: var(--color-text, #172033);
+  word-break: break-word;
+}
+
+.assinatura-pedido-card__submit {
+  width: 100%;
+  justify-content: center;
+}
+
+.assinatura-pdf-editor {
+  border: 1px solid var(--color-border-soft, #e3eaf2);
+  border-radius: 8px;
+  background: var(--color-surface-muted, #eef2f7);
+  overflow: hidden;
+}
+
+.assinatura-pdf-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+  background: var(--color-surface, #fff);
+  border-bottom: 1px solid var(--color-border-soft, #e3eaf2);
+}
+
+.assinatura-pdf-editor__meta {
+  font-size: var(--font-size-sm, 0.8125rem);
+  color: var(--color-muted, #52657a);
+}
+
+.assinatura-pdf-editor__zoom {
+  display: flex;
+  gap: var(--space-2, 0.5rem);
+  flex-wrap: wrap;
+}
+
+.assinatura-pdf-editor__scroller {
+  max-height: min(76vh, 860px);
+  overflow: auto;
+  padding: var(--space-4, 1rem);
+}
+
+.assinatura-pdf-editor__pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4, 1rem);
+}
+
+.assinatura-page-wrap {
+  position: relative;
+  display: inline-block;
+  box-shadow: 0 4px 18px rgba(7, 26, 51, 0.12);
+  border-radius: 4px;
+  overflow: visible;
+  background: #fff;
+}
+
+.assinatura-page-canvas {
+  display: block;
+  vertical-align: top;
+}
+
+.assinatura-label {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  z-index: 3;
+  cursor: move;
+  user-select: none;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(7, 26, 51, 0.18);
+}
+
+.assinatura-label--preview {
+  position: relative;
+  min-height: 5.25rem;
+  cursor: default;
+  box-shadow: 0 2px 8px rgba(7, 26, 51, 0.1);
+}
+
+.assinatura-label--draggable:active {
+  cursor: grabbing;
+  box-shadow: 0 5px 16px rgba(7, 26, 51, 0.22);
+}
+
+.assinatura-label__logo {
+  flex: 0 0 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5rem;
+  font-weight: 800;
+  color: #fff;
+  background: #08172a;
+  text-align: center;
+  padding: 0 0.2rem;
+}
+
+.assinatura-label__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.38rem 0.5rem;
+  background: #08172a;
+  color: #fff;
+}
+
+.assinatura-label__title {
+  font-size: 0.52rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.12rem;
+}
+
+.assinatura-label__name {
+  font-size: 0.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assinatura-label__meta,
+.assinatura-label__code {
+  font-size: 0.42rem;
+  opacity: 0.9;
+  line-height: 1.15;
+  word-break: break-word;
+}
+
+.assinatura-label__qr {
+  flex: 0 0 2.4rem;
+  background:
+    linear-gradient(90deg, #fff 6px, transparent 1%) center / 10px 10px,
+    linear-gradient(#fff 6px, transparent 1%) center / 10px 10px,
+    #dbeafe;
+}
+
+.assinatura-pdf-error {
+  margin-top: var(--space-3, 0.75rem);
+  color: #b42318;
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+@media (max-width: 980px) {
+  .assinatura-pedido__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .assinatura-pedido__aside {
+    position: static;
+  }
+}

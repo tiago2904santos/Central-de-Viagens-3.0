@@ -1,6 +1,6 @@
 /**
- * Editor de assinatura: PDF.js + etiqueta arrastável (coordenadas normalizadas 0–1, origem topo-esquerdo da página).
- * Depende de `window.pdfjsLib` (pdf.min.js carregado antes deste módulo).
+ * Editor de assinatura: PDF.js + etiqueta arrastavel (coordenadas normalizadas 0-1, origem topo-esquerdo da pagina).
+ * Depende de `window.pdfjsLib` (pdf.min.js carregado antes deste modulo).
  */
 
 const BASE_SCALE = 1.22;
@@ -32,18 +32,18 @@ function buildLabelHtml(signer, url, code) {
   const u = safe(url);
   const shortUrl = u.length > 72 ? u.slice(0, 70) + "…" : u;
   return (
-    '<div class="assinatura-label assinatura-label--draggable" tabindex="0" role="group" aria-label="Posição da assinatura eletrónica">' +
+    '<div class="assinatura-label assinatura-label--draggable" tabindex="0" role="group" aria-label="Posicao da assinatura eletronica">' +
     '<div class="assinatura-label__logo" aria-hidden="true">PCPR</div>' +
     '<div class="assinatura-label__body">' +
     '<div class="assinatura-label__title">DOCUMENTO ASSINADO ELETRONICAMENTE</div>' +
     '<div class="assinatura-label__name">' +
-    safe(signer || "—") +
+    safe(signer || "-") +
     "</div>" +
     '<div class="assinatura-label__meta">Verifique em: ' +
     shortUrl +
     "</div>" +
     '<div class="assinatura-label__code">Código: ' +
-    safe(code || "—") +
+    safe(code || "-") +
     "</div>" +
     "</div>" +
     "</div>"
@@ -61,7 +61,8 @@ function initEditor(root) {
   const scroller = qs(root, "#assinatura-editor-scroll");
   const metaEl = qs(root, "#assinatura-pdf-meta");
   const errEl = document.getElementById("assinatura-pdf-error");
-  const form = document.getElementById("form-assinar-oficio");
+  const formId = root.dataset.formId || "form-assinar-oficio";
+  const form = document.getElementById(formId);
   const inpX = form ? form.querySelector('[name="sig_x"]') : null;
   const inpY = form ? form.querySelector('[name="sig_y"]') : null;
   const inpW = form ? form.querySelector('[name="sig_w"]') : null;
@@ -232,7 +233,7 @@ function initEditor(root) {
       labelWrap.appendChild(labelEl);
     }
     syncLabelToInputs();
-    if (metaEl) metaEl.textContent = "Documento — " + n + " página" + (n > 1 ? "s" : "");
+      if (metaEl) metaEl.textContent = "Documento - " + n + " pagina" + (n > 1 ? "s" : "");
   }
 
   let resizeT = null;
@@ -250,7 +251,7 @@ function initEditor(root) {
       return renderAll();
     })
     .catch(function () {
-      showErr("Não foi possível carregar o PDF. Tente abrir em nova aba ou verifique a sessão.");
+      showErr("Nao foi possivel carregar o PDF. Tente abrir em nova aba ou verifique a sessao.");
     });
 
   const zIn = document.getElementById("assinatura-zoom-in");
