@@ -88,7 +88,7 @@ def build_signature_public_context(pedido: PedidoAssinaturaDocumento) -> dict[st
         "document_year": _document_year(pedido),
         "document_subject": _document_subject(pedido),
         "document_label": f"{document_type} {document_number}".strip(),
-        "issuer_label": "Policia Civil do Parana",
+        "issuer_label": "Polícia Civil do Paraná",
         "issuer_unit": pedido.unidade_assinante_snapshot or "Central de Viagens",
         "signer_name": pedido.nome_assinante_snapshot,
         "signer_cpf_masked": mascarar_cpf_assinatura(pedido.cpf_assinante_snapshot),
@@ -101,5 +101,5 @@ def build_signature_public_context(pedido: PedidoAssinaturaDocumento) -> dict[st
         "linked_document": str(artefato),
         "linked_oficio": getattr(oficio, "numero_formatado", "") if oficio is not None else "",
         "internal_responsible": getattr(pedido.criado_por, "get_full_name", lambda: "")() or getattr(pedido.criado_por, "username", "") if pedido.criado_por_id else "",
-        "signature_method": "Assinatura eletronica por link tokenizado",
+        "signature_method": "Assinatura eletrônica por link com token seguro",
     }

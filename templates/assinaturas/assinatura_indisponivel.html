@@ -2,17 +2,16 @@
 
 {% block title %}Assinatura indisponível{% endblock %}
 
-{% block header_badge %}
-  <span class="signature-header-badge signature-header-badge--error">Link indisponível</span>
-{% endblock %}
-
 {% block content %}
 <div class="app-page signature-public-flow">
   <div class="app-page__shell">
 
     <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact" aria-labelledby="signature-error-title">
       <div class="app-page-hero__stage">
-        <span class="app-page-hero__eyebrow">Aviso</span>
+        <div class="signature-public-hero-kicker">
+          <span class="app-page-hero__eyebrow">Aviso</span>
+          <span class="signature-header-badge signature-header-badge--error">Link indisponível</span>
+        </div>
         <h1 class="app-page-hero__title" id="signature-error-title">Este link de assinatura não está disponível</h1>
       </div>
       <div class="app-page-hero__body">

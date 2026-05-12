@@ -2,17 +2,16 @@
 
 {% block title %}Documento assinado{% endblock %}
 
-{% block header_badge %}
-  <span class="signature-header-badge signature-header-badge--success">Assinatura concluída</span>
-{% endblock %}
-
 {% block content %}
 <div class="app-page signature-public-flow">
   <div class="app-page__shell">
 
     <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact" aria-labelledby="signature-success-title">
       <div class="app-page-hero__stage">
-        <span class="app-page-hero__eyebrow">Concluído</span>
+        <div class="signature-public-hero-kicker">
+          <span class="app-page-hero__eyebrow">Concluído</span>
+          <span class="signature-header-badge signature-header-badge--success">Assinatura concluída</span>
+        </div>
         <h1 class="app-page-hero__title" id="signature-success-title">Documento assinado com sucesso</h1>
       </div>
       <div class="app-page-hero__body">

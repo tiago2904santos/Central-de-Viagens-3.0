@@ -3,8 +3,8 @@
  * Usa PDF.js (window.pdfjsLib). Suporta etiqueta arrastável e zoom com ajuste à largura.
  */
 
-const BASE_SCALE = 1.22;
-const ZOOM_MIN   = 0.5;
+const BASE_SCALE = 1;
+const ZOOM_MIN   = 0.32;
 const ZOOM_MAX   = 2.5;
 const ZOOM_STEP  = 0.15;
 const SCROLLER_PADDING = 24; // px de padding lateral no scroller
@@ -21,6 +21,14 @@ function readFloatInput(el, fallback) {
   if (!el) return fallback;
   const v = parseFloat(String(el.value).replace(",", "."));
   return Number.isFinite(v) ? v : fallback;
+}
+
+/** Fator 0,25–1 aplicado ao zoom “ajustar largura” (coluna estreita = PDF menor). */
+function readFitShrinkFromRoot(el) {
+  const raw = (el && el.dataset && el.dataset.pdfFitShrink) || "0.9";
+  const v = parseFloat(String(raw).replace(",", "."));
+  if (!Number.isFinite(v)) return 0.9;
+  return clamp(v, 0.25, 1);
 }
 
 function buildLabelHtml(signer, url, code) {
@@ -194,7 +202,7 @@ function initEditor(root) {
     if (!pdfDoc) return;
 
     if (fitOnLoad) {
-      zoom = calcFitZoom();
+      zoom = calcFitZoom() * readFitShrinkFromRoot(root);
       fitOnLoad = false;
     }
 
@@ -234,7 +242,7 @@ function initEditor(root) {
     syncLabelToInputs();
 
     if (metaEl) {
-      metaEl.textContent = "Documento — " + n + " pagina" + (n > 1 ? "s" : "");
+      metaEl.textContent = "Documento — " + n + " página" + (n > 1 ? "s" : "");
     }
   }
 
@@ -291,7 +299,7 @@ function initEditor(root) {
         if (pageWraps[i].offsetTop <= mid) best = i;
       }
       if (metaEl) {
-        metaEl.textContent = "Pagina " + (best + 1) + " / " + pdfDoc.numPages;
+        metaEl.textContent = "Página " + (best + 1) + " / " + pdfDoc.numPages;
       }
     });
   }
