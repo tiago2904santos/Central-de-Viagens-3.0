@@ -5,6 +5,7 @@
 
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/oficios.css' %}">
+  <link rel="stylesheet" href="{% static 'css/oficios-documentos-inline.css' %}">
   <link rel="stylesheet" href="{% static 'css/oficios-assinaturas-central.css' %}">
 {% endblock %}
 
@@ -142,15 +143,22 @@
                         </div>
                       </div>
 
-                      <p class="assinaturas-document-card__viewer-note">{{ documento.pdf_versao_label }}</p>
-                      <div class="assinaturas-document-card__viewer">
-                        <iframe
-                          class="document-inline-viewer__frame"
-                          src="{{ documento.pdf_estado_atual_url }}"
-                          title="PDF — {{ documento.titulo }}"
-                          loading="lazy"
-                        ></iframe>
-                      </div>
+                      <details class="document-inline-card document-inline-card--lazy assinaturas-document-card__preview" data-lazy-inline>
+                        <summary class="document-inline-card__header">
+                          <span class="document-inline-card__title">Pré-visualização do PDF</span>
+                          <span class="assinaturas-document-card__preview-hint doc-muted">Clique para mostrar ou ocultar — {{ documento.pdf_versao_label }}</span>
+                        </summary>
+                        <div class="document-inline-card__body">
+                          <div class="document-inline-viewer">
+                            <iframe
+                              class="document-inline-viewer__frame"
+                              data-src="{{ documento.pdf_estado_atual_url }}"
+                              title="PDF — {{ documento.titulo }}"
+                              loading="lazy"
+                            ></iframe>
+                          </div>
+                        </div>
+                      </details>
                     {% endif %}
 
                     <section class="assinaturas-document-card__destinatarios">
@@ -209,5 +217,6 @@
 
 {% block extra_js %}
   {{ block.super }}
+  <script src="{% static 'js/pages/oficios-documentos-inline.js' %}" defer></script>
   <script src="{% static 'js/pages/assinaturas-central.js' %}" defer></script>
 {% endblock %}
