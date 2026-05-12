@@ -153,7 +153,7 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         self.assertIn(reverse("oficios:wizard_assinaturas", args=[self.oficio.pk]), r["Location"])
 
     @mock.patch("oficios.views.gerar_resposta_documento_oficio", return_value=HttpResponse(b"x", content_type="application/pdf"))
-    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
+    @mock.patch("oficios.views.validar_oficio_para_documento", return_value=_validacao_limpa())
     def test_verificar_json_sem_pdf_previo_422(self, _m_val, _m_gerar):
         url = reverse("oficios:wizard_verificar_pdf_oficio", args=[self.oficio.pk])
         r = self.client.get(url)

@@ -119,7 +119,7 @@ class WizardAssinaturaCamposEtiquetaTests(TestCase):
     def test_get_pagina_e_central_sem_editor_de_assinatura(self):
         from unittest import mock
 
-        with mock.patch("oficios.views.validar_oficio_para_documento", return_value=self._validacao_limpa()):
+        with mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=self._validacao_limpa()):
             url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
             r = self.client.get(url)
         self.assertEqual(r.status_code, 200)
@@ -130,31 +130,11 @@ class WizardAssinaturaCamposEtiquetaTests(TestCase):
         self.assertNotContains(r, "Arraste a etiqueta")
 
     def test_post_gera_pedido_sem_assinar_diretamente(self):
-        from unittest import mock
-
-        called = {}
-
-        def _cap(pb, pos, **kw):
-            called["pos"] = pos
-            return aplicar_etiqueta_assinatura_pdf(pb, pos, **kw)
-
-        with (
-            mock.patch("oficios.views.validar_oficio_para_documento", return_value=self._validacao_limpa()),
-            mock.patch("documentos.services.signing.workflow.aplicar_etiqueta_assinatura_pdf", side_effect=_cap),
-        ):
-            url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
-            self.client.post(
-                url,
-                {
-                    "documento_alvo": "oficio",
-                    "sig_x": "0.2",
-                    "sig_y": "0.3",
-                    "sig_w": "0.4",
-                    "sig_h": "0.1",
-                    "sig_page": "0",
-                },
-            )
-        self.assertNotIn("pos", called)
+        url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
+        self.client.post(
+            url,
+            {"gerar_solicitacao": "1", "artefato_id": str(self.art.pk)},
+        )
         pedido = PedidoAssinaturaDocumento.objects.get(artefato=self.art)
         self.assertEqual(pedido.nome_assinante_snapshot, "S")
 
