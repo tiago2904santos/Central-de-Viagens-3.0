@@ -1,6 +1,7 @@
 """Termo PDF inline por servidor."""
 
 from io import BytesIO
+from zipfile import ZipFile
 from types import SimpleNamespace
 from unittest import mock
 
@@ -181,3 +182,22 @@ class TermoServidorPdfInlineTests(TestCase):
             "semipreenchido",
         ):
             self.assertNotIn(forbidden, text)
+
+    def test_docx_oficial_preenche_placeholders_legados(self):
+        doc = gerar_termo_um(self.oficio, self.servidor_ok, DocumentoFormato.DOCX)
+        self.assertTrue(doc.conteudo.startswith(b"PK"))
+        with ZipFile(BytesIO(doc.conteudo)) as zf:
+            xml = zf.read("word/document.xml").decode("utf-8", errors="ignore")
+        self.assertIn(self.servidor_ok.nome, xml)
+        self.assertIn("222.222.222-22", xml)
+        self.assertIn("ABC-1234", xml)
+        self.assertNotIn("{{", xml)
+        for forbidden in (
+            "[DEMO]",
+            "TERMO —",
+            "Variante:",
+            "completo_com_viatura",
+            "completo_sem_viatura",
+            "semipreenchido",
+        ):
+            self.assertNotIn(forbidden, xml)

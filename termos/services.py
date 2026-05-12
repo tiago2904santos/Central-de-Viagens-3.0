@@ -5,13 +5,24 @@ import zipfile
 
 from cadastros.models import Servidor
 
-from documentos.services.facade import build_default_facade
+from documentos.services.facade import DocumentoFacade
 from documentos.services.facade import DocumentoGerado
+from documentos.services.templates import DocumentTemplateDefinition
+from documentos.services.templates import DocumentTemplateRegistry
+from documentos.services.templates import default_template_registry
 from documentos.services.types import DocumentoFormato
 from documentos.services.types import DocumentoTipo
 
 from oficios.documents import build_termo_payload
+from oficios.documents import VarianteTermo
 from oficios.models import Oficio
+
+
+_TEMPLATE_DOCX_BY_VARIANTE = {
+    VarianteTermo.SEMIPREENCHIDO: "termo_autorizacao.docx",
+    VarianteTermo.COMPLETO_COM_VIATURA: "termo_autorizacao_automatico.docx",
+    VarianteTermo.COMPLETO_SEM_VIATURA: "termo_autorizacao_automatico_sem_viatura.docx",
+}
 
 
 def preview_termo_context(
@@ -33,6 +44,57 @@ def preview_termo_context(
     return {"payload": payload, "variante_efetiva": payload["termo"]["variante"]}
 
 
+def _facade_termo_com_template(template_docx: str) -> DocumentoFacade:
+    registry = DocumentTemplateRegistry()
+    for definition in default_template_registry.all():
+        if definition.tipo == DocumentoTipo.TERMO_AUTORIZACAO and definition.formato == DocumentoFormato.DOCX:
+            definition = DocumentTemplateDefinition(
+                tipo=definition.tipo,
+                formato=definition.formato,
+                template_path=template_docx,
+                required_placeholders=definition.required_placeholders,
+                stylesheet_paths=definition.stylesheet_paths,
+            )
+        registry.register(definition)
+    return DocumentoFacade(template_registry=registry)
+
+
+def _legacy_docx_context(payload: dict) -> dict:
+    institucional = payload.get("institucional") or {}
+    termo = payload.get("termo") or {}
+    participante = termo.get("participante") or {}
+    viagem = termo.get("viagem") or {}
+    transporte = termo.get("transporte") or {}
+
+    endereco_partes = [
+        institucional.get("logradouro"),
+        institucional.get("numero"),
+        institucional.get("bairro"),
+        institucional.get("cidade_endereco"),
+        institucional.get("uf"),
+        institucional.get("cep_formatado"),
+    ]
+    endereco = ", ".join(str(parte).strip() for parte in endereco_partes if str(parte or "").strip())
+
+    return {
+        "unidade": institucional.get("unidade") or termo.get("oficio", {}).get("origem") or "",
+        "divisao": institucional.get("divisao") or "",
+        "endereco": endereco,
+        "telefone": institucional.get("telefone_formatado") or institucional.get("telefone") or "",
+        "email": institucional.get("email") or "",
+        "unidade_rodape": institucional.get("unidade") or termo.get("oficio", {}).get("origem") or "",
+        "data_do_evento": viagem.get("periodo") or viagem.get("saida") or "",
+        "destino": viagem.get("destinos_texto") or viagem.get("destino_principal") or "",
+        "nome_servidor": participante.get("nome") or "",
+        "rg_servidor": participante.get("rg_formatado") or "",
+        "cpf_servidor": participante.get("cpf_formatado") or participante.get("cpf") or "",
+        "lotacao": participante.get("unidade") or "",
+        "viatura": transporte.get("modelo") or "",
+        "placa": transporte.get("placa") or "",
+        "combustivel": transporte.get("combustivel") or "",
+    }
+
+
 def gerar_termo_um(
     oficio: Oficio,
     servidor: Servidor,
@@ -48,13 +110,15 @@ def gerar_termo_um(
         variante=variante,
     )
     ref = f"{oficio.numero_formatado.replace('/', '-')}-termo-{servidor.pk}"
-    facade = build_default_facade()
-    # DOCX do termo segue placeholders aninhados ({{ oficio.* }}, {{ termo.participante.* }}).
+    variante_efetiva = payload["termo"]["variante"]
+    template_docx = _TEMPLATE_DOCX_BY_VARIANTE.get(variante_efetiva, "termo_autorizacao.docx")
+    facade = _facade_termo_com_template(template_docx)
     return facade.gerar(
         tipo=DocumentoTipo.TERMO_AUTORIZACAO,
         formato=formato,
         payload=payload,
         reference=ref,
+        docxtpl_context=_legacy_docx_context(payload),
     )
 
 
