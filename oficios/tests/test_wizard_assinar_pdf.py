@@ -17,7 +17,6 @@ from cadastros.models import Cargo
 from cadastros.models import Servidor
 from documentos.models import DocumentoArtefato
 from oficios.models import Oficio
-from justificativas.services import oficio_exige_justificativa
 
 
 def _minimal_pdf_bytes() -> bytes:
@@ -101,8 +100,7 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         r = self.client.get(url)
         self.assertContains(r, "Ofício (PDF)")
         self.assertContains(r, "Termo de Autorização")
-        if oficio_exige_justificativa(self.oficio):
-            self.assertContains(r, "Justificativa (PDF)")
+        self.assertContains(r, "Justificativa (PDF)")
         self.assertContains(r, "/documentos/artefatos/")
         self.assertContains(r, "/conteudo/")
         self.assertNotContains(r, "Ver comprovante")

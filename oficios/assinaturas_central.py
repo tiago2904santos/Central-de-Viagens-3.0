@@ -26,7 +26,6 @@ from documentos.services.persistence import persist_geracao
 from documentos.services.types import DocumentoFormato
 from documentos.services.types import DocumentoTipo
 from documentos.services.warm_cache import pdf_artefato_original_acessivel
-from justificativas.services import oficio_exige_justificativa
 from termos.services import gerar_termo_um
 
 from .documents import build_termo_payload
@@ -331,21 +330,21 @@ def build_documentos_assinatura_central(oficio, *, request: HttpRequest | None =
         )
     )
 
-    if oficio_exige_justificativa(oficio):
-        pj = preview_artefato_pdf_justificativa(oficio)
-        documentos.append(
-            _montar_item_documento(
-                oficio_pk=pk,
-                key="justificativa",
-                tipo="justificativa",
-                tipo_label="Justificativa",
-                titulo="Justificativa (PDF)",
-                descricao="Fundamentação vinculada a este ofício.",
-                preview=pj,
-                servidor=None,
-                request=request,
-            )
+    # Sempre listar justificativa (igual à etapa 5 «documentos para conferência»), não só quando a regra de prazo a torna obrigatória.
+    pj = preview_artefato_pdf_justificativa(oficio)
+    documentos.append(
+        _montar_item_documento(
+            oficio_pk=pk,
+            key="justificativa",
+            tipo="justificativa",
+            tipo_label="Justificativa",
+            titulo="Justificativa (PDF)",
+            descricao="Fundamentação vinculada a este ofício.",
+            preview=pj,
+            servidor=None,
+            request=request,
         )
+    )
 
     for servidor in oficio.servidores.order_by("nome"):
         pt = preview_artefato_pdf_termo(oficio, servidor)
