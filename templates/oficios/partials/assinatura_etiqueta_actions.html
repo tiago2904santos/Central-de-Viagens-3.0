@@ -1,6 +1,10 @@
 {% if painel.disponivel and painel.artefato and painel.etiqueta_urls %}
   <div class="oficio-assinatura-etiqueta-links app-form-actions oficio-assinatura-etiqueta-links--wrap">
-    <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ painel.etiqueta_urls.assinar }}">Assinar (etiqueta)</a>
+    {% if painel.etiqueta_urls.assinar %}
+      <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ painel.etiqueta_urls.assinar }}">Abrir assinatura</a>
+    {% else %}
+      <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ painel.etiqueta_urls.gerar_link }}">Gerar link de assinatura</a>
+    {% endif %}
     <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ painel.etiqueta_urls.pdf_original }}" target="_blank" rel="noopener noreferrer">PDF original</a>
     {% if painel.etiqueta_urls.verificar %}
       <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ painel.etiqueta_urls.verificar }}">Ver assinatura</a>

@@ -10,6 +10,9 @@ from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 
+from assinaturas.models import PedidoAssinaturaDocumento
+from cadastros.models import AssinaturaConfiguracao
+from cadastros.models import ConfiguracaoSistema
 from cadastros.models import Cargo
 from cadastros.models import Servidor
 from documentos.models import DocumentoArtefato
@@ -31,6 +34,13 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         self.client.force_login(self.user)
         self.cargo = Cargo.objects.create(nome="Cargo WizS")
         self.servidor = Servidor.objects.create(nome="Serv WizS", cargo=self.cargo, cpf="99888777666")
+        cfg = ConfiguracaoSistema.get_singleton()
+        AssinaturaConfiguracao.objects.update_or_create(
+            configuracao=cfg,
+            tipo=AssinaturaConfiguracao.TIPO_OFICIO,
+            ordem=1,
+            defaults={"servidor": self.servidor, "ativo": True},
+        )
         self.oficio = Oficio.objects.create(
             numero=1,
             ano=2026,
@@ -91,7 +101,9 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         self.assertIn(reverse("oficios:wizard_assinaturas", args=[self.oficio.pk]), r["Location"])
         self.assertIn("tab=oficio", r["Location"])
         self._art_oficio.refresh_from_db()
-        self.assertTrue((self._art_oficio.hash_sha256_assinado or "").strip())
+        self.assertFalse((self._art_oficio.hash_sha256_assinado or "").strip())
+        pedido = PedidoAssinaturaDocumento.objects.get(artefato=self._art_oficio)
+        self.assertEqual(pedido.nome_assinante_snapshot, "SERV WIZS")
 
     @mock.patch("oficios.views.validar_oficio_para_documento", return_value=_validacao_limpa())
     def test_post_legacy_assinar_pdf_oficio_redireciona_etapa6(self, _m_val):

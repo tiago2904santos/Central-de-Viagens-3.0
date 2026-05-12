@@ -1,10 +1,13 @@
 ﻿from __future__ import annotations
 
 import hashlib
+from datetime import timedelta
 
 from django.core.files.base import ContentFile
 from django.test import TestCase
+from django.utils import timezone
 
+from assinaturas.models import PedidoAssinaturaDocumento
 from assinaturas.presenters import assinatura_urls_artefato
 from cadastros.models import Servidor
 from documentos.models import DocumentoArtefato
@@ -27,5 +30,28 @@ class AssinaturaPresentersLinksTests(TestCase):
             arquivo=ContentFile(raw, name="p.pdf"),
         )
         u = assinatura_urls_artefato(art)
-        self.assertIn("/assinaturas/artefatos/", u["assinar"])
+        self.assertIn("/assinaturas/artefatos/", u["gerar_link"])
+        self.assertEqual(u["assinar"], "")
         self.assertIn("/pdf-original/", u["pdf_original"])
+
+    def test_urls_incluem_pedido_pendente(self):
+        raw = _pdf()
+        d = hashlib.sha256(raw).hexdigest()
+        srv = Servidor.objects.create(nome="S")
+        art = DocumentoArtefato.objects.create(
+            tipo="oficio",
+            formato="pdf",
+            servidor=srv,
+            hash_sha256=d,
+            arquivo=ContentFile(raw, name="p.pdf"),
+        )
+        pedido = PedidoAssinaturaDocumento.objects.create(
+            artefato=art,
+            token="tok",
+            assinante_servidor=srv,
+            nome_assinante_snapshot="S",
+            tipo_documento="oficio",
+            expira_em=timezone.now() + timedelta(days=1),
+        )
+        u = assinatura_urls_artefato(art)
+        self.assertIn(f"/assinaturas/pedidos/{pedido.token}/assinar/", u["assinar"])

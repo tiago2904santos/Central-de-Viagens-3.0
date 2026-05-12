@@ -14,6 +14,16 @@ urlpatterns = [
         name="assinatura-assinar-artefato",
     ),
     path(
+        "artefatos/<uuid:artefato_id>/gerar-link/",
+        views.gerar_link_assinatura,
+        name="gerar-link-assinatura",
+    ),
+    path(
+        "pedidos/<str:token>/assinar/",
+        views.assinar_pedido,
+        name="assinar-pedido",
+    ),
+    path(
         "artefatos/<uuid:artefato_id>/pdf-original/",
         views.assinatura_artefato_pdf_original,
         name="assinatura-artefato-pdf-original",

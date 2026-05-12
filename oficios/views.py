@@ -695,6 +695,9 @@ def _painel_contexto_de_artefato(art) -> dict:
 def _wizard_assinaturas_executar_post(request, oficio, documento_alvo: str, servidor: Servidor | None):
     pk = oficio.pk
     documento_alvo = (documento_alvo or "").strip().lower()
+    if documento_alvo != "oficio":
+        messages.error(request, "A assinatura por link da chefia esta disponivel para oficios.")
+        return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
     if documento_alvo == "oficio":
         art = _resolver_artefato_pdf_oficio_para_assinatura(request, oficio)
     elif documento_alvo == "justificativa":
@@ -710,13 +713,15 @@ def _wizard_assinaturas_executar_post(request, oficio, documento_alvo: str, serv
     if art is None:
         return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
     try:
-        n_pages = contar_paginas_pdf_artefato(art)
-        sig_pos = parse_signature_position_from_post(request.POST, num_pages=n_pages)
-        assinar_artefato_pdf(request, art, signature_position=sig_pos)
+        from assinaturas.services.pedidos import criar_ou_obter_pedido_assinatura
+        from assinaturas.services.pedidos import url_publica_pedido_assinatura
+
+        pedido = criar_ou_obter_pedido_assinatura(art, criado_por=request.user, request=request)
+        link = url_publica_pedido_assinatura(request, pedido)
     except Exception as exc:  # noqa: BLE001
-        messages.error(request, f"Não foi possível assinar o PDF: {exc}")
+        messages.error(request, f"Nao foi possivel gerar o link de assinatura: {exc}")
         return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
-    messages.success(request, "Documento assinado com sucesso.")
+    messages.success(request, f"Link de assinatura gerado: {link}")
     q: dict[str, str] = {"tab": documento_alvo}
     if documento_alvo == "termo" and servidor is not None:
         q["servidor"] = str(servidor.pk)

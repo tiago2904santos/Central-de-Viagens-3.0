@@ -1,6 +1,8 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class ConfiguracaoChaveAssinatura(models.Model):
@@ -80,6 +82,87 @@ class AssinaturaDigital(models.Model):
 
     def __str__(self) -> str:
         return f"{self.status} — {self.codigo_verificacao} — {self.artefato_id}"
+
+class PedidoAssinaturaDocumento(models.Model):
+    STATUS_PENDENTE = "pendente"
+    STATUS_ASSINADO = "assinado"
+    STATUS_EXPIRADO = "expirado"
+    STATUS_CANCELADO = "cancelado"
+    STATUS_SUBSTITUIDO = "substituido"
+    STATUS_CHOICES = [
+        (STATUS_PENDENTE, "Pendente"),
+        (STATUS_ASSINADO, "Assinado"),
+        (STATUS_EXPIRADO, "Expirado"),
+        (STATUS_CANCELADO, "Cancelado"),
+        (STATUS_SUBSTITUIDO, "Substituido"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    artefato = models.ForeignKey(
+        "documentos.DocumentoArtefato",
+        on_delete=models.CASCADE,
+        related_name="pedidos_assinatura",
+    )
+    token = models.CharField(max_length=96, unique=True, db_index=True)
+    assinante_usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedidos_assinatura_documental",
+    )
+    assinante_servidor = models.ForeignKey(
+        "cadastros.Servidor",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedidos_assinatura_documental",
+    )
+    nome_assinante_snapshot = models.CharField(max_length=160)
+    cpf_assinante_snapshot = models.CharField(max_length=14, blank=True, default="")
+    email_assinante_snapshot = models.EmailField(blank=True, default="")
+    cargo_assinante_snapshot = models.CharField(max_length=160, blank=True, default="")
+    unidade_assinante_snapshot = models.CharField(max_length=160, blank=True, default="")
+    tipo_documento = models.CharField(max_length=64, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDENTE, db_index=True)
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedidos_assinatura_criados",
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+    expira_em = models.DateTimeField(db_index=True)
+    assinado_em = models.DateTimeField(null=True, blank=True)
+    ip_assinatura = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, default="")
+    posicao_etiqueta_json = models.JSONField(blank=True, default=dict)
+    assinatura = models.OneToOneField(
+        AssinaturaDigital,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pedido_documental",
+    )
+    hash_documento_original = models.CharField(max_length=64, blank=True, default="")
+    hash_documento_assinado = models.CharField(max_length=64, blank=True, default="")
+    auditoria = models.JSONField(blank=True, default=dict)
+
+    class Meta:
+        ordering = ["-criado_em"]
+        verbose_name = "Pedido de assinatura documental"
+        verbose_name_plural = "Pedidos de assinatura documental"
+        indexes = [
+            models.Index(fields=["artefato", "status", "expira_em"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.status} - {self.tipo_documento} - {self.artefato_id}"
+
+    @property
+    def esta_expirado(self) -> bool:
+        return bool(self.expira_em and self.expira_em <= timezone.now())
 
 
 class EventoAssinatura(models.Model):

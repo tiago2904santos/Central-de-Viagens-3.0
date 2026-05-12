@@ -3,8 +3,10 @@ from __future__ import annotations
 from typing import Any
 
 from django.urls import reverse
+from django.utils import timezone
 
 from assinaturas.models import AssinaturaDigital
+from assinaturas.models import PedidoAssinaturaDocumento
 from assinaturas.services.assinatura_artefato import assinatura_arquivo_esta_integra
 from documentos.models import DocumentoArtefato
 
@@ -35,8 +37,19 @@ def assinatura_status_artefato(artefato: DocumentoArtefato) -> str:
 
 def assinatura_urls_artefato(artefato: DocumentoArtefato, *, request=None) -> dict[str, str]:
     reg = assinatura_ultima_valida(artefato)
+    pedido = (
+        PedidoAssinaturaDocumento.objects.filter(
+            artefato=artefato,
+            status=PedidoAssinaturaDocumento.STATUS_PENDENTE,
+            expira_em__gt=timezone.now(),
+        )
+        .order_by("-criado_em")
+        .first()
+    )
     urls: dict[str, str] = {
-        "assinar": reverse("assinaturas:assinatura-assinar-artefato", kwargs={"artefato_id": artefato.pk}),
+        "gerar_link": reverse("assinaturas:gerar-link-assinatura", kwargs={"artefato_id": artefato.pk}),
+        "assinar": "",
+        "pedido": "",
         "pdf_original": reverse(
             "assinaturas:assinatura-artefato-pdf-original",
             kwargs={"artefato_id": artefato.pk},
@@ -44,6 +57,9 @@ def assinatura_urls_artefato(artefato: DocumentoArtefato, *, request=None) -> di
         "verificar": "",
         "pdf_assinado": "",
     }
+    if pedido is not None:
+        urls["pedido"] = reverse("assinaturas:assinar-pedido", kwargs={"token": pedido.token})
+        urls["assinar"] = urls["pedido"]
     if reg is not None:
         urls["verificar"] = reverse(
             "assinaturas:assinatura-verificar-codigo",

@@ -6,7 +6,10 @@ from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 
+from assinaturas.models import PedidoAssinaturaDocumento
+from cadastros.models import AssinaturaConfiguracao
 from cadastros.models import Cargo
+from cadastros.models import ConfiguracaoSistema
 from cadastros.models import Servidor
 from documentos.models import DocumentoArtefato
 from documentos.services.signing.label_overlay import aplicar_etiqueta_assinatura_pdf
@@ -84,6 +87,13 @@ class WizardAssinaturaCamposEtiquetaTests(TestCase):
         self.client.force_login(self.user)
         self.cargo = Cargo.objects.create(nome="C")
         self.servidor = Servidor.objects.create(nome="S", cargo=self.cargo, cpf="11122233344")
+        cfg = ConfiguracaoSistema.get_singleton()
+        AssinaturaConfiguracao.objects.update_or_create(
+            configuracao=cfg,
+            tipo=AssinaturaConfiguracao.TIPO_OFICIO,
+            ordem=1,
+            defaults={"servidor": self.servidor, "ativo": True},
+        )
         self.oficio = Oficio.objects.create(
             numero=9,
             ano=2026,
@@ -119,7 +129,7 @@ class WizardAssinaturaCamposEtiquetaTests(TestCase):
         self.assertContains(r, 'id="assinatura-pdf-editor"')
         self.assertContains(r, 'id="assinatura-pages-column"')
 
-    def test_post_chama_overlay_com_posicao(self):
+    def test_post_gera_pedido_sem_assinar_diretamente(self):
         from unittest import mock
 
         called = {}
@@ -144,8 +154,9 @@ class WizardAssinaturaCamposEtiquetaTests(TestCase):
                     "sig_page": "0",
                 },
             )
-        self.assertIn("pos", called)
-        self.assertAlmostEqual(called["pos"].box_x, 0.2, places=3)
+        self.assertNotIn("pos", called)
+        pedido = PedidoAssinaturaDocumento.objects.get(artefato=self.art)
+        self.assertEqual(pedido.nome_assinante_snapshot, "S")
 
     def test_assinar_artefato_pdf_embute_texto(self):
         from django.test import RequestFactory
