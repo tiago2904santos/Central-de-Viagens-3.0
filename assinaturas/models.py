@@ -60,6 +60,16 @@ class AssinaturaDigital(models.Model):
     signature_field_name = models.CharField(max_length=120, default="AssinaturaCentralViagens")
     appearance = models.JSONField(default=dict, blank=True)
     evidencias = models.JSONField(default=dict, blank=True)
+    codigo_verificacao = models.CharField(max_length=32, unique=True, db_index=True)
+    nome_assinante = models.CharField(max_length=160, blank=True, default="")
+    cpf_assinante = models.CharField(max_length=14, blank=True, default="")
+    email_assinante = models.EmailField(blank=True, default="")
+    metodo_autenticacao = models.CharField(max_length=40, blank=True, default="")
+    ip_assinatura = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, default="")
+    posicao_carimbo_json = models.JSONField(blank=True, default=dict)
+    pagina_carimbo = models.PositiveIntegerField(default=1)
+    url_validacao = models.URLField(max_length=600, blank=True, default="")
     criado_em = models.DateTimeField(auto_now_add=True)
     validado_em = models.DateTimeField(null=True, blank=True)
 
@@ -69,7 +79,7 @@ class AssinaturaDigital(models.Model):
         verbose_name_plural = "Assinaturas digitais"
 
     def __str__(self) -> str:
-        return f"{self.status} — {self.artefato_id}"
+        return f"{self.status} — {self.codigo_verificacao} — {self.artefato_id}"
 
 
 class EventoAssinatura(models.Model):

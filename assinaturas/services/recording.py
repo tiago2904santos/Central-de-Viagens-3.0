@@ -7,6 +7,7 @@ from django.utils import timezone
 from assinaturas.models import AssinaturaDigital
 from assinaturas.models import ConfiguracaoChaveAssinatura
 from assinaturas.models import EventoAssinatura
+from assinaturas.services.codigos import gerar_codigo_verificacao
 from documentos.models import DocumentoArtefato
 
 
@@ -24,6 +25,7 @@ def registrar_assinatura_concluida(artefato: DocumentoArtefato, meta: dict[str, 
         artefato=artefato,
         chave=chave,
         status=AssinaturaDigital.STATUS_VALID,
+        codigo_verificacao=gerar_codigo_verificacao(),
         hash_documento=hash_in,
         hash_documento_assinado=hash_out,
         signature_field_name=field_name,

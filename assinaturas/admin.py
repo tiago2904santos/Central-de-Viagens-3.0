@@ -19,7 +19,7 @@ class EventoAssinaturaInline(admin.TabularInline):
 
 @admin.register(AssinaturaDigital)
 class AssinaturaDigitalAdmin(admin.ModelAdmin):
-    list_display = ("id", "artefato", "status", "criado_em", "validado_em")
+    list_display = ("id", "artefato", "status", "codigo_verificacao", "criado_em", "validado_em")
     list_filter = ("status",)
     readonly_fields = ("criado_em", "hash_documento", "hash_documento_assinado")
     inlines = [EventoAssinaturaInline]
