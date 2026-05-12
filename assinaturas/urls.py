@@ -23,6 +23,12 @@ urlpatterns = [
         views.assinar_pedido,
         name="assinar-pedido",
     ),
+    path("pedidos/<str:token>/revogar/", views.revogar_pedido, name="revogar-pedido"),
+    path("assinar/<str:token>/", views.assinatura_token, name="assinatura-token"),
+    path("assinar/<str:token>/confirmar/", views.assinatura_token_confirmar, name="assinatura-token-confirmar"),
+    path("assinar/<str:token>/recusar/", views.assinatura_token_recusar, name="assinatura-token-recusar"),
+    path("assinar/<str:token>/pdf-original/", views.assinatura_token_pdf_original, name="assinatura-token-pdf-original"),
+    path("sucesso/<str:token>/", views.assinatura_sucesso, name="assinatura-sucesso"),
     path(
         "artefatos/<uuid:artefato_id>/pdf-original/",
         views.assinatura_artefato_pdf_original,

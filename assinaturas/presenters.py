@@ -40,7 +40,7 @@ def assinatura_urls_artefato(artefato: DocumentoArtefato, *, request=None) -> di
     pedido = (
         PedidoAssinaturaDocumento.objects.filter(
             artefato=artefato,
-            status=PedidoAssinaturaDocumento.STATUS_PENDENTE,
+            status__in=[PedidoAssinaturaDocumento.STATUS_PENDENTE, PedidoAssinaturaDocumento.STATUS_VISUALIZADA],
             expira_em__gt=timezone.now(),
         )
         .order_by("-criado_em")
@@ -50,6 +50,7 @@ def assinatura_urls_artefato(artefato: DocumentoArtefato, *, request=None) -> di
         "gerar_link": reverse("assinaturas:gerar-link-assinatura", kwargs={"artefato_id": artefato.pk}),
         "assinar": "",
         "pedido": "",
+        "revogar": "",
         "pdf_original": reverse(
             "assinaturas:assinatura-artefato-pdf-original",
             kwargs={"artefato_id": artefato.pk},
@@ -58,8 +59,8 @@ def assinatura_urls_artefato(artefato: DocumentoArtefato, *, request=None) -> di
         "pdf_assinado": "",
     }
     if pedido is not None:
-        urls["pedido"] = reverse("assinaturas:assinar-pedido", kwargs={"token": pedido.token})
-        urls["assinar"] = urls["pedido"]
+        urls["pedido"] = reverse("assinaturas:assinatura-token", kwargs={"token": pedido.token})
+        urls["revogar"] = reverse("assinaturas:revogar-pedido", kwargs={"token": pedido.token})
     if reg is not None:
         urls["verificar"] = reverse(
             "assinaturas:assinatura-verificar-codigo",

@@ -652,6 +652,9 @@ def _enriquecer_painel_etiqueta_assinatura(request, painel: dict) -> None:
     from assinaturas.presenters import assinatura_status_artefato
     from assinaturas.presenters import assinatura_urls_artefato
     from assinaturas.presenters import assinatura_ultima_valida
+    from assinaturas.models import PedidoAssinaturaDocumento
+    from assinaturas.services.assinatura_artefato import mascarar_cpf_assinatura
+    from assinaturas.services.pedidos import url_publica_pedido_assinatura
 
     nomes = ""
     u = getattr(request, "user", None)
@@ -660,6 +663,25 @@ def _enriquecer_painel_etiqueta_assinatura(request, painel: dict) -> None:
     painel["assinante_display"] = nomes
     painel["etiqueta_status"] = assinatura_status_artefato(art)
     painel["etiqueta_urls"] = assinatura_urls_artefato(art, request=request)
+    pedidos = list(
+        PedidoAssinaturaDocumento.objects.filter(artefato=art)
+        .select_related("assinatura", "assinante_servidor")
+        .order_by("-criado_em")
+    )
+    for pedido in pedidos:
+        pedido.link_publico = url_publica_pedido_assinatura(request, pedido)
+        pedido.cpf_mascarado = mascarar_cpf_assinatura(pedido.cpf_assinante_snapshot)
+    abertos = [
+        p
+        for p in pedidos
+        if p.status in {PedidoAssinaturaDocumento.STATUS_PENDENTE, PedidoAssinaturaDocumento.STATUS_VISUALIZADA}
+        and not p.esta_expirado
+    ]
+    painel["pedidos_assinatura"] = pedidos
+    painel["pedido_pendente"] = abertos[0] if abertos else None
+    painel["assinaturas_pendentes"] = len(abertos)
+    painel["assinaturas_concluidas"] = len([p for p in pedidos if p.status == PedidoAssinaturaDocumento.STATUS_ASSINADO])
+    painel["destinatarios_total"] = len(pedidos)
     reg = assinatura_ultima_valida(art)
     if reg is not None and reg.codigo_verificacao:
         painel["verificacao_url"] = request.build_absolute_uri(

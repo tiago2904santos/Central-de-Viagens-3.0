@@ -51,16 +51,19 @@ def criar_ou_obter_pedido_assinatura(
     forcar_novo: bool = False,
 ) -> PedidoAssinaturaDocumento:
     now = timezone.now()
-    pendentes = PedidoAssinaturaDocumento.objects.select_for_update().filter(
+    abertos = PedidoAssinaturaDocumento.objects.select_for_update().filter(
         artefato=artefato,
-        status=PedidoAssinaturaDocumento.STATUS_PENDENTE,
+        status__in=[
+            PedidoAssinaturaDocumento.STATUS_PENDENTE,
+            PedidoAssinaturaDocumento.STATUS_VISUALIZADA,
+        ],
     )
     if not forcar_novo:
-        existente = pendentes.filter(expira_em__gt=now).order_by("-criado_em").first()
+        existente = abertos.filter(expira_em__gt=now).order_by("-criado_em").first()
         if existente is not None:
             return existente
 
-    pendentes.update(status=PedidoAssinaturaDocumento.STATUS_SUBSTITUIDO if forcar_novo else PedidoAssinaturaDocumento.STATUS_EXPIRADO)
+    abertos.update(status=PedidoAssinaturaDocumento.STATUS_SUBSTITUIDO if forcar_novo else PedidoAssinaturaDocumento.STATUS_EXPIRADO)
 
     assinante = resolver_assinante_para_artefato(artefato)
     auditoria = _request_auditoria(request)
@@ -89,7 +92,7 @@ def criar_ou_obter_pedido_assinatura(
 
 
 def url_publica_pedido_assinatura(request: HttpRequest | None, pedido: PedidoAssinaturaDocumento) -> str:
-    rel = reverse("assinaturas:assinar-pedido", kwargs={"token": pedido.token})
+    rel = reverse("assinaturas:assinatura-token", kwargs={"token": pedido.token})
     if request is not None:
         return request.build_absolute_uri(rel)
     return rel

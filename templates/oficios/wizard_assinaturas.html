@@ -6,6 +6,7 @@
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/oficios.css' %}">
   <link rel="stylesheet" href="{% static 'css/oficios-documentos-inline.css' %}">
+  <link rel="stylesheet" href="{% static 'css/assinaturas.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -29,268 +30,66 @@
               <header class="oficio-assinatura-pdf__intro">
                 <h2 class="oficio-assinatura-pdf__title">Assinaturas digitais</h2>
                 <p class="oficio-assinatura-pdf__subtitle">
-                  Ofício {{ oficio.numero_formatado }} — confira cada PDF e confirme a assinatura quando estiver de acordo.
+                  Ofício {{ oficio.numero_formatado }} — acompanhe solicitações, links e status de assinatura.
                 </p>
               </header>
 
-              <div class="oficios-assinaturas-tabs" role="tablist" aria-label="Tipo de documento">
-                <button
-                  type="button"
-                  class="oficios-assinaturas-tabs__btn {% if tab_atual == 'oficio' %}oficios-assinaturas-tabs__btn--active{% endif %}"
-                  role="tab"
-                  aria-selected="{% if tab_atual == 'oficio' %}true{% else %}false{% endif %}"
-                  data-assinaturas-tab="oficio"
-                >Ofício</button>
-                <button
-                  type="button"
-                  class="oficios-assinaturas-tabs__btn {% if tab_atual == 'justificativa' %}oficios-assinaturas-tabs__btn--active{% endif %}"
-                  role="tab"
-                  aria-selected="{% if tab_atual == 'justificativa' %}true{% else %}false{% endif %}"
-                  data-assinaturas-tab="justificativa"
-                >Justificativa</button>
-                <button
-                  type="button"
-                  class="oficios-assinaturas-tabs__btn {% if tab_atual == 'termo' %}oficios-assinaturas-tabs__btn--active{% endif %}"
-                  role="tab"
-                  aria-selected="{% if tab_atual == 'termo' %}true{% else %}false{% endif %}"
-                  data-assinaturas-tab="termo"
-                >Termos</button>
-              </div>
-
-              <section
-                class="oficios-assinaturas-panel"
-                role="tabpanel"
-                data-assinaturas-panel="oficio"
-                id="assinaturas-panel-oficio"
-                {% if tab_atual != 'oficio' %}hidden{% endif %}
-              >
-                <article class="oficio-documentos-card oficio-documentos-card--admin oficio-assinatura-pdf__meta">
-                  <header class="oficio-documentos-card__header">
-                    <div>
-                      <h4 class="oficio-documentos-card__title">Ofício (PDF)</h4>
-                      <p class="oficio-documentos-card__subtitle">Integridade e estado</p>
-                    </div>
-                    {% if painel_oficio.disponivel %}
-                      {% if painel_oficio.ja_assinado %}
-                        <span class="oficio-documentos-sig-badge oficio-documentos-sig-badge--signed" role="status">Assinado</span>
-                      {% else %}
-                        <span class="oficio-documentos-sig-badge oficio-documentos-sig-badge--unsigned" role="status">Não assinado</span>
-                      {% endif %}
-                    {% endif %}
-                  </header>
-                  <div class="oficio-documentos-card__body">
-                    {% if painel_oficio.erro %}
-                      <p class="doc-muted">{{ painel_oficio.erro }}</p>
-                    {% elif painel_oficio.disponivel %}
-                      <dl class="oficio-documentos-facts">
-                        <div class="oficio-documentos-fact">
-                          <dt>Hash SHA-256 (original)</dt>
-                          <dd class="oficio-assinatura-pdf__mono">{{ painel_oficio.artefato.hash_sha256 }}</dd>
-                        </div>
-                        <div class="oficio-documentos-fact">
-                          <dt>Hash SHA-256 (assinado)</dt>
-                          <dd class="oficio-assinatura-pdf__mono">{% if painel_oficio.artefato.hash_sha256_assinado %}{{ painel_oficio.artefato.hash_sha256_assinado }}{% else %}—{% endif %}</dd>
-                        </div>
-                      </dl>
-                      {% include "oficios/partials/assinatura_etiqueta_actions.html" with painel=painel_oficio only %}
-                      <p class="assinatura-oficio-instrucao doc-muted">
-                        Arraste a etiqueta para o local exato onde a assinatura deve aparecer no PDF.
-                      </p>
-                      <div class="assinatura-oficio-layout">
-                        <div class="assinatura-oficio-layout__main">
-                          <div
-                            class="assinatura-pdf-editor"
-                            id="assinatura-pdf-editor"
-                            data-pdf-url="{{ painel_oficio.pdf_preview_url }}"
-                            data-signer-name="{{ painel_oficio.assinante_display|default:'' }}"
-                            data-verification-url="{{ painel_oficio.verificacao_url }}"
-                            data-verification-code="{{ painel_oficio.verificacao_codigo }}"
-                            data-worker-src="{% static 'vendor/pdfjs/pdf.worker.min.js' %}"
-                          >
-                            <div class="assinatura-pdf-editor__toolbar">
-                              <span class="assinatura-pdf-editor__meta" id="assinatura-pdf-meta">Página —</span>
-                              <div class="assinatura-pdf-editor__zoom">
-                                <button type="button" class="btn btn-secondary app-btn app-btn--secondary" id="assinatura-zoom-out" aria-label="Diminuir zoom">−</button>
-                                <button type="button" class="btn btn-secondary app-btn app-btn--secondary" id="assinatura-zoom-reset">100%</button>
-                                <button type="button" class="btn btn-secondary app-btn app-btn--secondary" id="assinatura-zoom-in" aria-label="Aumentar zoom">+</button>
-                              </div>
-                            </div>
-                            <div class="assinatura-pdf-editor__scroller" id="assinatura-editor-scroll">
-                              <div class="assinatura-pdf-editor__pages" id="assinatura-pages-column"></div>
-                            </div>
-                          </div>
-                          <p id="assinatura-pdf-error" class="assinatura-pdf-error" role="alert" hidden></p>
-                          <div class="form-actions app-form-actions oficio-assinatura-pdf__actions assinatura-oficio-actions">
-                            <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ painel_oficio.pdf_visualizar_url }}" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
-                            <form method="post" action="{% url 'oficios:wizard_assinaturas' oficio.pk %}" class="oficio-assinatura-pdf__confirm-form" id="form-assinar-oficio">
-                              {% csrf_token %}
-                              <input type="hidden" name="documento_alvo" value="oficio">
-                              <input type="hidden" name="sig_x" id="sig-x" value="0.58" autocomplete="off">
-                              <input type="hidden" name="sig_y" id="sig-y" value="0.78" autocomplete="off">
-                              <input type="hidden" name="sig_w" id="sig-w" value="0.34" autocomplete="off">
-                              <input type="hidden" name="sig_h" id="sig-h" value="0.11" autocomplete="off">
-                              <input type="hidden" name="sig_page" id="sig-page" value="-1" autocomplete="off">
-                              <button class="btn btn-primary app-btn app-btn--primary" type="submit">Confirmar assinatura</button>
-                            </form>
-                          </div>
-                        </div>
-                        <aside class="assinatura-oficio-layout__aside" aria-label="Pré-visualização do bloco de autenticação">
-                          <h3 class="assinatura-oficio-aside__title">Bloco de autenticação</h3>
-                          <div class="assinatura-label assinatura-label--preview" aria-hidden="true">
-                            <div class="assinatura-label__logo" aria-hidden="true">PCPR</div>
-                            <div class="assinatura-label__body">
-                              <div class="assinatura-label__title">DOCUMENTO ASSINADO ELETRONICAMENTE</div>
-                              <div class="assinatura-label__name">{{ painel_oficio.assinante_display|default:"—" }}</div>
-                              <div class="assinatura-label__meta">Verifique em: {{ painel_oficio.verificacao_url }}</div>
-                              <div class="assinatura-label__code">Código: {{ painel_oficio.verificacao_codigo }}</div>
-                              <div class="assinatura-label__qr" aria-hidden="true"></div>
-                            </div>
-                          </div>
-                        </aside>
-                      </div>
-                    {% endif %}
-                  </div>
+              <section class="assinaturas-central-resumo" aria-label="Resumo das assinaturas">
+                <article>
+                  <span>Documentos</span>
+                  <strong>3</strong>
+                </article>
+                <article>
+                  <span>Destinatários</span>
+                  <strong>{{ painel_oficio.destinatarios_total|default:0 }}</strong>
+                </article>
+                <article>
+                  <span>Assinados</span>
+                  <strong>{{ painel_oficio.assinaturas_concluidas|default:0 }}</strong>
+                </article>
+                <article>
+                  <span>Pendentes</span>
+                  <strong>{{ painel_oficio.assinaturas_pendentes|default:0 }}</strong>
                 </article>
               </section>
 
-              <section
-                class="oficios-assinaturas-panel"
-                role="tabpanel"
-                data-assinaturas-panel="justificativa"
-                id="assinaturas-panel-justificativa"
-                {% if tab_atual != 'justificativa' %}hidden{% endif %}
-              >
-                <article class="oficio-documentos-card oficio-documentos-card--admin oficio-assinatura-pdf__meta">
-                  <header class="oficio-documentos-card__header">
-                    <div>
-                      <h4 class="oficio-documentos-card__title">Justificativa (PDF)</h4>
-                      <p class="oficio-documentos-card__subtitle">Integridade e estado</p>
-                    </div>
-                    {% if painel_justificativa.disponivel %}
-                      {% if painel_justificativa.ja_assinado %}
-                        <span class="oficio-documentos-sig-badge oficio-documentos-sig-badge--signed" role="status">Assinado</span>
-                      {% else %}
-                        <span class="oficio-documentos-sig-badge oficio-documentos-sig-badge--unsigned" role="status">Não assinado</span>
-                      {% endif %}
-                    {% endif %}
-                  </header>
-                  <div class="oficio-documentos-card__body">
-                    {% if painel_justificativa.erro %}
-                      <p class="doc-muted">{{ painel_justificativa.erro }}</p>
-                    {% elif painel_justificativa.disponivel %}
-                      <dl class="oficio-documentos-facts">
-                        <div class="oficio-documentos-fact">
-                          <dt>Hash SHA-256 (original)</dt>
-                          <dd class="oficio-assinatura-pdf__mono">{{ painel_justificativa.artefato.hash_sha256 }}</dd>
-                        </div>
-                        <div class="oficio-documentos-fact">
-                          <dt>Hash SHA-256 (assinado)</dt>
-                          <dd class="oficio-assinatura-pdf__mono">{% if painel_justificativa.artefato.hash_sha256_assinado %}{{ painel_justificativa.artefato.hash_sha256_assinado }}{% else %}—{% endif %}</dd>
-                        </div>
-                      </dl>
-                      {% include "oficios/partials/assinatura_etiqueta_actions.html" with painel=painel_justificativa only %}
-                      <div class="document-inline-viewer oficios-assinaturas-panel__viewer">
-                        <iframe
-                          class="document-inline-viewer__frame"
-                          src="{{ painel_justificativa.pdf_preview_url }}"
-                          title="Pré-visualização da justificativa em PDF"
-                          loading="lazy"
-                        ></iframe>
-                      </div>
-                      <div class="form-actions app-form-actions oficio-assinatura-pdf__actions">
-                        <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ painel_justificativa.pdf_visualizar_url }}" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
-                        <form method="post" action="{% url 'oficios:wizard_assinaturas' oficio.pk %}" class="oficio-assinatura-pdf__confirm-form">
-                          {% csrf_token %}
-                          <input type="hidden" name="documento_alvo" value="justificativa">
-                          <input type="hidden" name="sig_x" value="0.58" autocomplete="off">
-                          <input type="hidden" name="sig_y" value="0.78" autocomplete="off">
-                          <input type="hidden" name="sig_w" value="0.34" autocomplete="off">
-                          <input type="hidden" name="sig_h" value="0.11" autocomplete="off">
-                          <input type="hidden" name="sig_page" value="-1" autocomplete="off">
-                          <button class="btn btn-primary app-btn app-btn--primary" type="submit">Confirmar assinatura</button>
-                        </form>
-                      </div>
-                    {% endif %}
-                  </div>
-                </article>
-              </section>
+              {% include "oficios/partials/assinatura_central_documento.html" with titulo="Ofício PDF" painel=painel_oficio oficio=oficio request=request only %}
+              {% include "oficios/partials/assinatura_central_documento.html" with titulo="Justificativa PDF" painel=painel_justificativa oficio=oficio request=request only %}
 
-              <section
-                class="oficios-assinaturas-panel"
-                role="tabpanel"
-                data-assinaturas-panel="termo"
-                id="assinaturas-panel-termo"
-                {% if tab_atual != 'termo' %}hidden{% endif %}
-              >
+              <section class="assinaturas-central-card">
+                <header class="assinaturas-central-card__header">
+                  <div>
+                    <h3>Termos de autorização</h3>
+                    <p>Documentos individuais vinculados aos viajantes.</p>
+                  </div>
+                </header>
                 {% if termos_linhas %}
-                  <div class="oficios-assinaturas-termo-toolbar">
-                    <label class="oficios-assinaturas-termo-toolbar__label" for="termo-servidor-select">Viajante</label>
-                    <select id="termo-servidor-select" class="oficios-assinaturas-termo-toolbar__select" aria-label="Selecionar viajante para o termo">
-                      {% for row in termos_linhas %}
-                        <option
-                          value="{{ row.servidor_pk }}"
-                          data-preview-url="{{ row.pdf_preview_url|default:'' }}"
-                          data-visualizar-url="{{ row.pdf_visualizar_url|default:'' }}"
-                          data-erro="{{ row.erro|default:'' }}"
-                          data-disponivel="{% if row.disponivel %}1{% else %}0{% endif %}"
-                          data-assinado="{% if row.ja_assinado %}1{% else %}0{% endif %}"
-                          data-hash-o="{% if row.artefato %}{{ row.artefato.hash_sha256 }}{% endif %}"
-                          data-hash-a="{% if row.artefato %}{{ row.artefato.hash_sha256_assinado }}{% endif %}"
-                          {% if servidor_termo_pk == row.servidor_pk %}selected{% endif %}
-                        >{{ row.servidor_nome }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                  <p class="doc-muted oficios-assinaturas-termo-erro" id="termo-erro-msg" hidden></p>
-                  <div class="oficio-documentos-facts oficios-assinaturas-termo-meta" id="termo-meta-hashes">
-                    <div class="oficio-documentos-fact">
-                      <dt>Hash SHA-256 (original)</dt>
-                      <dd class="oficio-assinatura-pdf__mono" id="termo-hash-o">—</dd>
-                    </div>
-                    <div class="oficio-documentos-fact">
-                      <dt>Hash SHA-256 (assinado)</dt>
-                      <dd class="oficio-assinatura-pdf__mono" id="termo-hash-a">—</dd>
-                    </div>
-                  </div>
-                  <p class="oficio-assinatura-pdf__mvp-text" id="termo-badge-wrap">
-                    <span id="termo-badge" class="oficio-documentos-sig-badge oficio-documentos-sig-badge--unsigned" role="status"></span>
-                  </p>
-                  <div class="document-inline-viewer oficios-assinaturas-panel__viewer">
-                    <iframe
-                      class="document-inline-viewer__frame"
-                      id="termo-iframe"
-                      title="Pré-visualização do termo em PDF"
-                      loading="lazy"
-                      src=""
-                    ></iframe>
-                  </div>
-                  <div class="form-actions app-form-actions oficio-assinatura-pdf__actions">
-                    <a class="btn btn-secondary app-btn app-btn--secondary" id="termo-abrir-aba" href="#" target="_blank" rel="noopener noreferrer">Abrir em nova aba</a>
-                    <form method="post" action="{% url 'oficios:wizard_assinaturas' oficio.pk %}" class="oficio-assinatura-pdf__confirm-form" id="termo-sign-form">
-                      {% csrf_token %}
-                      <input type="hidden" name="documento_alvo" value="termo">
-                      <input type="hidden" name="servidor_id" id="termo-servidor-id-input" value="{% firstof servidor_termo_pk '' %}">
-                      <input type="hidden" name="sig_x" value="0.58" autocomplete="off">
-                      <input type="hidden" name="sig_y" value="0.78" autocomplete="off">
-                      <input type="hidden" name="sig_w" value="0.34" autocomplete="off">
-                      <input type="hidden" name="sig_h" value="0.11" autocomplete="off">
-                      <input type="hidden" name="sig_page" value="-1" autocomplete="off">
-                      <button class="btn btn-primary app-btn app-btn--primary" type="submit" id="termo-submit-btn">Confirmar assinatura</button>
-                    </form>
+                  <div class="assinaturas-central-lista">
+                    {% for row in termos_linhas %}
+                      <article class="assinaturas-central-row">
+                        <div>
+                          <strong>{{ row.servidor_nome }}</strong>
+                          {% if row.erro %}
+                            <p>{{ row.erro }}</p>
+                          {% elif row.artefato %}
+                            <p class="mono">Hash original: {{ row.artefato.hash_sha256 }}</p>
+                          {% endif %}
+                        </div>
+                        <div class="assinaturas-central-row__actions">
+                          {% if row.pdf_visualizar_url %}
+                            <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ row.pdf_visualizar_url }}" target="_blank" rel="noopener noreferrer">Visualizar documento original</a>
+                          {% endif %}
+                          {% if row.etiqueta_urls.pdf_assinado %}
+                            <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ row.etiqueta_urls.pdf_assinado }}" target="_blank" rel="noopener noreferrer">Ver PDF assinado</a>
+                          {% endif %}
+                        </div>
+                      </article>
+                    {% endfor %}
                   </div>
                 {% else %}
-                  <p class="doc-muted">Nenhum viajante vinculado a este ofício para gerar termos.</p>
+                  <p class="doc-muted">Nenhum termo disponível.</p>
                 {% endif %}
               </section>
-
-              <div class="form-actions app-form-actions oficio-wizard__actions app-wizard__actions oficio-assinatura-pdf__actions oficios-assinaturas-footer">
-                <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:wizard_documentos' oficio.pk %}">Voltar para documentos</a>
-                <button
-                  class="btn btn-secondary app-btn app-btn--secondary"
-                  type="button"
-                  data-verify-oficio-pdf-url="{% url 'oficios:wizard_verificar_pdf_oficio' oficio.pk %}"
-                >Verificar assinatura (ofício)</button>
-              </div>
             </div>
           </main>
         </div>
@@ -301,8 +100,5 @@
 
 {% block extra_js %}
   {{ block.super }}
-  <script src="{% static 'vendor/pdfjs/pdf.min.js' %}"></script>
-  <script type="module" src="{% static 'js/pages/assinatura-pdf.js' %}"></script>
-  <script src="{% static 'js/pages/oficios-documentos-inline.js' %}" defer></script>
-  <script src="{% static 'js/pages/oficios-assinaturas-wizard.js' %}" defer></script>
+  <script src="{% static 'js/pages/assinaturas-central.js' %}" defer></script>
 {% endblock %}

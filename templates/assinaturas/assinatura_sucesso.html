@@ -1,0 +1,40 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }}</title>
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/assinaturas.css' %}">
+</head>
+<body class="assinatura-publica-body">
+  <main class="assinatura-publica assinatura-publica--narrow">
+    <header class="assinatura-publica__header">
+      <div>
+        <p class="assinatura-publica__brand">Central de Viagens</p>
+        <h1>Documento assinado com sucesso</h1>
+      </div>
+    </header>
+    <section class="assinatura-publica__summary assinatura-publica__summary--stack">
+      <div>
+        <span>Código</span>
+        <strong>{{ assinatura.codigo_verificacao }}</strong>
+      </div>
+      <div>
+        <span>Data/hora</span>
+        <strong>{{ pedido.assinado_em|date:"d/m/Y H:i" }}</strong>
+      </div>
+      <div>
+        <span>Hash do documento assinado</span>
+        <strong class="mono">{{ pedido.hash_documento_assinado }}</strong>
+      </div>
+      <div>
+        <span>Destinatário</span>
+        <strong>{{ pedido.nome_assinante_snapshot }}</strong>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

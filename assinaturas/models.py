@@ -85,14 +85,20 @@ class AssinaturaDigital(models.Model):
 
 class PedidoAssinaturaDocumento(models.Model):
     STATUS_PENDENTE = "pendente"
+    STATUS_VISUALIZADA = "visualizada"
     STATUS_ASSINADO = "assinado"
     STATUS_EXPIRADO = "expirado"
+    STATUS_RECUSADA = "recusada"
+    STATUS_REVOGADA = "revogada"
     STATUS_CANCELADO = "cancelado"
     STATUS_SUBSTITUIDO = "substituido"
     STATUS_CHOICES = [
         (STATUS_PENDENTE, "Pendente"),
+        (STATUS_VISUALIZADA, "Visualizada"),
         (STATUS_ASSINADO, "Assinado"),
         (STATUS_EXPIRADO, "Expirado"),
+        (STATUS_RECUSADA, "Recusada"),
+        (STATUS_REVOGADA, "Revogada"),
         (STATUS_CANCELADO, "Cancelado"),
         (STATUS_SUBSTITUIDO, "Substituido"),
     ]
@@ -134,9 +140,15 @@ class PedidoAssinaturaDocumento(models.Model):
     )
     criado_em = models.DateTimeField(auto_now_add=True)
     expira_em = models.DateTimeField(db_index=True)
+    visualizado_em = models.DateTimeField(null=True, blank=True)
     assinado_em = models.DateTimeField(null=True, blank=True)
+    recusado_em = models.DateTimeField(null=True, blank=True)
+    revogado_em = models.DateTimeField(null=True, blank=True)
+    ip_visualizacao = models.GenericIPAddressField(null=True, blank=True)
+    user_agent_visualizacao = models.TextField(blank=True, default="")
     ip_assinatura = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True, default="")
+    motivo_recusa = models.TextField(blank=True, default="")
     posicao_etiqueta_json = models.JSONField(blank=True, default=dict)
     assinatura = models.OneToOneField(
         AssinaturaDigital,

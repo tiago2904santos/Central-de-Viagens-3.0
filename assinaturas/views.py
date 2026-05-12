@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import FileResponse
 from django.http import Http404
+from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import redirect
@@ -115,6 +116,45 @@ def _pdf_inline_response(field_file, filename: str) -> FileResponse:
     return resp
 
 
+def _request_ip(request):
+    return request.META.get("REMOTE_ADDR") or None
+
+
+def _request_ua(request):
+    return (request.META.get("HTTP_USER_AGENT") or "")[:4000]
+
+
+def _pedido_por_token(token):
+    return get_object_or_404(
+        PedidoAssinaturaDocumento.objects.select_related("artefato", "assinante_servidor", "assinante_usuario", "assinatura"),
+        token=token,
+    )
+
+
+def _marcar_expirado_se_preciso(pedido: PedidoAssinaturaDocumento) -> bool:
+    if pedido.status in {PedidoAssinaturaDocumento.STATUS_PENDENTE, PedidoAssinaturaDocumento.STATUS_VISUALIZADA} and pedido.esta_expirado:
+        pedido.status = PedidoAssinaturaDocumento.STATUS_EXPIRADO
+        pedido.save(update_fields=["status"])
+        return True
+    return False
+
+
+def _pedido_pode_assinar(pedido: PedidoAssinaturaDocumento) -> bool:
+    return pedido.status in {
+        PedidoAssinaturaDocumento.STATUS_PENDENTE,
+        PedidoAssinaturaDocumento.STATUS_VISUALIZADA,
+    } and not pedido.esta_expirado
+
+
+def _render_pedido_indisponivel(request, pedido: PedidoAssinaturaDocumento, mensagem: str, status: int = 403):
+    return render(
+        request,
+        "assinaturas/assinatura_indisponivel.html",
+        {"page_title": "Assinatura indisponivel", "pedido": pedido, "mensagem": mensagem},
+        status=status,
+    )
+
+
 @login_not_required
 @require_GET
 def assinatura_pdf_original(request, assinatura_id):
@@ -188,86 +228,161 @@ def _pedido_403_se_usuario_incorreto(request, pedido: PedidoAssinaturaDocumento)
 @login_required
 @require_http_methods(["GET", "POST"])
 def assinar_pedido(request, token):
-    pedido = get_object_or_404(
-        PedidoAssinaturaDocumento.objects.select_related("artefato", "assinante_servidor", "assinante_usuario"),
-        token=token,
-    )
-    _pedido_403_se_usuario_incorreto(request, pedido)
-    if pedido.status == PedidoAssinaturaDocumento.STATUS_ASSINADO and pedido.assinatura_id:
-        return HttpResponseRedirect(
-            reverse(
-                "assinaturas:assinatura-verificar-codigo",
-                kwargs={"codigo": pedido.assinatura.codigo_verificacao},
-            )
-        )
-    if pedido.status != PedidoAssinaturaDocumento.STATUS_PENDENTE:
-        raise Http404("Pedido de assinatura indisponível.")
-    if pedido.esta_expirado:
-        pedido.status = PedidoAssinaturaDocumento.STATUS_EXPIRADO
-        pedido.save(update_fields=["status"])
-        raise Http404("Pedido de assinatura expirado.")
+    return redirect(reverse("assinaturas:assinatura-token", kwargs={"token": token}))
 
-    artefato = pedido.artefato
-    ensure_request_may_view_artefato_pdf(request, artefato)
-    if request.method == "POST":
-        pos = _posicao_from_post(request.POST)
-        ass = assinar_artefato_com_etiqueta(
-            artefato,
-            nome_assinante=pedido.nome_assinante_snapshot,
-            cpf_assinante=pedido.cpf_assinante_snapshot,
-            email_assinante=pedido.email_assinante_snapshot,
-            usuario=request.user,
-            request=request,
-            posicao=pos,
-        )
-        pedido.status = PedidoAssinaturaDocumento.STATUS_ASSINADO
-        pedido.assinado_em = timezone.now()
-        pedido.ip_assinatura = request.META.get("REMOTE_ADDR") or None
-        pedido.user_agent = (request.META.get("HTTP_USER_AGENT") or "")[:4000]
-        pedido.posicao_etiqueta_json = pos
-        pedido.assinatura = ass
-        pedido.hash_documento_original = ass.hash_documento
-        pedido.hash_documento_assinado = ass.hash_documento_assinado
-        pedido.auditoria = {
-            **(pedido.auditoria or {}),
-            "assinado_por_user_id": str(request.user.pk),
-            "codigo_verificacao": ass.codigo_verificacao,
-        }
-        pedido.save(
-            update_fields=[
-                "status",
-                "assinado_em",
-                "ip_assinatura",
-                "user_agent",
-                "posicao_etiqueta_json",
-                "assinatura",
-                "hash_documento_original",
-                "hash_documento_assinado",
-                "auditoria",
-            ]
-        )
-        return HttpResponseRedirect(
-            reverse(
-                "assinaturas:assinatura-verificar-codigo",
-                kwargs={"codigo": ass.codigo_verificacao},
-            )
-        )
-    pdf_url = reverse(
-        "assinaturas:assinatura-artefato-pdf-original",
-        kwargs={"artefato_id": artefato.pk},
-    )
+
+@login_not_required
+@require_GET
+def assinatura_token(request, token):
+    pedido = _pedido_por_token(token)
+    if _marcar_expirado_se_preciso(pedido):
+        return _render_pedido_indisponivel(request, pedido, "Este link de assinatura expirou.")
+    if pedido.status == PedidoAssinaturaDocumento.STATUS_ASSINADO:
+        return redirect(reverse("assinaturas:assinatura-sucesso", kwargs={"token": pedido.token}))
+    mensagens_indisponiveis = {
+        PedidoAssinaturaDocumento.STATUS_REVOGADA: "Esta solicitacao de assinatura foi revogada.",
+        PedidoAssinaturaDocumento.STATUS_RECUSADA: "Esta solicitacao de assinatura foi recusada.",
+        PedidoAssinaturaDocumento.STATUS_CANCELADO: "Esta solicitacao de assinatura foi cancelada.",
+        PedidoAssinaturaDocumento.STATUS_SUBSTITUIDO: "Esta solicitacao de assinatura foi substituida.",
+        PedidoAssinaturaDocumento.STATUS_EXPIRADO: "Este link de assinatura expirou.",
+    }
+    if pedido.status in mensagens_indisponiveis:
+        return _render_pedido_indisponivel(request, pedido, mensagens_indisponiveis[pedido.status])
+    if not pedido.artefato.arquivo or not getattr(pedido.artefato.arquivo, "name", ""):
+        return _render_pedido_indisponivel(request, pedido, "O documento original nao esta disponivel.", status=404)
+    if pedido.status == PedidoAssinaturaDocumento.STATUS_PENDENTE:
+        pedido.status = PedidoAssinaturaDocumento.STATUS_VISUALIZADA
+        pedido.visualizado_em = timezone.now()
+        pedido.ip_visualizacao = _request_ip(request)
+        pedido.user_agent_visualizacao = _request_ua(request)
+        pedido.save(update_fields=["status", "visualizado_em", "ip_visualizacao", "user_agent_visualizacao"])
     return render(
         request,
-        "assinaturas/assinar_pedido.html",
+        "assinaturas/assinatura_token.html",
         {
-            "page_title": "Assinatura do documento",
-            "artefato": artefato,
+            "page_title": "Assinatura digital de documento",
             "pedido": pedido,
-            "pdf_url": pdf_url,
+            "artefato": pedido.artefato,
             "cpf_mascarado": mascarar_cpf_assinatura(pedido.cpf_assinante_snapshot),
-            "pedido_url": url_publica_pedido_assinatura(request, pedido),
+            "pdf_url": reverse("assinaturas:assinatura-token-pdf-original", kwargs={"token": pedido.token}),
         },
     )
+
+
+@login_not_required
+@require_POST
+def assinatura_token_confirmar(request, token):
+    pedido = _pedido_por_token(token)
+    if _marcar_expirado_se_preciso(pedido) or not _pedido_pode_assinar(pedido):
+        return _render_pedido_indisponivel(request, pedido, "Este link nao permite nova assinatura.")
+    if request.POST.get("ciencia") != "1" or request.POST.get("identidade") != "1":
+        return HttpResponseForbidden("Confirme a ciencia e a identidade antes de assinar.")
+    artefato = pedido.artefato
+    pos = {
+        "box_x": 0.58,
+        "box_y": 0.78,
+        "box_w": 0.34,
+        "box_h": 0.11,
+        "page_index": -1,
+    }
+    ass = assinar_artefato_com_etiqueta(
+        artefato,
+        nome_assinante=pedido.nome_assinante_snapshot,
+        cpf_assinante=pedido.cpf_assinante_snapshot,
+        email_assinante=pedido.email_assinante_snapshot,
+        usuario=request.user if getattr(request.user, "is_authenticated", False) else None,
+        request=request,
+        posicao=pos,
+    )
+    pedido.status = PedidoAssinaturaDocumento.STATUS_ASSINADO
+    pedido.assinado_em = timezone.now()
+    pedido.ip_assinatura = _request_ip(request)
+    pedido.user_agent = _request_ua(request)
+    pedido.posicao_etiqueta_json = pos
+    pedido.assinatura = ass
+    pedido.hash_documento_original = ass.hash_documento
+    pedido.hash_documento_assinado = ass.hash_documento_assinado
+    pedido.auditoria = {
+        **(pedido.auditoria or {}),
+        "codigo_verificacao": ass.codigo_verificacao,
+    }
+    pedido.save(
+        update_fields=[
+            "status",
+            "assinado_em",
+            "ip_assinatura",
+            "user_agent",
+            "posicao_etiqueta_json",
+            "assinatura",
+            "hash_documento_original",
+            "hash_documento_assinado",
+            "auditoria",
+        ]
+    )
+    return redirect(reverse("assinaturas:assinatura-sucesso", kwargs={"token": pedido.token}))
+
+
+@login_not_required
+@require_POST
+def assinatura_token_recusar(request, token):
+    pedido = _pedido_por_token(token)
+    if _marcar_expirado_se_preciso(pedido) or not _pedido_pode_assinar(pedido):
+        return _render_pedido_indisponivel(request, pedido, "Este link nao permite recusa.")
+    pedido.status = PedidoAssinaturaDocumento.STATUS_RECUSADA
+    pedido.recusado_em = timezone.now()
+    pedido.motivo_recusa = (request.POST.get("motivo") or "").strip()[:4000]
+    pedido.auditoria = {
+        **(pedido.auditoria or {}),
+        "ip_recusa": _request_ip(request) or "",
+        "user_agent_recusa": _request_ua(request),
+    }
+    pedido.save(update_fields=["status", "recusado_em", "motivo_recusa", "auditoria"])
+    return _render_pedido_indisponivel(request, pedido, "A assinatura foi recusada.")
+
+
+@login_not_required
+@require_GET
+def assinatura_sucesso(request, token):
+    pedido = _pedido_por_token(token)
+    if pedido.status != PedidoAssinaturaDocumento.STATUS_ASSINADO or not pedido.assinatura_id:
+        return _render_pedido_indisponivel(request, pedido, "Esta assinatura ainda nao foi concluida.", status=404)
+    return render(
+        request,
+        "assinaturas/assinatura_sucesso.html",
+        {"page_title": "Documento assinado", "pedido": pedido, "assinatura": pedido.assinatura},
+    )
+
+
+@login_not_required
+@require_GET
+def assinatura_token_pdf_original(request, token):
+    pedido = _pedido_por_token(token)
+    if pedido.status in {
+        PedidoAssinaturaDocumento.STATUS_REVOGADA,
+        PedidoAssinaturaDocumento.STATUS_RECUSADA,
+        PedidoAssinaturaDocumento.STATUS_CANCELADO,
+        PedidoAssinaturaDocumento.STATUS_SUBSTITUIDO,
+    } or _marcar_expirado_se_preciso(pedido):
+        raise Http404()
+    return _pdf_inline_response(pedido.artefato.arquivo, "documento-original.pdf")
+
+
+@login_required
+@require_POST
+def revogar_pedido(request, token):
+    pedido = _pedido_por_token(token)
+    if pedido.status not in {PedidoAssinaturaDocumento.STATUS_PENDENTE, PedidoAssinaturaDocumento.STATUS_VISUALIZADA}:
+        messages.error(request, "Somente solicitacoes pendentes podem ser revogadas.")
+    else:
+        pedido.status = PedidoAssinaturaDocumento.STATUS_REVOGADA
+        pedido.revogado_em = timezone.now()
+        pedido.auditoria = {
+            **(pedido.auditoria or {}),
+            "revogado_por_user_id": str(request.user.pk),
+        }
+        pedido.save(update_fields=["status", "revogado_em", "auditoria"])
+        messages.success(request, "Solicitacao de assinatura revogada.")
+    return redirect(request.POST.get("next") or request.META.get("HTTP_REFERER") or reverse("assinaturas:index"))
 
 
 @login_required
