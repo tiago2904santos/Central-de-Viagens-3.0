@@ -62,11 +62,15 @@ def api_assinar_documento(request, pk):
 @require_GET
 def assinatura_verificar_codigo(request, codigo):
     c = normalizar_codigo_verificacao(codigo)
-    assinatura = AssinaturaDigital.objects.filter(codigo_verificacao=c).select_related("artefato").first()
-    if assinatura is None:
+    from assinaturas.services.validacao_codigo import validar_assinatura_por_codigo
+
+    vd = validar_assinatura_por_codigo(c)
+    if not vd["existe"]:
         raise Http404()
-    artefato = assinatura.artefato
-    integra = assinatura_arquivo_esta_integra(assinatura)
+    assinatura = vd["assinatura"]
+    artefato = vd["artefato"]
+    assert assinatura is not None and artefato is not None
+    integra = bool(vd["integra"])
     hash_atual = ""
     if artefato.arquivo_assinado and getattr(artefato.arquivo_assinado, "name", ""):
         try:
@@ -121,6 +125,8 @@ def assinatura_pdf_assinado(request, assinatura_id):
 def assinatura_gestao(request):
     return index(request)
 
+
+@login_required
 @require_http_methods(["GET", "POST"])
 def assinar_artefato(request, artefato_id):
     artefato = get_object_or_404(DocumentoArtefato, pk=artefato_id)
@@ -148,9 +154,15 @@ def assinar_artefato(request, artefato_id):
             posicao=pos,
         )
         return HttpResponseRedirect(
-            reverse("assinaturas:assinatura-verificar-codigo", kwargs={"codigo": ass.codigo_verificacao})
+            reverse(
+                "assinaturas:assinatura-verificar-codigo",
+                kwargs={"codigo": ass.codigo_verificacao},
+            )
         )
-    pdf_url = reverse("assinaturas:assinatura-artefato-pdf-original", kwargs={"artefato_id": artefato.pk})
+    pdf_url = reverse(
+        "assinaturas:assinatura-artefato-pdf-original",
+        kwargs={"artefato_id": artefato.pk},
+    )
     return render(
         request,
         "assinaturas/assinar_artefato.html",
@@ -162,6 +174,7 @@ def assinar_artefato(request, artefato_id):
     )
 
 
+@login_required
 @require_GET
 def assinatura_artefato_pdf_original(request, artefato_id):
     artefato = get_object_or_404(DocumentoArtefato, pk=artefato_id)

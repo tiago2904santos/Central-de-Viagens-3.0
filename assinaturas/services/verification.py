@@ -8,6 +8,31 @@ from documentos.models import DocumentoArtefato
 from documentos.services.access import select_artefato_pdf_fieldfile
 
 
+def _verificar_artefato_etiqueta_pdf(artefato: DocumentoArtefato) -> dict[str, Any]:
+    from assinaturas.models import AssinaturaDigital
+    from assinaturas.services.assinatura_artefato import assinatura_arquivo_esta_integra
+
+    reg = AssinaturaDigital.objects.filter(artefato=artefato).order_by("-criado_em").first()
+    if reg is None:
+        return {
+            "ok": False,
+            "reason": "no_registration",
+            "detail": "Sem registo de assinatura para o artefato.",
+        }
+    if not assinatura_arquivo_esta_integra(reg):
+        return {
+            "ok": False,
+            "reason": "hash_mismatch",
+            "detail": "O PDF assinado não coincide com o hash guardado.",
+        }
+    return {
+        "ok": True,
+        "reason": "ok",
+        "summary": "Etiqueta PDF e hash consistentes.",
+        "backend": "etiqueta_pdf",
+    }
+
+
 def verificar_pdf_bytes(pdf_bytes: bytes) -> dict[str, Any]:
     """Validação criptográfica/estrutural das assinaturas embutidas no PDF (pyHanko)."""
     from pyhanko.pdf_utils.misc import PdfReadError
@@ -44,7 +69,10 @@ def verificar_pdf_bytes(pdf_bytes: bytes) -> dict[str, Any]:
 def verificar_artefato_documento(artefato: DocumentoArtefato) -> dict[str, Any]:
     """
     Duas camadas: validação das assinaturas no ficheiro PDF servido e confronto com hash persistido.
+    Para `assinatura_backend=etiqueta_pdf`, valida apenas integridade com o registo AssinaturaDigital.
     """
+    if (artefato.assinatura_backend or "").strip() == "etiqueta_pdf":
+        return _verificar_artefato_etiqueta_pdf(artefato)
     field = select_artefato_pdf_fieldfile(artefato)
     if field is None:
         return {"ok": False, "reason": "no_file"}

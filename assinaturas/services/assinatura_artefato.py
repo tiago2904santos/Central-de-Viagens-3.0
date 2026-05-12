@@ -136,6 +136,7 @@ def assinatura_arquivo_esta_integra(assinatura: AssinaturaDigital) -> bool:
     if not field or not getattr(field, "name", ""):
         return False
     try:
+        field.open("rb")
         data = field.read()
     except OSError:
         return False
