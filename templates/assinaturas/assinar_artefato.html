@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<div class="assinatura-ws">
+  <header class="assinatura-page-header">
+    <h1 class="app-page__title">Assinatura do documento</h1>
+  </header>
+  <form method="post" class="assinatura-doc-editor" id="form-assinar">
+    {% csrf_token %}
+    <input type="hidden" name="sig_x" id="sig-x" value="0.37">
+    <input type="hidden" name="sig_y" id="sig-y" value="0.8">
+    <input type="hidden" name="sig_w" id="sig-w" value="0.269">
+    <input type="hidden" name="sig_h" id="sig-h" value="0.067">
+    <input type="hidden" name="sig_page" id="sig-page" value="-1">
+    <div class="app-grid-two">
+      <div class="assinatura-doc-editor__main">
+        <div class="assinatura-editor-scroller">
+          <div class="assinatura-pages-column" id="assinatura-pages-column">
+            <div class="assinatura-page-wrap">
+              <div class="assinatura-doc-placeholder">
+                <iframe class="assinatura-doc-placeholder__chrome" id="pdf-embed" title="PDF" src="{{ pdf_url }}"></iframe>
+                <div class="assinatura-doc-placeholder__overlay" aria-hidden="true">
+                  <div class="assinatura-doc-placeholder__qr"></div>
+                  <div class="assinatura-doc-placeholder__text">
+                    <span>Documento assinado eletronicamente</span>
+                    <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+                    <small>verifique em /assinaturas/verificar/…</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="assinatura-doc-editor__aside">
+        <div class="assinatura-professional-preview">
+          <div class="assinatura-professional-preview__qr" aria-hidden="true"></div>
+          <div class="assinatura-professional-preview__body">
+            <strong>Documento assinado eletronicamente</strong>
+            <div>{{ request.user.get_full_name|default:request.user.username }}</div>
+            <small>verifique em /assinaturas/verificar/…</small>
+          </div>
+        </div>
+        <label class="form-field">Nome assinante
+          <input type="text" name="nome_assinante" value="{{ request.user.get_full_name|default:request.user.username }}">
+        </label>
+        <label class="form-field">CPF
+          <input type="text" name="cpf_assinante" placeholder="00000000000">
+        </label>
+        <label class="form-field">Email
+          <input type="email" name="email_assinante" value="{{ request.user.email|default:'' }}">
+        </label>
+        <button type="submit" class="btn btn-primary">Concluir assinatura</button>
+      </aside>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script type="module">
+  const pdfUrl = "{{ pdf_url|escapejs }}";
+  const iframe = document.getElementById("pdf-embed");
+  if (iframe && !iframe.src) iframe.src = pdfUrl;
+</script>
+{% endblock %}

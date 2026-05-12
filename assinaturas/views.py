@@ -2,14 +2,17 @@ from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 from django.http import Http404
+from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_http_methods
 from django.views.decorators.http import require_POST
 
 from assinaturas.models import AssinaturaDigital
+from assinaturas.services.assinatura_artefato import assinar_artefato_com_etiqueta
 from assinaturas.services.assinatura_artefato import assinatura_arquivo_esta_integra
 from assinaturas.services.assinatura_artefato import mascarar_cpf_assinatura
 from assinaturas.services.codigos import normalizar_codigo_verificacao
@@ -117,3 +120,50 @@ def assinatura_pdf_assinado(request, assinatura_id):
 @login_required
 def assinatura_gestao(request):
     return index(request)
+
+@require_http_methods(["GET", "POST"])
+def assinar_artefato(request, artefato_id):
+    artefato = get_object_or_404(DocumentoArtefato, pk=artefato_id)
+    ensure_request_may_view_artefato_pdf(request, artefato)
+    if request.method == "POST":
+        pos = {
+            "box_x": float(request.POST.get("sig_x", "0.37")),
+            "box_y": float(request.POST.get("sig_y", "0.8")),
+            "box_w": float(request.POST.get("sig_w", "0.269")),
+            "box_h": float(request.POST.get("sig_h", "0.067")),
+            "page_index": int(request.POST.get("sig_page", "-1")),
+        }
+        nome = (request.POST.get("nome_assinante") or "").strip() or (
+            request.user.get_full_name() or request.user.get_username()
+        )
+        cpf = (request.POST.get("cpf_assinante") or "").strip()
+        email = (request.POST.get("email_assinante") or "").strip()
+        ass = assinar_artefato_com_etiqueta(
+            artefato,
+            nome_assinante=nome,
+            cpf_assinante=cpf,
+            email_assinante=email,
+            usuario=request.user,
+            request=request,
+            posicao=pos,
+        )
+        return HttpResponseRedirect(
+            reverse("assinaturas:assinatura-verificar-codigo", kwargs={"codigo": ass.codigo_verificacao})
+        )
+    pdf_url = reverse("assinaturas:assinatura-artefato-pdf-original", kwargs={"artefato_id": artefato.pk})
+    return render(
+        request,
+        "assinaturas/assinar_artefato.html",
+        {
+            "page_title": "Assinatura do documento",
+            "artefato": artefato,
+            "pdf_url": pdf_url,
+        },
+    )
+
+
+@require_GET
+def assinatura_artefato_pdf_original(request, artefato_id):
+    artefato = get_object_or_404(DocumentoArtefato, pk=artefato_id)
+    ensure_request_may_view_artefato_pdf(request, artefato)
+    return _pdf_inline_response(artefato.arquivo, "original.pdf")

@@ -8,6 +8,16 @@ app_name = "assinaturas"
 urlpatterns = [
     path("", views.index, name="index"),
     path("gestao/", views.assinatura_gestao, name="assinatura-gestao"),
+    path(
+        "artefatos/<uuid:artefato_id>/assinar/",
+        views.assinar_artefato,
+        name="assinatura-assinar-artefato",
+    ),
+    path(
+        "artefatos/<uuid:artefato_id>/pdf-original/",
+        views.assinatura_artefato_pdf_original,
+        name="assinatura-artefato-pdf-original",
+    ),
     path("verificar/<str:codigo>/", views.assinatura_verificar_codigo, name="assinatura-verificar-codigo"),
     path("<uuid:assinatura_id>/pdf-original/", views.assinatura_pdf_original, name="assinatura-pdf-original"),
     path("<uuid:assinatura_id>/pdf-assinado/", views.assinatura_pdf_assinado, name="assinatura-pdf-assinado"),
