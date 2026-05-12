@@ -5,7 +5,8 @@ document.addEventListener("click", function (event) {
   if (!value || !navigator.clipboard) return;
   navigator.clipboard.writeText(value).then(function () {
     const original = button.textContent;
-    button.textContent = "Link copiado";
+    const done = button.dataset.copyDone || "Copiado";
+    button.textContent = done;
     window.setTimeout(function () {
       button.textContent = original;
     }, 1800);

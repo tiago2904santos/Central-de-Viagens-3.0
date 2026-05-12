@@ -1,12 +1,11 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/oficios.css' %}">
-  <link rel="stylesheet" href="{% static 'css/oficios-documentos-inline.css' %}">
-  <link rel="stylesheet" href="{% static 'css/assinaturas.css' %}">
+  <link rel="stylesheet" href="{% static 'css/oficios-assinaturas-central.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -27,69 +26,146 @@
         <div class="oficio-wizard__layout app-wizard__layout">
           <main class="oficio-wizard__main">
             <div class="app-form-shell app-form-shell--oficio form-shell">
-              <header class="oficio-assinatura-pdf__intro">
-                <h2 class="oficio-assinatura-pdf__title">Assinaturas digitais</h2>
-                <p class="oficio-assinatura-pdf__subtitle">
-                  Ofício {{ oficio.numero_formatado }} — acompanhe solicitações, links e status de assinatura.
+
+              <header class="assinaturas-center-hero">
+                <h2>Assinaturas digitais</h2>
+                <p>
+                  Ofício {{ oficio.numero_formatado }} — confira os documentos no estado atual e gere solicitações de assinatura quando necessário.
                 </p>
               </header>
 
-              <section class="assinaturas-central-resumo" aria-label="Resumo das assinaturas">
-                <article>
-                  <span>Documentos</span>
-                  <strong>3</strong>
-                </article>
-                <article>
-                  <span>Destinatários</span>
-                  <strong>{{ painel_oficio.destinatarios_total|default:0 }}</strong>
-                </article>
-                <article>
-                  <span>Assinados</span>
-                  <strong>{{ painel_oficio.assinaturas_concluidas|default:0 }}</strong>
-                </article>
-                <article>
-                  <span>Pendentes</span>
-                  <strong>{{ painel_oficio.assinaturas_pendentes|default:0 }}</strong>
-                </article>
+              <section class="assinaturas-center-kpis" aria-label="Resumo">
+                <div class="assinaturas-kpi-card">
+                  <p class="assinaturas-kpi-card__label">Documentos</p>
+                  <p class="assinaturas-kpi-card__value">{{ assinaturas_kpis.documentos }}</p>
+                </div>
+                <div class="assinaturas-kpi-card">
+                  <p class="assinaturas-kpi-card__label">Destinatários</p>
+                  <p class="assinaturas-kpi-card__value">{{ assinaturas_kpis.destinatarios }}</p>
+                </div>
+                <div class="assinaturas-kpi-card">
+                  <p class="assinaturas-kpi-card__label">Assinados</p>
+                  <p class="assinaturas-kpi-card__value">{{ assinaturas_kpis.assinados }}</p>
+                </div>
+                <div class="assinaturas-kpi-card">
+                  <p class="assinaturas-kpi-card__label">Pendentes</p>
+                  <p class="assinaturas-kpi-card__value">{{ assinaturas_kpis.pendentes }}</p>
+                </div>
               </section>
 
-              {% include "oficios/partials/assinatura_central_documento.html" with titulo="Ofício PDF" painel=painel_oficio oficio=oficio request=request only %}
-              {% include "oficios/partials/assinatura_central_documento.html" with titulo="Justificativa PDF" painel=painel_justificativa oficio=oficio request=request only %}
+              <section class="assinaturas-document-stack" aria-label="Documentos">
+                {% for documento in documentos_assinatura %}
+                  <article class="assinaturas-document-card">
+                    <header class="assinaturas-document-card__header">
+                      <div>
+                        <p class="assinaturas-document-card__eyebrow">{{ documento.tipo_label }}</p>
+                        <h3>{{ documento.titulo }}</h3>
+                        <p>{{ documento.descricao }}</p>
+                      </div>
+                      <div class="assinaturas-document-card__status-area">
+                        <span class="assinaturas-status-badge assinaturas-status-badge--{{ documento.status_key }}">{{ documento.status_label }}</span>
+                        {% if documento.pode_gerar_solicitacao %}
+                          <form method="post" action="{{ documento.gerar_solicitacao_url }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="gerar_solicitacao" value="1">
+                            <input type="hidden" name="artefato_id" value="{{ documento.artefato.pk }}">
+                            <button type="submit" class="btn btn-primary app-btn app-btn--primary">Gerar solicitação</button>
+                          </form>
+                        {% endif %}
+                      </div>
+                    </header>
 
-              <section class="assinaturas-central-card">
-                <header class="assinaturas-central-card__header">
-                  <div>
-                    <h3>Termos de autorização</h3>
-                    <p>Documentos individuais vinculados aos viajantes.</p>
-                  </div>
-                </header>
-                {% if termos_linhas %}
-                  <div class="assinaturas-central-lista">
-                    {% for row in termos_linhas %}
-                      <article class="assinaturas-central-row">
-                        <div>
-                          <strong>{{ row.servidor_nome }}</strong>
-                          {% if row.erro %}
-                            <p>{{ row.erro }}</p>
-                          {% elif row.artefato %}
-                            <p class="mono">Hash original: {{ row.artefato.hash_sha256 }}</p>
-                          {% endif %}
+                    {% if documento.erro %}
+                      <p class="doc-muted" style="padding: 0 1.15rem;">{{ documento.erro }}</p>
+                    {% endif %}
+
+                    {% if documento.disponivel %}
+                      <div class="assinaturas-document-card__meta">
+                        <span><strong>Última atualização:</strong> {% if documento.atualizado_em %}{{ documento.atualizado_em|date:"d/m/Y H:i" }}{% else %}—{% endif %}</span>
+                        <span><strong>Destinatários (solicitações):</strong> {{ documento.n_destinatarios }}</span>
+                        <span><strong>Estado do ficheiro:</strong> {% if documento.ja_assinado %}PDF assinado disponível{% else %}PDF original (sem assinatura){% endif %}</span>
+                      </div>
+
+                      <div class="assinaturas-document-card__hashes">
+                        <div class="assinatura-hash-grid">
+                          <div class="assinatura-hash-box">
+                            <p class="assinatura-hash-box__label">Hash original</p>
+                            <p class="assinatura-hash-box__value">{{ documento.hash_original }}</p>
+                            <div class="assinatura-hash-box__actions">
+                              <button type="button" class="btn btn-secondary app-btn app-btn--secondary assinatura-hash-copy" data-copy-value="{{ documento.hash_original }}">Copiar</button>
+                            </div>
+                          </div>
+                          <div class="assinatura-hash-box">
+                            <p class="assinatura-hash-box__label">Hash assinado</p>
+                            {% if documento.hash_assinado_placeholder %}
+                              <p class="assinatura-hash-box__placeholder">Ainda não gerado</p>
+                            {% else %}
+                              <p class="assinatura-hash-box__value">{{ documento.hash_assinado_exibicao }}</p>
+                              <div class="assinatura-hash-box__actions">
+                                <button type="button" class="btn btn-secondary app-btn app-btn--secondary assinatura-hash-copy" data-copy-value="{{ documento.hash_assinado_exibicao }}">Copiar</button>
+                              </div>
+                            {% endif %}
+                          </div>
                         </div>
-                        <div class="assinaturas-central-row__actions">
-                          {% if row.pdf_visualizar_url %}
-                            <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ row.pdf_visualizar_url }}" target="_blank" rel="noopener noreferrer">Visualizar documento original</a>
-                          {% endif %}
-                          {% if row.etiqueta_urls.pdf_assinado %}
-                            <a class="btn btn-secondary app-btn app-btn--secondary" href="{{ row.etiqueta_urls.pdf_assinado }}" target="_blank" rel="noopener noreferrer">Ver PDF assinado</a>
-                          {% endif %}
+                      </div>
+
+                      <p class="assinaturas-document-card__viewer-note">{{ documento.pdf_versao_label }}</p>
+                      <div class="assinaturas-document-card__viewer">
+                        <iframe
+                          class="document-inline-viewer__frame"
+                          src="{{ documento.pdf_estado_atual_url }}"
+                          title="PDF — {{ documento.titulo }}"
+                          loading="lazy"
+                        ></iframe>
+                      </div>
+                    {% endif %}
+
+                    <section class="assinaturas-document-card__destinatarios">
+                      <h4>Destinatários e solicitações</h4>
+                      {% if documento.destinatarios %}
+                        <div class="assinatura-destinatarios">
+                          {% for d in documento.destinatarios %}
+                            <article class="assinatura-destinatario-card">
+                              <div class="assinatura-destinatario-avatar" aria-hidden="true">{{ d.iniciais }}</div>
+                              <div class="assinatura-destinatario-col">
+                                <div class="assinatura-destinatario-main">
+                                  <strong>{{ d.nome }}</strong>
+                                  <div class="muted">CPF: {{ d.cpf_mascarado }}{% if d.cargo and d.cargo != "—" %} · {{ d.cargo }}{% endif %}</div>
+                                  <div class="assinatura-destinatario-status assinatura-destinatario-status--{{ d.status_key }}">{{ d.status_label }}</div>
+                                </div>
+                                <dl class="assinatura-destinatario-timeline">
+                                  <div>
+                                    <dt>Envio</dt>
+                                    <dd>{{ d.enviado_em|date:"d/m/Y H:i" }}</dd>
+                                  </div>
+                                  <div>
+                                    <dt>Visualização</dt>
+                                    <dd>{% if d.visualizado_em %}{{ d.visualizado_em|date:"d/m/Y H:i" }}{% else %}—{% endif %}</dd>
+                                  </div>
+                                  <div>
+                                    <dt>Assinatura</dt>
+                                    <dd>{% if d.assinado_em %}{{ d.assinado_em|date:"d/m/Y H:i" }}{% else %}—{% endif %}</dd>
+                                  </div>
+                                  <div>
+                                    <dt>Expiração</dt>
+                                    <dd>{{ d.expiracao|date:"d/m/Y H:i" }}</dd>
+                                  </div>
+                                </dl>
+                              </div>
+                            </article>
+                          {% endfor %}
                         </div>
-                      </article>
-                    {% endfor %}
-                  </div>
-                {% else %}
-                  <p class="doc-muted">Nenhum termo disponível.</p>
-                {% endif %}
+                      {% else %}
+                        <p class="doc-muted">Nenhuma solicitação registada para este documento.</p>
+                      {% endif %}
+                    </section>
+                  </article>
+                {% endfor %}
               </section>
+
+              <div class="assinaturas-wizard-footer form-actions app-form-actions">
+                <a class="btn btn-secondary app-btn app-btn--secondary" href="{% url 'oficios:wizard_documentos' oficio.pk %}">Voltar para documentos</a>
+              </div>
             </div>
           </main>
         </div>

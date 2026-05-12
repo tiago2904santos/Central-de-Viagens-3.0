@@ -17,6 +17,7 @@ from cadastros.models import Cargo
 from cadastros.models import Servidor
 from documentos.models import DocumentoArtefato
 from oficios.models import Oficio
+from justificativas.services import oficio_exige_justificativa
 
 
 def _minimal_pdf_bytes() -> bytes:
@@ -38,6 +39,12 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         AssinaturaConfiguracao.objects.update_or_create(
             configuracao=cfg,
             tipo=AssinaturaConfiguracao.TIPO_OFICIO,
+            ordem=1,
+            defaults={"servidor": self.servidor, "ativo": True},
+        )
+        AssinaturaConfiguracao.objects.update_or_create(
+            configuracao=cfg,
+            tipo=AssinaturaConfiguracao.TIPO_JUSTIFICATIVA,
             ordem=1,
             defaults={"servidor": self.servidor, "ativo": True},
         )
@@ -74,7 +81,7 @@ class WizardAssinaturasEtapa6Tests(TestCase):
             arquivo=ContentFile(raw, name="termo_wiz.pdf"),
         )
 
-    @mock.patch("oficios.views.validar_oficio_para_documento", return_value=_validacao_limpa())
+    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
     def test_get_etapa_assinaturas_200_sem_attachment(self, _m_val):
         url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
         r = self.client.get(url)
@@ -88,42 +95,65 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         self.assertNotContains(r, "Arraste a etiqueta")
         self.assertTemplateUsed(r, "oficios/wizard_assinaturas.html")
 
-    @mock.patch("documentos.services.signing.workflow.assinar_pdf_final")
-    @mock.patch("oficios.views.validar_oficio_para_documento", return_value=_validacao_limpa())
-    def test_get_nao_chama_assinar_pdf_final(self, _m_val, m_final):
+    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
+    def test_get_lista_documentos_e_iframe_conteudo(self, _m_val):
         url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
-        self.client.get(url)
-        m_final.assert_not_called()
+        r = self.client.get(url)
+        self.assertContains(r, "Ofício (PDF)")
+        self.assertContains(r, "Termo de Autorização")
+        if oficio_exige_justificativa(self.oficio):
+            self.assertContains(r, "Justificativa (PDF)")
+        self.assertContains(r, "/documentos/artefatos/")
+        self.assertContains(r, "/conteudo/")
+        self.assertNotContains(r, "Ver comprovante")
+        self.assertNotContains(r, "Visualizar documento original")
+        self.assertNotContains(r, "Verificar assinatura")
 
-    @mock.patch("oficios.views.validar_oficio_para_documento", return_value=_validacao_limpa())
-    def test_post_assina_oficio_redireciona_etapa_assinaturas(self, _m_val):
+    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
+    def test_post_gera_pedido_oficio(self, _m_val):
         url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
-        r = self.client.post(url, {"documento_alvo": "oficio"}, follow=False)
+        r = self.client.post(
+            url,
+            {"gerar_solicitacao": "1", "artefato_id": str(self._art_oficio.pk)},
+            follow=False,
+        )
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse("oficios:wizard_assinaturas", args=[self.oficio.pk]), r["Location"])
-        self.assertIn("tab=oficio", r["Location"])
         self._art_oficio.refresh_from_db()
         self.assertFalse((self._art_oficio.hash_sha256_assinado or "").strip())
         pedido = PedidoAssinaturaDocumento.objects.get(artefato=self._art_oficio)
         self.assertEqual(pedido.nome_assinante_snapshot, "SERV WIZS")
 
-    @mock.patch("oficios.views.validar_oficio_para_documento", return_value=_validacao_limpa())
+    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
+    def test_post_segundo_pedido_nao_duplica(self, _m_val):
+        url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
+        self.client.post(url, {"gerar_solicitacao": "1", "artefato_id": str(self._art_oficio.pk)})
+        self.client.post(url, {"gerar_solicitacao": "1", "artefato_id": str(self._art_oficio.pk)})
+        self.assertEqual(PedidoAssinaturaDocumento.objects.filter(artefato=self._art_oficio).count(), 1)
+
+    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
     def test_post_legacy_assinar_pdf_oficio_redireciona_etapa6(self, _m_val):
         url = reverse("oficios:wizard_assinar_pdf_oficio", args=[self.oficio.pk])
         r = self.client.post(url, follow=False)
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse("oficios:wizard_assinaturas", args=[self.oficio.pk]), r["Location"])
 
-    @mock.patch("oficios.views.validar_oficio_para_documento", return_value=_validacao_limpa())
+    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
     def test_get_legacy_assinar_pdf_redireciona_etapa6(self, _m_val):
         url = reverse("oficios:wizard_assinar_pdf_oficio", args=[self.oficio.pk])
         r = self.client.get(url, follow=False)
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse("oficios:wizard_assinaturas", args=[self.oficio.pk]), r["Location"])
-        self.assertIn("tab=oficio", r["Location"])
+
+    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
+    def test_alias_assinar_redireciona_etapa6(self, _m_val):
+        url = reverse("oficios:wizard_assinaturas_assinar_alias", args=[self.oficio.pk])
+        r = self.client.get(url, follow=False)
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(reverse("oficios:wizard_assinaturas", args=[self.oficio.pk]), r["Location"])
 
     @mock.patch("oficios.views.gerar_resposta_documento_oficio", return_value=HttpResponse(b"x", content_type="application/pdf"))
-    @mock.patch("oficios.views.validar_oficio_para_documento", return_value=_validacao_limpa())
+    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
     def test_verificar_json_sem_pdf_previo_422(self, _m_val, _m_gerar):
         url = reverse("oficios:wizard_verificar_pdf_oficio", args=[self.oficio.pk])
         r = self.client.get(url)

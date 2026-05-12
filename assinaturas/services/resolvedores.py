@@ -23,6 +23,23 @@ class AssinanteResolvido:
     unidade: str
 
 
+def _assinante_de_configuracao(tipo_cfg: str, *, mensagem_sem_config: str) -> AssinanteResolvido:
+    cfg = ConfiguracaoSistema.get_singleton()
+    assinatura = (
+        cfg.assinaturas.select_related("servidor", "servidor__cargo", "servidor__unidade")
+        .filter(
+            tipo=tipo_cfg,
+            ordem=1,
+            ativo=True,
+            servidor__isnull=False,
+        )
+        .first()
+    )
+    if not assinatura or not assinatura.servidor_id:
+        raise AssinanteNaoConfiguradoError(mensagem_sem_config)
+    return _snapshot_servidor(assinatura.servidor)
+
+
 def _snapshot_servidor(servidor) -> AssinanteResolvido:
     cargo = servidor.cargo.nome if getattr(servidor, "cargo_id", None) and servidor.cargo else ""
     unidade = ""
@@ -42,22 +59,22 @@ def _snapshot_servidor(servidor) -> AssinanteResolvido:
 def resolver_assinante_para_artefato(artefato: DocumentoArtefato) -> AssinanteResolvido:
     tipo = (artefato.tipo or "").strip().lower()
     if tipo == DocumentoTipo.OFICIO.value:
-        cfg = ConfiguracaoSistema.get_singleton()
-        assinatura = (
-            cfg.assinaturas.select_related("servidor", "servidor__cargo", "servidor__unidade")
-            .filter(
-                tipo=AssinaturaConfiguracao.TIPO_OFICIO,
-                ordem=1,
-                ativo=True,
-                servidor__isnull=False,
-            )
-            .first()
+        return _assinante_de_configuracao(
+            AssinaturaConfiguracao.TIPO_OFICIO,
+            mensagem_sem_config="Nenhum assinante de ofício configurado nas Configurações do Sistema.",
         )
-        if not assinatura or not assinatura.servidor_id:
+    if tipo == DocumentoTipo.JUSTIFICATIVA.value:
+        return _assinante_de_configuracao(
+            AssinaturaConfiguracao.TIPO_JUSTIFICATIVA,
+            mensagem_sem_config="Nenhum assinante de justificativa configurado nas Configurações do Sistema.",
+        )
+    if tipo == DocumentoTipo.TERMO_AUTORIZACAO.value:
+        srv = getattr(artefato, "servidor", None)
+        if srv is None or not getattr(srv, "pk", None):
             raise AssinanteNaoConfiguradoError(
-                "Nenhum assinante de ofício configurado nas Configurações do Sistema."
+                "Artefato de termo sem servidor vinculado; não é possível determinar o assinante."
             )
-        return _snapshot_servidor(assinatura.servidor)
+        return _snapshot_servidor(srv)
 
     raise AssinanteNaoConfiguradoError(
         f"Nenhum assinante configurado para o tipo de documento '{artefato.tipo}'."

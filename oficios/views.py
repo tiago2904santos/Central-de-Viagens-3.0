@@ -35,21 +35,17 @@ from cadastros.models import Combustivel
 from cadastros.models import Servidor
 from assinaturas.services.recording import registrar_verificacao_artefato
 from assinaturas.services.verification import verificar_artefato_documento
+from .assinaturas_central import build_documentos_assinatura_central
+from .assinaturas_central import wizard_assinaturas_post_gerar_solicitacao
 from documentos.selectors import get_latest_artefato_pdf_for_oficio
-from documentos.selectors import get_latest_artefato_pdf_termo
-from documentos.services.persistence import persist_geracao
 from documentos.services.downloads import download_documento_or_redirect_pdf_error
 from documentos.services.warm_cache import pdf_artefato_original_acessivel
-from documentos.services.signing.position import parse_signature_position_from_post
-from documentos.services.signing.workflow import assinar_artefato_pdf
-from documentos.services.signing.workflow import contar_paginas_pdf_artefato
 from documentos.services.responses import build_inline_pdf_response_from_download_response
 from documentos.services.timing import measure_step
 from documentos.services.types import DocumentoFormato
 from documentos.services.types import DocumentoTipo
 from ordens_servico.services import gerar_resposta_ordem_servico_documento
 from planos_trabalho.services import gerar_resposta_plano_trabalho_documento
-from termos.services import gerar_termo_um
 from .forms import OficioDadosViajantesForm
 from .forms import OficioTransporteForm
 from .forms import ModeloMotivoOficioForm
@@ -85,7 +81,6 @@ from .services import gerar_resposta_justificativa_documento
 from .services import garantir_roteiro_vinculado_ao_oficio
 from .services import redirect_para_corrigir_documento_oficio
 from .services import validar_oficio_para_documento
-from .documents import build_termo_payload
 
 
 logger = logging.getLogger(__name__)
@@ -492,262 +487,9 @@ def wizard_resumo(request, pk):
     return wizard_documentos(request, pk)
 
 
-def _resolver_artefato_pdf_oficio_para_assinatura(request, oficio):
-    """
-    Devolve o último DocumentoArtefato PDF do ofício, gerando-o no servidor se ainda não existir.
-    Não exige download manual pelo utilizador.
-    """
-    if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
-        return None
-    aval = validar_oficio_para_documento(oficio)
-    if aval.get("pendencias"):
-        messages.error(request, "Complete o ofício antes de assinar o PDF.")
-        return None
-    art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
-    if art is not None and pdf_artefato_original_acessivel(art):
-        return art
-    try:
-        gerar_resposta_documento_oficio(oficio, DocumentoFormato.PDF)
-    except Exception as exc:  # noqa: BLE001
-        messages.error(request, f"Não foi possível preparar o PDF do ofício: {exc}")
-        return None
-    art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
-    if art is None or not pdf_artefato_original_acessivel(art):
-        messages.error(
-            request,
-            "Não foi possível obter o PDF persistido do ofício. Verifique o motor de PDF (LibreOffice / Word) e tente novamente.",
-        )
-        return None
-    return art
-
-
-def _preview_artefato_pdf_oficio(oficio) -> dict:
-    """Sem mensagens Django — para montar a etapa de assinaturas (pré-visualização)."""
-    out: dict = {"artefato": None, "erro": None}
-    if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
-        out["erro"] = "persist_disabled"
-        return out
-    aval = validar_oficio_para_documento(oficio)
-    if aval.get("pendencias"):
-        out["erro"] = "oficio_incompleto"
-        return out
-    art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
-    if art is not None and pdf_artefato_original_acessivel(art):
-        out["artefato"] = art
-        return out
-    try:
-        gerar_resposta_documento_oficio(oficio, DocumentoFormato.PDF)
-    except Exception as exc:  # noqa: BLE001
-        out["erro"] = "geracao"
-        out["detalhe"] = str(exc)
-        return out
-    art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.OFICIO.value)
-    if art is None or not pdf_artefato_original_acessivel(art):
-        out["erro"] = "sem_pdf"
-        return out
-    out["artefato"] = art
-    return out
-
-
-def _preview_artefato_pdf_justificativa(oficio) -> dict:
-    out: dict = {"artefato": None, "erro": None}
-    if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
-        out["erro"] = "persist_disabled"
-        return out
-    aval = validar_oficio_para_documento(oficio)
-    if aval.get("pendencias"):
-        out["erro"] = "oficio_incompleto"
-        return out
-    art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.JUSTIFICATIVA.value)
-    if art is not None and pdf_artefato_original_acessivel(art):
-        out["artefato"] = art
-        return out
-    try:
-        gerar_resposta_justificativa_documento(oficio, DocumentoFormato.PDF)
-    except Exception as exc:  # noqa: BLE001
-        out["erro"] = "geracao"
-        out["detalhe"] = str(exc)
-        return out
-    art = get_latest_artefato_pdf_for_oficio(oficio.pk, DocumentoTipo.JUSTIFICATIVA.value)
-    if art is None or not pdf_artefato_original_acessivel(art):
-        out["erro"] = "sem_pdf"
-        return out
-    out["artefato"] = art
-    return out
-
-
-def _preview_artefato_pdf_termo(oficio, servidor: Servidor) -> dict:
-    out: dict = {"artefato": None, "erro": None}
-    if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
-        out["erro"] = "persist_disabled"
-        return out
-    aval = validar_oficio_para_documento(oficio)
-    if aval.get("pendencias"):
-        out["erro"] = "oficio_incompleto"
-        return out
-    art = get_latest_artefato_pdf_termo(oficio.pk, servidor.pk)
-    if art is not None and pdf_artefato_original_acessivel(art):
-        out["artefato"] = art
-        return out
-    try:
-        doc = gerar_termo_um(oficio, servidor, DocumentoFormato.PDF)
-        payload = build_termo_payload(oficio, servidor, modo_semipreenchido=False)
-        try:
-            persist_geracao(
-                doc,
-                oficio_id=oficio.pk,
-                servidor_id=servidor.pk,
-                payload_snapshot=payload,
-                engine=doc.pdf_engine_used or "",
-            )
-        except Exception:
-            logger.exception("Não foi possível persistir artefato do termo (ofício %s, servidor %s).", oficio.pk, servidor.pk)
-    except Exception as exc:  # noqa: BLE001
-        out["erro"] = "geracao"
-        out["detalhe"] = str(exc)
-        return out
-    art = get_latest_artefato_pdf_termo(oficio.pk, servidor.pk)
-    if art is None or not pdf_artefato_original_acessivel(art):
-        out["erro"] = "sem_pdf"
-        return out
-    out["artefato"] = art
-    return out
-
-
-def _mensagem_preview_assinatura(erro: str, detalhe: str | None) -> str:
-    base = {
-        "persist_disabled": "Artefatos persistidos estão desligados neste ambiente.",
-        "oficio_incompleto": "Complete o ofício antes de assinar os documentos.",
-        "sem_pdf": "Não foi possível obter o PDF persistido. Verifique o motor de PDF e tente novamente.",
-        "geracao": "Não foi possível preparar o PDF.",
-    }
-    msg = base.get(erro, "Não foi possível preparar o documento.")
-    if erro == "geracao" and detalhe:
-        return f"{msg} ({detalhe})"
-    return msg
-
-
-def _resolver_artefato_pdf_justificativa_para_assinatura(request, oficio):
-    prev = _preview_artefato_pdf_justificativa(oficio)
-    if prev["erro"]:
-        messages.error(request, _mensagem_preview_assinatura(prev["erro"], prev.get("detalhe")))
-        return None
-    return prev["artefato"]
-
-
-def _resolver_artefato_pdf_termo_para_assinatura(request, oficio, servidor: Servidor):
-    prev = _preview_artefato_pdf_termo(oficio, servidor)
-    if prev["erro"]:
-        messages.error(request, _mensagem_preview_assinatura(prev["erro"], prev.get("detalhe")))
-        return None
-    return prev["artefato"]
-
-
-def _enriquecer_painel_etiqueta_assinatura(request, painel: dict) -> None:
-    if not painel.get("disponivel") or painel.get("erro"):
-        return
-    art = painel.get("artefato")
-    if not art:
-        return
-    from assinaturas.presenters import assinatura_status_artefato
-    from assinaturas.presenters import assinatura_urls_artefato
-    from assinaturas.presenters import assinatura_ultima_valida
-    from assinaturas.models import PedidoAssinaturaDocumento
-    from assinaturas.services.assinatura_artefato import mascarar_cpf_assinatura
-    from assinaturas.services.pedidos import url_publica_pedido_assinatura
-
-    nomes = ""
-    u = getattr(request, "user", None)
-    if u is not None and getattr(u, "is_authenticated", False):
-        nomes = ((getattr(u, "get_full_name", lambda: "")() or "").strip() or getattr(u, "get_username", lambda: "")() or "").strip()
-    painel["assinante_display"] = nomes
-    painel["etiqueta_status"] = assinatura_status_artefato(art)
-    painel["etiqueta_urls"] = assinatura_urls_artefato(art, request=request)
-    pedidos = list(
-        PedidoAssinaturaDocumento.objects.filter(artefato=art)
-        .select_related("assinatura", "assinante_servidor")
-        .order_by("-criado_em")
-    )
-    for pedido in pedidos:
-        pedido.link_publico = url_publica_pedido_assinatura(request, pedido)
-        pedido.cpf_mascarado = mascarar_cpf_assinatura(pedido.cpf_assinante_snapshot)
-    abertos = [
-        p
-        for p in pedidos
-        if p.status in {PedidoAssinaturaDocumento.STATUS_PENDENTE, PedidoAssinaturaDocumento.STATUS_VISUALIZADA}
-        and not p.esta_expirado
-    ]
-    painel["pedidos_assinatura"] = pedidos
-    painel["pedido_pendente"] = abertos[0] if abertos else None
-    painel["assinaturas_pendentes"] = len(abertos)
-    painel["assinaturas_concluidas"] = len([p for p in pedidos if p.status == PedidoAssinaturaDocumento.STATUS_ASSINADO])
-    painel["destinatarios_total"] = len(pedidos)
-    reg = assinatura_ultima_valida(art)
-    if reg is not None and reg.codigo_verificacao:
-        painel["verificacao_url"] = request.build_absolute_uri(
-            reverse("assinaturas:assinatura-verificar-codigo", kwargs={"codigo": reg.codigo_verificacao}),
-        )
-        painel["verificacao_codigo"] = reg.codigo_verificacao
-    else:
-        painel["verificacao_url"] = request.build_absolute_uri(
-            reverse("documentos:artefato_pdf_visualizar", args=[art.pk]),
-        )
-        painel["verificacao_codigo"] = (art.hash_sha256 or "")[:12]
-
-
-def _painel_contexto_de_artefato(art) -> dict:
-    if art is None:
-        return {
-            "disponivel": False,
-            "artefato": None,
-            "pdf_preview_url": "",
-            "pdf_visualizar_url": "",
-            "ja_assinado": False,
-        }
-    ja = bool((art.hash_sha256_assinado or "").strip() and getattr(art.arquivo_assinado, "name", ""))
-    return {
-        "disponivel": True,
-        "artefato": art,
-        "pdf_preview_url": reverse("documentos:artefato_pdf_conteudo", args=[art.pk]),
-        "pdf_visualizar_url": reverse("documentos:artefato_pdf_visualizar", args=[art.pk]),
-        "ja_assinado": ja,
-    }
-
-
-def _wizard_assinaturas_executar_post(request, oficio, documento_alvo: str, servidor: Servidor | None):
-    pk = oficio.pk
-    documento_alvo = (documento_alvo or "").strip().lower()
-    if documento_alvo != "oficio":
-        messages.error(request, "A assinatura por link da chefia esta disponivel para oficios.")
-        return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
-    if documento_alvo == "oficio":
-        art = _resolver_artefato_pdf_oficio_para_assinatura(request, oficio)
-    elif documento_alvo == "justificativa":
-        art = _resolver_artefato_pdf_justificativa_para_assinatura(request, oficio)
-    elif documento_alvo == "termo":
-        if servidor is None:
-            messages.error(request, "Selecione o viajante para assinar o termo.")
-            return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
-        art = _resolver_artefato_pdf_termo_para_assinatura(request, oficio, servidor)
-    else:
-        messages.error(request, "Tipo de documento inválido.")
-        return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
-    if art is None:
-        return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
-    try:
-        from assinaturas.services.pedidos import criar_ou_obter_pedido_assinatura
-        from assinaturas.services.pedidos import url_publica_pedido_assinatura
-
-        pedido = criar_ou_obter_pedido_assinatura(art, criado_por=request.user, request=request)
-        link = url_publica_pedido_assinatura(request, pedido)
-    except Exception as exc:  # noqa: BLE001
-        messages.error(request, f"Nao foi possivel gerar o link de assinatura: {exc}")
-        return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
-    messages.success(request, f"Link de assinatura gerado: {link}")
-    q: dict[str, str] = {"tab": documento_alvo}
-    if documento_alvo == "termo" and servidor is not None:
-        q["servidor"] = str(servidor.pk)
-    return redirect(f"{reverse('oficios:wizard_assinaturas', args=[pk])}?{urlencode(q)}")
+def wizard_assinaturas_redirect_assinar(request, pk):
+    """Alias de URL legada `/oficios/<pk>/assinar/` → etapa 6."""
+    return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
 
 
 def wizard_assinaturas_documentos(request, pk):
@@ -760,50 +502,12 @@ def wizard_assinaturas_documentos(request, pk):
         return redirect(reverse("oficios:wizard_documentos", args=[pk]))
 
     if request.method == "POST":
-        alvo = (request.POST.get("documento_alvo") or "").strip().lower()
-        servidor = None
-        if alvo == "termo":
-            raw_sid = (request.POST.get("servidor_id") or "").strip()
-            if not raw_sid.isdigit():
-                messages.error(request, "Selecione o viajante para assinar o termo.")
-                return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
-            servidor = get_object_or_404(Servidor, pk=int(raw_sid))
-            if not oficio.servidores.filter(pk=servidor.pk).exists():
-                raise Http404("Servidor não participa deste ofício.")
-        return _wizard_assinaturas_executar_post(request, oficio, alvo, servidor)
+        if (request.POST.get("gerar_solicitacao") or "").strip() != "1":
+            messages.error(request, "Ação inválida.")
+            return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
+        return wizard_assinaturas_post_gerar_solicitacao(request, oficio)
 
-    tab_atual = (request.GET.get("tab") or "oficio").strip().lower()
-    if tab_atual not in {"oficio", "justificativa", "termo"}:
-        tab_atual = "oficio"
-
-    po = _preview_artefato_pdf_oficio(oficio)
-    pj = _preview_artefato_pdf_justificativa(oficio)
-    painel_oficio = _painel_contexto_de_artefato(po["artefato"])
-    painel_oficio["erro"] = _mensagem_preview_assinatura(po["erro"], po.get("detalhe")) if po["erro"] else ""
-    _enriquecer_painel_etiqueta_assinatura(request, painel_oficio)
-
-    painel_justificativa = _painel_contexto_de_artefato(pj["artefato"])
-    painel_justificativa["erro"] = _mensagem_preview_assinatura(pj["erro"], pj.get("detalhe")) if pj["erro"] else ""
-    _enriquecer_painel_etiqueta_assinatura(request, painel_justificativa)
-
-    termos_linhas = []
-    servidor_termo_pk = None
-    raw_srv = (request.GET.get("servidor") or "").strip()
-    for servidor in oficio.servidores.order_by("nome"):
-        pt = _preview_artefato_pdf_termo(oficio, servidor)
-        linha = {
-            "servidor_pk": servidor.pk,
-            "servidor_nome": servidor.nome,
-            "erro": _mensagem_preview_assinatura(pt["erro"], pt.get("detalhe")) if pt["erro"] else "",
-        }
-        linha.update(_painel_contexto_de_artefato(pt["artefato"]))
-        _enriquecer_painel_etiqueta_assinatura(request, linha)
-        termos_linhas.append(linha)
-    if raw_srv.isdigit():
-        servidor_termo_pk = int(raw_srv)
-    elif termos_linhas:
-        servidor_termo_pk = termos_linhas[0]["servidor_pk"]
-
+    central_ctx = build_documentos_assinatura_central(oficio)
     aval_doc = validar_oficio_para_documento(oficio)
     doc_status = "complete" if aval_doc["status"] == "complete" else "incomplete"
     dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)
@@ -814,7 +518,7 @@ def wizard_assinaturas_documentos(request, pk):
         request,
         "oficios/wizard_assinaturas.html",
         {
-            "page_title": "Assinaturas",
+            "page_title": "Assinaturas digitais",
             "wizard_header": apresentar_oficio_wizard_header("assinaturas"),
             "wizard_steps": apresentar_oficio_wizard_steps(
                 oficio=oficio,
@@ -827,28 +531,21 @@ def wizard_assinaturas_documentos(request, pk):
             ),
             "wizard_summary": apresentar_oficio_wizard_summary(oficio),
             "oficio": oficio,
-            "tab_atual": tab_atual,
-            "painel_oficio": painel_oficio,
-            "painel_justificativa": painel_justificativa,
-            "termos_linhas": termos_linhas,
-            "servidor_termo_pk": servidor_termo_pk,
+            "documentos_assinatura": central_ctx["documentos_assinatura"],
+            "assinaturas_kpis": central_ctx["assinaturas_kpis"],
         },
     )
 
 
 def wizard_assinar_pdf_oficio(request, pk):
-    """Legado: GET redireciona para a etapa 6; POST mantém assinatura só do ofício."""
+    """Legado: GET/POST redirecionam para a etapa 6 (assinatura só via solicitação)."""
     if request.method == "GET":
-        base = reverse("oficios:wizard_assinaturas", args=[pk])
-        return redirect(f"{base}?{urlencode({'tab': 'oficio'})}")
-    oficio = get_oficio_by_id(pk)
-    if not getattr(settings, "DOCUMENTOS_PERSIST_ARTEFATOS", False):
-        messages.error(
-            request,
-            "Assinatura digital requer DOCUMENTOS_PERSIST_ARTEFATOS=true no ambiente.",
-        )
-        return redirect(reverse("oficios:wizard_documentos", args=[pk]))
-    return _wizard_assinaturas_executar_post(request, oficio, "oficio", None)
+        return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
+    messages.info(
+        request,
+        "A assinatura direta neste URL foi descontinuada. Use «Gerar solicitação» na etapa de assinaturas.",
+    )
+    return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
 
 
 @require_GET
