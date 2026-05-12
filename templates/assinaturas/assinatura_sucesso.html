@@ -1,25 +1,72 @@
 {% extends "assinaturas/base_publica_assinatura.html" %}
 
 {% block title %}Documento assinado{% endblock %}
-{% block header_status %}Assinatura concluida{% endblock %}
+
+{% block header_badge %}
+  <span class="signature-header-badge signature-header-badge--success">Assinatura concluída</span>
+{% endblock %}
 
 {% block content %}
-<section class="signature-result signature-result--success">
-  <p class="signature-kicker">Concluido</p>
-  <h1>Documento assinado com sucesso</h1>
-  <p>Este link nao permite nova assinatura para o mesmo pedido.</p>
-</section>
+<div class="app-page signature-public-flow">
+  <div class="app-page__shell">
 
-<section class="signature-context-bar signature-context-bar--result">
-  <div class="signature-context-grid">
-    <div><span>Documento</span><strong>{{ public_context.document_label|default:"Documento" }}</strong></div>
-    <div><span>Assinante</span><strong>{{ public_context.signer_name }}</strong></div>
-    <div><span>Data/hora</span><strong>{{ pedido.assinado_em|date:"d/m/Y H:i" }}</strong></div>
-    <div><span>Codigo de verificacao</span><strong>{{ assinatura.codigo_verificacao }}</strong></div>
-    <div class="signature-context-grid__wide"><span>Hash do documento assinado</span><strong class="mono">{{ pedido.hash_documento_assinado }}</strong></div>
+    <header class="app-page-hero app-page-hero--hybrid app-page-hero--compact" aria-labelledby="signature-success-title">
+      <div class="app-page-hero__stage">
+        <span class="app-page-hero__eyebrow">Concluído</span>
+        <h1 class="app-page-hero__title" id="signature-success-title">Documento assinado com sucesso</h1>
+      </div>
+      <div class="app-page-hero__body">
+        <p class="app-page__subtitle">Este link não permite nova assinatura para o mesmo pedido.</p>
+      </div>
+      <div class="app-page-hero__ribbon" aria-hidden="true"></div>
+    </header>
+
+    <section class="app-page__form-card signature-success-card" aria-label="Resumo da assinatura">
+      <div class="signature-success-card__header">Resumo da assinatura</div>
+      <ul class="signature-success-summary signature-info-list">
+        <li class="signature-info-item">
+          <span class="signature-info-item__label">Documento</span>
+          <strong class="signature-info-item__value">{{ public_context.document_label|default:"Documento" }}</strong>
+        </li>
+        <li class="signature-info-item">
+          <span class="signature-info-item__label">Assinante</span>
+          <strong class="signature-info-item__value">{{ public_context.signer_name }}</strong>
+        </li>
+        <li class="signature-info-item">
+          <span class="signature-info-item__label">CPF</span>
+          <strong class="signature-info-item__value">{{ public_context.signer_cpf_masked }}</strong>
+        </li>
+        <li class="signature-info-item">
+          <span class="signature-info-item__label">Data e hora</span>
+          <strong class="signature-info-item__value">{{ pedido.assinado_em|date:"d/m/Y H:i" }}</strong>
+        </li>
+        <li class="signature-info-item">
+          <span class="signature-info-item__label">Código de verificação</span>
+          <code class="signature-code">{{ assinatura.codigo_verificacao }}</code>
+        </li>
+        <li class="signature-info-item">
+          <span class="signature-info-item__label">Código do pedido</span>
+          <code class="signature-code">{{ public_context.public_code }}</code>
+        </li>
+        {% if pedido.hash_documento_assinado %}
+        <li class="signature-info-item signature-info-item--full">
+          <span class="signature-info-item__label">Hash do documento assinado</span>
+          <code class="signature-code mono">{{ pedido.hash_documento_assinado }}</code>
+        </li>
+        {% endif %}
+      </ul>
+      <div class="signature-success-actions btn-group">
+        <a
+          class="btn btn-primary app-btn"
+          href="{% url 'assinaturas:assinatura-pdf-assinado' assinatura.pk %}"
+          target="_blank"
+          rel="noopener"
+        >
+          Visualizar PDF assinado
+        </a>
+      </div>
+    </section>
+
   </div>
-  <div class="signature-result-actions">
-    <a class="signature-primary-button" href="{% url 'assinaturas:assinatura-pdf-assinado' assinatura.pk %}" target="_blank" rel="noopener">Visualizar PDF assinado</a>
-  </div>
-</section>
+</div>
 {% endblock %}

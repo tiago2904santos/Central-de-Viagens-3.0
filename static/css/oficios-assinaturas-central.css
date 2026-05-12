@@ -50,7 +50,7 @@
 
 
 /* Link publico do pedido (copiar / enviar futuro) */
-.assinaturas-link-pedido { margin: 0 1.15rem 1rem; padding: 0.85rem 1rem; border-radius: 12px; border: 1px solid rgba(15,23,42,.1); background: #f8fafc; }
+.assinaturas-link-pedido { margin: 1rem 1.15rem 1rem; padding: 0.85rem 1rem; border-radius: 12px; border: 1px solid rgba(15,23,42,.1); background: #f8fafc; }
 .assinaturas-link-pedido__title { margin: 0 0 0.35rem; font-size: 0.95rem; color: #0f172a; }
 .assinaturas-link-pedido__hint { margin: 0 0 0.65rem; font-size: 0.82rem; line-height: 1.4; }
 .assinaturas-link-pedido__row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: stretch; }
@@ -63,6 +63,7 @@
 .assinaturas-document-card__preview.document-inline-card {
   margin-top: 0.75rem;
   margin-bottom: 0;
+  margin: var(--space-4);
 }
 .assinaturas-document-card__preview-hint {
   flex: 1 1 100%;

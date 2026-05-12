@@ -4,30 +4,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{{ page_title|default:"Assinatura de documento" }}{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
-  <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+  <script src="{% static 'js/core/theme-shared.js' %}"></script>
+  <script src="{% static 'js/core/theme-init.js' %}"></script>
+  <title>{% block title %}{{ page_title|default:"Assinatura de documento" }}{% endblock %} — Central de Viagens</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <link rel="stylesheet" href="{% static 'css/signature-public.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
 <body class="signature-public-page">
-  <header class="signature-public-header">
-    <div class="signature-public-brand">
-      <div class="signature-public-brand__mark" aria-hidden="true">CV</div>
-      <div>
-        <strong>Central de Viagens</strong>
-        <span>Policia Civil do Parana</span>
+  <header class="signature-public-topbar" role="banner">
+    <div class="signature-public-topbar__inner">
+      <div class="signature-public-brand" aria-label="Central de Viagens, Polícia Civil do Paraná">
+        <span class="signature-public-brand__mark" aria-hidden="true">CV</span>
+        <div class="signature-public-brand__text">
+          <strong>Central de Viagens</strong>
+          <span>Polícia Civil do Paraná</span>
+        </div>
       </div>
-    </div>
-    <div class="signature-public-header__meta">
-      <span>Assinatura eletronica de documento</span>
-      <strong>{% block header_status %}Ambiente seguro{% endblock %}</strong>
+      <div class="signature-public-topbar__meta">
+        <span class="signature-public-topbar__title">Assinatura eletrônica de documento</span>
+        {% block header_badge %}
+          <span class="signature-header-badge signature-header-badge--valid">Ambiente seguro</span>
+        {% endblock %}
+      </div>
     </div>
   </header>
 
-  <main class="signature-public-main">
-    {% block content %}{% endblock %}
+  <main class="app-main signature-public-main">
+    <section class="content-wrap">
+      {% block content %}{% endblock %}
+    </section>
   </main>
 
   {% block extra_js %}{% endblock %}
