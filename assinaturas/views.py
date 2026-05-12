@@ -1,9 +1,19 @@
+from django.contrib.auth.decorators import login_not_required
+from django.contrib.auth.decorators import login_required
+from django.http import FileResponse
+from django.http import Http404
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
+from assinaturas.models import AssinaturaDigital
+from assinaturas.services.assinatura_artefato import assinatura_arquivo_esta_integra
+from assinaturas.services.assinatura_artefato import mascarar_cpf_assinatura
+from assinaturas.services.codigos import normalizar_codigo_verificacao
+from assinaturas.services.hash import calcular_sha256_bytes
 from assinaturas.services.recording import registrar_assinatura_concluida
 from assinaturas.services.recording import registrar_verificacao_artefato
 from assinaturas.services.verification import verificar_artefato_documento
@@ -43,3 +53,67 @@ def api_assinar_documento(request, pk):
     atualizar_apos_assinatura(artefato, pdf_assinado=signed, backend=str(meta.get("backend", "")))
     registrar_assinatura_concluida(artefato, meta)
     return JsonResponse({"ok": True, "meta": meta})
+
+
+@login_not_required
+@require_GET
+def assinatura_verificar_codigo(request, codigo):
+    c = normalizar_codigo_verificacao(codigo)
+    assinatura = AssinaturaDigital.objects.filter(codigo_verificacao=c).select_related("artefato").first()
+    if assinatura is None:
+        raise Http404()
+    artefato = assinatura.artefato
+    integra = assinatura_arquivo_esta_integra(assinatura)
+    hash_atual = ""
+    if artefato.arquivo_assinado and getattr(artefato.arquivo_assinado, "name", ""):
+        try:
+            data = artefato.arquivo_assinado.read()
+            hash_atual = calcular_sha256_bytes(data)
+        except OSError:
+            hash_atual = ""
+    cpf_m = mascarar_cpf_assinatura(assinatura.cpf_assinante)
+    ctx = {
+        "assinatura": assinatura,
+        "artefato": artefato,
+        "status_valido": assinatura.status == AssinaturaDigital.STATUS_VALID,
+        "status_integridade_registro": integra,
+        "hash_atual_pdf_assinado": hash_atual,
+        "cpf_mascarado": cpf_m,
+        "url_pdf_original": reverse(
+            "assinaturas:assinatura-pdf-original",
+            kwargs={"assinatura_id": assinatura.pk},
+        ),
+        "url_pdf_assinado": reverse(
+            "assinaturas:assinatura-pdf-assinado",
+            kwargs={"assinatura_id": assinatura.pk},
+        ),
+    }
+    return render(request, "assinaturas/verificar_codigo.html", ctx)
+
+
+def _pdf_inline_response(field_file, filename: str) -> FileResponse:
+    if not field_file or not getattr(field_file, "name", ""):
+        raise Http404("Ficheiro nao encontrado.")
+    fh = field_file.open("rb")
+    resp = FileResponse(fh, content_type="application/pdf")
+    resp["Content-Disposition"] = f'inline; filename="{filename}"'
+    return resp
+
+
+@login_not_required
+@require_GET
+def assinatura_pdf_original(request, assinatura_id):
+    ass = get_object_or_404(AssinaturaDigital, pk=assinatura_id)
+    return _pdf_inline_response(ass.artefato.arquivo, "original.pdf")
+
+
+@login_not_required
+@require_GET
+def assinatura_pdf_assinado(request, assinatura_id):
+    ass = get_object_or_404(AssinaturaDigital, pk=assinatura_id)
+    return _pdf_inline_response(ass.artefato.arquivo_assinado, "assinado.pdf")
+
+
+@login_required
+def assinatura_gestao(request):
+    return index(request)
