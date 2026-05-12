@@ -11,8 +11,16 @@
       {% if preview.erro %}
         <p class="text-danger">{{ preview.erro }}</p>
       {% else %}
-        <p><strong>Variante:</strong> {{ preview.variante_efetiva }}</p>
-        <pre class="app-code-block" style="white-space: pre-wrap;">{{ preview_json }}</pre>
+        <section class="app-panel">
+          <h2>Servidores com Termo de Autorização</h2>
+          <ul>
+            {% for servidor in preview.servidores %}
+              <li>{{ servidor.nome }}</li>
+            {% empty %}
+              <li>Nenhum servidor selecionado para Termo de Autorização neste ofício.</li>
+            {% endfor %}
+          </ul>
+        </section>
       {% endif %}
     </div>
   </div>

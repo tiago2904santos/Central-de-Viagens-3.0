@@ -92,7 +92,7 @@
         </summary>
         <div class="document-inline-card__body document-inline-card__body--termos">
           {% if di.termos_vazio %}
-            <p class="document-inline-empty">Nenhum viajante vinculado ao ofício para gerar termos.</p>
+            <p class="document-inline-empty">{{ di.termos_empty_message }}</p>
           {% else %}
             {% for t in di.termos %}
               <details class="document-inline-card document-inline-card--nested document-inline-card--lazy" data-lazy-inline>

@@ -106,7 +106,9 @@ def _motorista_oficio_numero_display(ref):
 
 
 def _prepare_dados_viajantes_form(form):
-    form.fields["servidores"].queryset = listar_servidores_para_oficio()
+    servidores_qs = listar_servidores_para_oficio()
+    form.fields["servidores"].queryset = servidores_qs
+    form.fields["servidores_termo_autorizacao"].queryset = servidores_qs
 
 
 def _prepare_transporte_form(form):

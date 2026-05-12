@@ -55,6 +55,7 @@ class WizardAssinaturasEtapa6Tests(TestCase):
             custeio=Oficio.CUSTEIO_UNIDADE_DPC,
         )
         self.oficio.servidores.add(self.servidor)
+        self.oficio.servidores_termo_autorizacao.add(self.servidor)
         raw = _minimal_pdf_bytes()
         digest = hashlib.sha256(raw).hexdigest()
         self._art_oficio = DocumentoArtefato.objects.create(

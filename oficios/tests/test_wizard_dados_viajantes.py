@@ -84,6 +84,11 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Protocolo")
         self.assertContains(response, "Custeio")
         self.assertContains(response, "Motivo")
+        self.assertContains(response, "Termos de Autoriza")
+        self.assertContains(response, "Selecione quais servidores devem ter Termo de Autoriza")
+        self.assertContains(response, 'name="servidores_termo_autorizacao_present"')
+        self.assertContains(response, 'name="servidores_termo_autorizacao"')
+        self.assertContains(response, "js/oficios_termos_selector.js")
         self.assertContains(response, "Equipe do ofício")
         self.assertContains(response, "Busque servidores finalizados e mantenha a seleção visível enquanto monta o ofício.")
         self.assertContains(response, "Cadastrar novo viajante")
@@ -137,6 +142,7 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertEqual(oficio.motivo, "Motivo inicial")
         self.assertEqual(oficio.status, Oficio.STATUS_RASCUNHO)
         self.assertEqual(list(oficio.servidores.all()), [self.servidor])
+        self.assertEqual(list(oficio.servidores_termo_autorizacao.all()), [self.servidor])
 
     def test_post_novo_save_continue_cria_e_redireciona_para_transporte(self):
         response = self.client.post(self._novo_rascunho_url(), data=self._payload(action="save_continue"))
@@ -216,9 +222,77 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertEqual(response.status_code, 302)
         oficio.refresh_from_db()
         self.assertEqual(set(oficio.servidores.all()), {self.servidor, self.outro_servidor})
+        self.assertEqual(
+            set(oficio.servidores_termo_autorizacao.all()),
+            {self.servidor, self.outro_servidor},
+        )
 
         response = self.client.get(reverse("oficios:dados_viajantes", args=[oficio.pk]))
         self.assertContains(response, f'<option value="{self.servidor.pk}" selected')
+        self.assertContains(response, f'<option value="{self.outro_servidor.pk}" selected')
+
+    def test_post_dados_viajantes_salva_apenas_servidores_selecionados_para_termo(self):
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            assunto="Antigo",
+            motivo="Antigo",
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+        )
+
+        response = self.client.post(
+            reverse("oficios:dados_viajantes", args=[oficio.pk]),
+            data=self._payload(
+                servidores=[str(self.servidor.pk), str(self.outro_servidor.pk)],
+                servidores_termo_autorizacao_present="1",
+                servidores_termo_autorizacao=[str(self.servidor.pk)],
+                action="save_draft",
+            ),
+        )
+
+        self.assertEqual(response.status_code, 302)
+        oficio.refresh_from_db()
+        self.assertEqual(set(oficio.servidores.all()), {self.servidor, self.outro_servidor})
+        self.assertEqual(list(oficio.servidores_termo_autorizacao.all()), [self.servidor])
+
+    def test_post_dados_viajantes_nao_permite_termo_fora_da_equipe(self):
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            assunto="Antigo",
+            motivo="Antigo",
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+        )
+
+        response = self.client.post(
+            reverse("oficios:dados_viajantes", args=[oficio.pk]),
+            data=self._payload(
+                servidores=[str(self.servidor.pk)],
+                servidores_termo_autorizacao_present="1",
+                servidores_termo_autorizacao=[str(self.outro_servidor.pk)],
+                action="save_draft",
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Selecione para termo apenas servidores que tambem estao na equipe do oficio.",
+        )
+
+    def test_get_dados_viajantes_reexibe_servidores_de_termo_marcados(self):
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            motivo="Motivo existente",
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+        )
+        oficio.servidores.add(self.servidor, self.outro_servidor)
+        oficio.servidores_termo_autorizacao.add(self.outro_servidor)
+
+        response = self.client.get(reverse("oficios:dados_viajantes", args=[oficio.pk]))
+
+        self.assertContains(response, 'name="servidores_termo_autorizacao"')
         self.assertContains(response, f'<option value="{self.outro_servidor.pk}" selected')
 
     def test_get_editar_redireciona_para_dados_viajantes(self):

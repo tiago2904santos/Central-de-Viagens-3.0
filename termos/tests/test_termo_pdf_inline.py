@@ -27,6 +27,7 @@ from roteiros.models import Roteiro
 from roteiros.models import RoteiroDestino
 from roteiros.models import RoteiroTrecho
 from termos.services import gerar_termo_um
+from termos.services import gerar_termo_lote
 
 
 class TermoServidorPdfInlineTests(TestCase):
@@ -99,6 +100,7 @@ class TermoServidorPdfInlineTests(TestCase):
             custeio=Oficio.CUSTEIO_UNIDADE_DPC,
         )
         self.oficio.servidores.add(self.servidor_ok)
+        self.oficio.servidores_termo_autorizacao.add(self.servidor_ok)
 
     @mock.patch("termos.views.validar_oficio_para_documento", return_value={"pendencias": ["x"]})
     def test_redirect_quando_oficio_incompleto(self, _m):
@@ -109,6 +111,20 @@ class TermoServidorPdfInlineTests(TestCase):
     @mock.patch("termos.views.validar_oficio_para_documento", return_value={"pendencias": []})
     def test_servidor_fora_do_oficio_retorna_404(self, _m_val):
         url = reverse("termos:termo_servidor_pdf_inline", args=[self.oficio.pk, self.servidor_no.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    @mock.patch("termos.views.validar_oficio_para_documento", return_value={"pendencias": []})
+    def test_servidor_sem_termo_retorna_404_no_inline(self, _m_val):
+        self.oficio.servidores_termo_autorizacao.clear()
+        url = reverse("termos:termo_servidor_pdf_inline", args=[self.oficio.pk, self.servidor_ok.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    @mock.patch("termos.views.validar_oficio_para_documento", return_value={"pendencias": []})
+    def test_servidor_sem_termo_retorna_404_no_download(self, _m_val):
+        self.oficio.servidores_termo_autorizacao.clear()
+        url = reverse("termos:baixar_termo_servidor", args=[self.oficio.pk, self.servidor_ok.pk, "pdf"])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
@@ -201,3 +217,17 @@ class TermoServidorPdfInlineTests(TestCase):
             "semipreenchido",
         ):
             self.assertNotIn(forbidden, xml)
+
+    @mock.patch("termos.services.gerar_termo_um")
+    def test_lote_gera_apenas_servidores_selecionados_para_termo(self, m_gerar):
+        self.oficio.servidores.add(self.servidor_no)
+        self.oficio.servidores_termo_autorizacao.set([self.servidor_ok])
+        m_gerar.return_value = SimpleNamespace(
+            conteudo=b"x",
+            hash_sha256="h",
+            content_type="application/pdf",
+            nome_arquivo="t.pdf",
+        )
+        docs = gerar_termo_lote(self.oficio, DocumentoFormato.PDF)
+        self.assertEqual(len(docs), 1)
+        m_gerar.assert_called_once_with(self.oficio, self.servidor_ok, DocumentoFormato.PDF)

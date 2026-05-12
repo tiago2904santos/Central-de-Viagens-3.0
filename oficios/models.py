@@ -62,6 +62,12 @@ class Oficio(TimeStampedModel):
     )
     custeio_observacao = models.CharField(max_length=255, blank=True, default="")
     servidores = models.ManyToManyField(Servidor, blank=True, related_name="oficios")
+    servidores_termo_autorizacao = models.ManyToManyField(
+        Servidor,
+        blank=True,
+        related_name="oficios_termo_autorizacao",
+        verbose_name="Servidores com Termo de Autorização",
+    )
     viatura = models.ForeignKey(
         Viatura,
         on_delete=models.SET_NULL,

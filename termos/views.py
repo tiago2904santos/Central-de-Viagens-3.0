@@ -24,6 +24,7 @@ from oficios.services import validar_oficio_para_documento
 from .services import empacotar_termos_zip
 from .services import gerar_termo_lote
 from .services import gerar_termo_um
+from .services import listar_servidores_com_termo
 from .services import preview_termo_context
 
 
@@ -80,6 +81,8 @@ def termo_servidor_pdf_inline(request, pk, servidor_pk):
     servidor = get_object_or_404(Servidor, pk=servidor_pk)
     if not oficio.servidores.filter(pk=servidor.pk).exists():
         raise Http404("Servidor nao participa deste oficio.")
+    if not listar_servidores_com_termo(oficio).filter(pk=servidor.pk).exists():
+        raise Http404("Servidor nao selecionado para Termo de Autorizacao neste oficio.")
 
     doc = gerar_termo_um(oficio, servidor, DocumentoFormato.PDF)
     ref = f"{oficio.numero_formatado.replace('/', '-')}-termo-{servidor.pk}"
@@ -108,6 +111,8 @@ def baixar_termo_servidor(request, pk, servidor_pk, formato):
     servidor = get_object_or_404(Servidor, pk=servidor_pk)
     if not oficio.servidores.filter(pk=servidor.pk).exists():
         raise Http404("Servidor nao participa deste oficio.")
+    if not listar_servidores_com_termo(oficio).filter(pk=servidor.pk).exists():
+        raise Http404("Servidor nao selecionado para Termo de Autorizacao neste oficio.")
 
     doc = gerar_termo_um(oficio, servidor, fmt)
     response = HttpResponse(doc.conteudo, content_type=doc.content_type)
@@ -129,8 +134,8 @@ def baixar_termo_lote_zip(request, pk, formato):
         messages.error(request, "Lote nao gerado: oficio incompleto.")
         return redirect(f"{redirect_para_corrigir_documento_oficio(oficio)}?documento_incompleto=1")
 
-    if not oficio.servidores.exists():
-        messages.error(request, "Nenhum servidor no oficio para gerar termos.")
+    if not listar_servidores_com_termo(oficio).exists():
+        messages.error(request, "Nenhum servidor selecionado para Termo de Autorizacao.")
         return redirect("termos:index")
 
     docs = gerar_termo_lote(oficio, fmt)

@@ -97,6 +97,7 @@ class OficioForm(forms.ModelForm):
             "roteiro",
             "solicitante",
             "servidores",
+            "servidores_termo_autorizacao",
             "viatura",
             "motorista",
             "custeio",
@@ -109,6 +110,7 @@ class OficioForm(forms.ModelForm):
             "solicitante": forms.Select(attrs={"class": "form-select"}),
             "status": forms.Select(attrs={"class": "form-select"}),
             "servidores": forms.SelectMultiple(attrs={"class": "form-select", "size": "8"}),
+            "servidores_termo_autorizacao": forms.SelectMultiple(attrs={"class": "form-select", "size": "8"}),
             "viatura": forms.Select(attrs={"class": "form-select"}),
             "motorista": forms.Select(attrs={"class": "form-select"}),
             "custeio": forms.Select(attrs={"class": "form-select"}),
@@ -121,7 +123,14 @@ class OficioForm(forms.ModelForm):
                 field.widget.attrs.setdefault("class", "form-control")
             if field_name in {"protocolo", "assunto"}:
                 field.widget.attrs.setdefault("data-mask", "upper")
-        for optional_field in ("roteiro", "solicitante", "viatura", "motorista", "servidores"):
+        for optional_field in (
+            "roteiro",
+            "solicitante",
+            "viatura",
+            "motorista",
+            "servidores",
+            "servidores_termo_autorizacao",
+        ):
             if optional_field in self.fields:
                 self.fields[optional_field].required = False
 
@@ -157,6 +166,7 @@ class OficioDadosViajantesForm(OficioForm):
             "custeio",
             "custeio_observacao",
             "servidores",
+            "servidores_termo_autorizacao",
         ]
         widgets = {
             "protocolo": forms.TextInput(attrs={"class": "form-control", "data-mask": "protocolo"}),
@@ -175,6 +185,12 @@ class OficioDadosViajantesForm(OficioForm):
                     "data-search-placeholder": "Digite nome, RG ou CPF",
                 },
             ),
+            "servidores_termo_autorizacao": ServidorEquipeSelectMultiple(
+                attrs={
+                    "class": "form-select app-termos-selector__native",
+                    "data-termos-selector-target": "true",
+                },
+            ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -182,6 +198,12 @@ class OficioDadosViajantesForm(OficioForm):
         self.fields["modelo_motivo"].queryset = ModeloMotivoOficio.objects.order_by("ordem", "nome")
         self.fields["custeio"].required = False
         self.fields["servidores"].required = False
+        self.fields["servidores_termo_autorizacao"].queryset = self.fields["servidores"].queryset
+        self.fields["servidores_termo_autorizacao"].required = False
+        if not self.is_bound and self.instance.pk and not self.instance.servidores_termo_autorizacao.exists():
+            self.initial["servidores_termo_autorizacao"] = list(
+                self.instance.servidores.values_list("pk", flat=True),
+            )
 
     def clean_protocolo(self):
         protocolo = normalize_protocolo(self.cleaned_data.get("protocolo", ""))
@@ -193,7 +215,25 @@ class OficioDadosViajantesForm(OficioForm):
         return normalize_spaces(self.cleaned_data.get("motivo", ""))
 
     def clean(self):
-        return super().clean()
+        cleaned = super().clean()
+        servidores = list(cleaned.get("servidores") or [])
+        termos = list(cleaned.get("servidores_termo_autorizacao") or [])
+        servidor_ids = {servidor.pk for servidor in servidores}
+
+        if self.is_bound and "servidores_termo_autorizacao_present" not in self.data:
+            termos = servidores
+        invalidos = [servidor for servidor in termos if servidor.pk not in servidor_ids]
+        if invalidos:
+            self.add_error(
+                "servidores_termo_autorizacao",
+                "Selecione para termo apenas servidores que tambem estao na equipe do oficio.",
+            )
+            cleaned["servidores_termo_autorizacao"] = [
+                servidor for servidor in termos if servidor.pk in servidor_ids
+            ]
+        else:
+            cleaned["servidores_termo_autorizacao"] = termos
+        return cleaned
 
 
 class OficioTransporteForm(forms.ModelForm):

@@ -27,6 +27,7 @@ from documentos.services.types import DocumentoFormato
 from documentos.services.types import DocumentoTipo
 from documentos.services.warm_cache import pdf_artefato_original_acessivel
 from termos.services import gerar_termo_um
+from termos.services import listar_servidores_com_termo
 
 from .documents import build_termo_payload
 from .services import gerar_resposta_documento_oficio
@@ -346,7 +347,7 @@ def build_documentos_assinatura_central(oficio, *, request: HttpRequest | None =
         )
     )
 
-    for servidor in oficio.servidores.order_by("nome"):
+    for servidor in listar_servidores_com_termo(oficio):
         pt = preview_artefato_pdf_termo(oficio, servidor)
         documentos.append(
             _montar_item_documento(
@@ -389,7 +390,7 @@ def artefato_permitido_no_oficio(art: DocumentoArtefato, oficio) -> bool:
         sid = art.servidor_id
         if not sid:
             return False
-        return oficio.servidores.filter(pk=sid).exists()
+        return listar_servidores_com_termo(oficio).filter(pk=sid).exists()
     return True
 
 

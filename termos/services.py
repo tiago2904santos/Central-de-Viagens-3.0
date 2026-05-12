@@ -13,8 +13,8 @@ from documentos.services.templates import default_template_registry
 from documentos.services.types import DocumentoFormato
 from documentos.services.types import DocumentoTipo
 
-from oficios.documents import build_termo_payload
 from oficios.documents import VarianteTermo
+from oficios.documents import build_termo_payload
 from oficios.models import Oficio
 
 
@@ -25,6 +25,10 @@ _TEMPLATE_DOCX_BY_VARIANTE = {
 }
 
 
+def listar_servidores_com_termo(oficio: Oficio):
+    return oficio.servidores_termo_autorizacao.select_related("cargo", "unidade").order_by("nome")
+
+
 def preview_termo_context(
     oficio: Oficio,
     servidor: Servidor | None = None,
@@ -32,16 +36,24 @@ def preview_termo_context(
     modo_semipreenchido: bool = False,
     variante: str | None = None,
 ) -> dict:
-    srv = servidor or oficio.servidores.order_by("nome").first()
+    servidores_termo = listar_servidores_com_termo(oficio)
+    srv = servidor or servidores_termo.first()
     if srv is None:
-        return {"erro": "Ofício sem servidores para montar o termo."}
+        return {"erro": "Nenhum servidor selecionado para Termo de Autorizacao neste oficio."}
+    if not servidores_termo.filter(pk=srv.pk).exists():
+        return {"erro": "Servidor nao selecionado para Termo de Autorizacao neste oficio."}
     payload = build_termo_payload(
         oficio,
         srv,
         modo_semipreenchido=modo_semipreenchido,
         variante=variante,
     )
-    return {"payload": payload, "variante_efetiva": payload["termo"]["variante"]}
+    return {
+        "payload": payload,
+        "servidor": srv,
+        "servidores": list(servidores_termo),
+        "variante_efetiva": payload["termo"]["variante"],
+    }
 
 
 def _facade_termo_com_template(template_docx: str) -> DocumentoFacade:
@@ -124,7 +136,7 @@ def gerar_termo_um(
 
 def gerar_termo_lote(oficio: Oficio, formato: DocumentoFormato) -> list[DocumentoGerado]:
     out: list[DocumentoGerado] = []
-    for servidor in oficio.servidores.order_by("nome"):
+    for servidor in listar_servidores_com_termo(oficio):
         out.append(gerar_termo_um(oficio, servidor, formato))
     return out
 

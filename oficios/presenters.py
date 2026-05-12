@@ -499,7 +499,8 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         doc_msg = ""
 
     termos_items = []
-    for servidor in oficio.servidores.order_by("nome"):
+    servidores_termo = oficio.servidores_termo_autorizacao.select_related("cargo", "unidade").order_by("nome")
+    for servidor in servidores_termo:
         termos_items.append(
             {
                 "titulo": f"Termo de Autorização — {servidor.nome}",
@@ -534,6 +535,7 @@ def apresentar_oficio_wizard_documentos_context(oficio):
         },
         "termos": termos_items,
         "termos_vazio": not termos_items,
+        "termos_empty_message": "Nenhum servidor selecionado para Termo de Autorização.",
         "mensagem_indisponivel": doc_msg,
     }
 
