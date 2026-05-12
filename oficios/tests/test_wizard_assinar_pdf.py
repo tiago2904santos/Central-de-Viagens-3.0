@@ -125,6 +125,19 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         self.assertEqual(pedido.nome_assinante_snapshot, "SERV WIZS")
 
     @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
+    def test_get_mostra_link_publico_apos_gerar_solicitacao(self, _m_val):
+        url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
+        self.client.post(url, {"gerar_solicitacao": "1", "artefato_id": str(self._art_oficio.pk)})
+        pedido = PedidoAssinaturaDocumento.objects.get(artefato=self._art_oficio)
+        r = self.client.get(url)
+        self.assertContains(r, "Link para o assinante")
+        self.assertContains(r, "Copiar link")
+        self.assertContains(r, "/assinaturas/assinar/")
+        self.assertContains(r, pedido.token)
+        self.assertContains(r, "Enviar")
+        self.assertContains(r, 'aria-disabled="true"')
+
+    @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
     def test_post_segundo_pedido_nao_duplica(self, _m_val):
         url = reverse("oficios:wizard_assinaturas", args=[self.oficio.pk])
         self.client.post(url, {"gerar_solicitacao": "1", "artefato_id": str(self._art_oficio.pk)})

@@ -507,7 +507,7 @@ def wizard_assinaturas_documentos(request, pk):
             return redirect(reverse("oficios:wizard_assinaturas", args=[pk]))
         return wizard_assinaturas_post_gerar_solicitacao(request, oficio)
 
-    central_ctx = build_documentos_assinatura_central(oficio)
+    central_ctx = build_documentos_assinatura_central(oficio, request=request)
     aval_doc = validar_oficio_para_documento(oficio)
     doc_status = "complete" if aval_doc["status"] == "complete" else "incomplete"
     dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)

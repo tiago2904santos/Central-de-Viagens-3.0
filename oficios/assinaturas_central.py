@@ -8,6 +8,7 @@ from typing import Any
 from django.conf import settings
 from django.contrib import messages
 from django.http import Http404
+from django.http import HttpRequest
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -15,6 +16,7 @@ from django.utils import timezone
 from assinaturas.models import PedidoAssinaturaDocumento
 from assinaturas.services.assinatura_artefato import mascarar_cpf_assinatura
 from assinaturas.services.pedidos import criar_ou_obter_pedido_assinatura
+from assinaturas.services.pedidos import url_publica_pedido_assinatura
 from assinaturas.services.resolvedores import AssinanteNaoConfiguradoError
 from cadastros.models import Servidor
 from documentos.models import DocumentoArtefato
@@ -221,6 +223,7 @@ def _montar_item_documento(
     descricao: str,
     preview: dict,
     servidor: Servidor | None,
+    request: HttpRequest | None = None,
 ) -> dict[str, Any]:
     art = preview.get("artefato")
     erro = preview.get("erro")
@@ -271,6 +274,10 @@ def _montar_item_documento(
     if isinstance(art, DocumentoArtefato):
         pdf_url = reverse("documentos:artefato_pdf_conteudo", args=[art.pk])
 
+    link_pedido_assinatura = ""
+    if pedido_aberto is not None and request is not None:
+        link_pedido_assinatura = url_publica_pedido_assinatura(request, pedido_aberto)
+
     return {
         "key": key,
         "tipo": tipo,
@@ -300,11 +307,12 @@ def _montar_item_documento(
         "atualizado_em": atualizado,
         "n_destinatarios": n_dest,
         "destinatarios": _montar_destinatarios(art if isinstance(art, DocumentoArtefato) else None),
+        "link_pedido_assinatura": link_pedido_assinatura,
     }
 
 
-def build_documentos_assinatura_central(oficio) -> dict[str, Any]:
-    """Lista única de documentos + KPIs para a etapa 6."""
+def build_documentos_assinatura_central(oficio, *, request: HttpRequest | None = None) -> dict[str, Any]:
+    """Lista única de documentos + KPIs para a etapa 6 (URLs públicos de pedido exigem `request`)."""
     pk = oficio.pk
     documentos: list[dict[str, Any]] = []
 
@@ -319,6 +327,7 @@ def build_documentos_assinatura_central(oficio) -> dict[str, Any]:
             descricao="Documento principal do expediente.",
             preview=po,
             servidor=None,
+            request=request,
         )
     )
 
@@ -334,6 +343,7 @@ def build_documentos_assinatura_central(oficio) -> dict[str, Any]:
                 descricao="Fundamentação vinculada a este ofício.",
                 preview=pj,
                 servidor=None,
+                request=request,
             )
         )
 
@@ -349,6 +359,7 @@ def build_documentos_assinatura_central(oficio) -> dict[str, Any]:
                 descricao="Autorização de viagem para o servidor indicado.",
                 preview=pt,
                 servidor=servidor,
+                request=request,
             )
         )
 

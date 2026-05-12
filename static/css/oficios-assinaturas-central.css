@@ -50,3 +50,13 @@
 
 .assinatura-destinatario-col { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
 .assinatura-destinatario-timeline { grid-column: unset; }
+
+
+/* Link publico do pedido (copiar / enviar futuro) */
+.assinaturas-link-pedido { margin: 0 1.15rem 1rem; padding: 0.85rem 1rem; border-radius: 12px; border: 1px solid rgba(15,23,42,.1); background: #f8fafc; }
+.assinaturas-link-pedido__title { margin: 0 0 0.35rem; font-size: 0.95rem; color: #0f172a; }
+.assinaturas-link-pedido__hint { margin: 0 0 0.65rem; font-size: 0.82rem; line-height: 1.4; }
+.assinaturas-link-pedido__row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: stretch; }
+.assinaturas-link-pedido__input { flex: 1 1 12rem; min-width: 0; padding: 0.5rem 0.65rem; font-size: 0.78rem; font-family: ui-monospace, monospace; border: 1px solid rgba(15,23,42,.15); border-radius: 8px; background: #fff; color: #0f172a; }
+.assinaturas-link-pedido__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.assinaturas-link-pedido__send:disabled { opacity: 0.55; cursor: not-allowed; }

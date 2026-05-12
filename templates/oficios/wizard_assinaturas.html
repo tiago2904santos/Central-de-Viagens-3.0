@@ -79,6 +79,39 @@
                       <p class="doc-muted" style="padding: 0 1.15rem;">{{ documento.erro }}</p>
                     {% endif %}
 
+                    {% if documento.link_pedido_assinatura %}
+                      <section class="assinaturas-link-pedido" aria-labelledby="link-pedido-titulo-{{ documento.key }}">
+                        <h4 class="assinaturas-link-pedido__title" id="link-pedido-titulo-{{ documento.key }}">Link para o assinante</h4>
+                        <p class="assinaturas-link-pedido__hint doc-muted">
+                          Copie o endereço abaixo e envie manualmente ao assinante. O envio automático pelo sistema ficará disponível em breve.
+                        </p>
+                        <div class="assinaturas-link-pedido__row">
+                          <input
+                            type="text"
+                            readonly
+                            class="assinaturas-link-pedido__input"
+                            value="{{ documento.link_pedido_assinatura }}"
+                            aria-label="URL público de assinatura"
+                          >
+                          <div class="assinaturas-link-pedido__actions">
+                            <button
+                              type="button"
+                              class="btn btn-secondary app-btn app-btn--secondary assinatura-hash-copy"
+                              data-copy-value="{{ documento.link_pedido_assinatura }}"
+                              data-copy-done="Link copiado"
+                            >Copiar link</button>
+                            <button
+                              type="button"
+                              class="btn btn-primary app-btn app-btn--primary assinaturas-link-pedido__send"
+                              disabled
+                              title="Em desenvolvimento"
+                              aria-disabled="true"
+                            >Enviar</button>
+                          </div>
+                        </div>
+                      </section>
+                    {% endif %}
+
                     {% if documento.disponivel %}
                       <div class="assinaturas-document-card__meta">
                         <span><strong>Última atualização:</strong> {% if documento.atualizado_em %}{{ documento.atualizado_em|date:"d/m/Y H:i" }}{% else %}—{% endif %}</span>
