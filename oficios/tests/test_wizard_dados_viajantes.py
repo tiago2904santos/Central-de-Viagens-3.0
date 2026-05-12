@@ -85,9 +85,14 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Custeio")
         self.assertContains(response, "Motivo")
         self.assertContains(response, "Termos de Autoriza")
-        self.assertContains(response, "Selecione quais servidores devem ter Termo de Autoriza")
+        self.assertContains(response, "Escolha quais viajantes devem ter termo gerado.")
+        self.assertContains(response, "0 com termo")
+        self.assertContains(response, "0 sem termo")
+        self.assertContains(response, "data-oficio-termos-summary")
+        self.assertContains(response, "oficio-termos-selector__list")
         self.assertContains(response, 'name="servidores_termo_autorizacao_present"')
         self.assertContains(response, 'name="servidores_termo_autorizacao"')
+        self.assertContains(response, "app-termos-selector__native")
         self.assertContains(response, "js/oficios_termos_selector.js")
         self.assertContains(response, "Equipe do ofício")
         self.assertContains(response, "Busque servidores finalizados e mantenha a seleção visível enquanto monta o ofício.")
@@ -294,6 +299,31 @@ class OficioWizardDadosViajantesTests(TestCase):
 
         self.assertContains(response, 'name="servidores_termo_autorizacao"')
         self.assertContains(response, f'<option value="{self.outro_servidor.pk}" selected')
+
+    def test_post_dados_viajantes_remove_termo_quando_servidor_sai_da_equipe(self):
+        oficio = Oficio.objects.create(
+            numero=1,
+            ano=2026,
+            motivo="Motivo existente",
+            custeio=Oficio.CUSTEIO_UNIDADE_DPC,
+        )
+        oficio.servidores.add(self.servidor, self.outro_servidor)
+        oficio.servidores_termo_autorizacao.add(self.servidor, self.outro_servidor)
+
+        response = self.client.post(
+            reverse("oficios:dados_viajantes", args=[oficio.pk]),
+            data=self._payload(
+                servidores=[str(self.outro_servidor.pk)],
+                servidores_termo_autorizacao_present="1",
+                servidores_termo_autorizacao=[str(self.outro_servidor.pk)],
+                action="save_draft",
+            ),
+        )
+
+        self.assertEqual(response.status_code, 302)
+        oficio.refresh_from_db()
+        self.assertEqual(list(oficio.servidores.all()), [self.outro_servidor])
+        self.assertEqual(list(oficio.servidores_termo_autorizacao.all()), [self.outro_servidor])
 
     def test_get_editar_redireciona_para_dados_viajantes(self):
         oficio = Oficio.objects.create(numero=1, ano=2026, custeio=Oficio.CUSTEIO_UNIDADE_DPC)

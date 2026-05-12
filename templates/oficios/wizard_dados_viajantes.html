@@ -90,24 +90,24 @@
         {% include "components/forms/form_field.html" with field=form.servidores label="BUSCAR VIAJANTE" help_text="A busca mostra apenas viajantes finalizados e continua disponível após cada seleção." only %}
       </div>
     </div>
-  </div>
-
-  <div class="form-section oficio-termos-selector" data-oficio-termos-selector>
-    <div class="oficio-equipe-section__header">
-      <div class="oficio-equipe-section__copy">
-        <h3>Termos de Autorização</h3>
-        <p>Selecione quais servidores devem ter Termo de Autorização gerado.</p>
+    <div class="form-section oficio-termos-selector" data-oficio-termos-selector>
+      <div class="oficio-termos-selector__header">
+        <div>
+          <h3>Termos de Autorização</h3>
+          <p>Escolha quais viajantes devem ter termo gerado.</p>
+        </div>
+        <span class="oficio-termos-selector__summary" data-oficio-termos-summary>0 com termo · 0 sem termo</span>
       </div>
+      <input type="hidden" name="servidores_termo_autorizacao_present" value="1">
+      {{ form.servidores_termo_autorizacao }}
+      {% if form.servidores_termo_autorizacao.errors %}
+        <p class="field-error">{{ form.servidores_termo_autorizacao.errors|striptags }}</p>
+      {% endif %}
+      <div class="oficio-termos-selector__list" data-oficio-termos-list></div>
+      <p class="oficio-termos-selector__empty" data-oficio-termos-empty>
+        Selecione viajantes para definir os termos.
+      </p>
     </div>
-    <input type="hidden" name="servidores_termo_autorizacao_present" value="1">
-    {{ form.servidores_termo_autorizacao }}
-    {% if form.servidores_termo_autorizacao.errors %}
-      <p class="field-error">{{ form.servidores_termo_autorizacao.errors|striptags }}</p>
-    {% endif %}
-    <div class="oficio-termos-selector__list" data-oficio-termos-list></div>
-    <p class="oficio-termos-selector__empty" data-oficio-termos-empty>
-      Selecione viajantes para definir os termos.
-    </p>
   </div>
 {% endblock %}
 
