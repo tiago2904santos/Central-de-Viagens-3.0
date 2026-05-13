@@ -42,6 +42,13 @@
   gap: var(--space-2);
 }
 
+.oficio-card__status-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .oficio-card__number-label {
   color: var(--color-muted);
   font-size: var(--font-size-xs);

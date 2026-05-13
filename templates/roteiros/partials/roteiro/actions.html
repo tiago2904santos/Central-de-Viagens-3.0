@@ -1,12 +1,15 @@
-<div class="roteiro-editor__actions oficio-wizard-footer-actions {% if is_avulso %}roteiro-editor__actions--avulso{% endif %}" data-oficio-footer-actions="1">
+            <div class="roteiro-editor__actions oficio-wizard-footer-actions {% if is_avulso %}roteiro-editor__actions--avulso{% endif %}" data-oficio-footer-actions="1">
               {% if roteiro_editor_oficio %}
-              <a href="{{ wizard_back_url }}" class="btn btn-outline-secondary">{{ wizard_back_label|default:"Voltar" }}</a>
+              <button type="submit" name="action" value="wizard_back" class="btn btn-outline-secondary">{{ wizard_back_label|default:"Voltar" }}</button>
               {% if oficio %}
                 <a class="btn btn-secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'docx' %}">DOCX</a>
                 <a class="btn btn-secondary" href="{% url 'oficios:baixar_documento' oficio.pk 'pdf' %}">PDF</a>
               {% endif %}
+              {% if not oficio_completo|default:False %}
+              <button type="submit" class="btn btn-secondary" name="action" value="save_draft_list">Salvar rascunho e voltar à lista</button>
+              {% endif %}
               <button type="submit" class="btn btn-secondary" name="action" value="save_draft">Salvar rascunho</button>
-              <button type="submit" class="btn btn-primary" name="action" value="save_continue">Salvar e continuar</button>
+              <button type="submit" class="btn btn-primary" name="action" value="wizard_next">Salvar e continuar</button>
               {% elif is_avulso %}
               <a href="{% url 'roteiros:index' %}" class="btn btn-outline-secondary">Voltar para lista</a>
               <button type="submit" class="btn btn-primary">{% if object %}Salvar roteiro{% else %}Cadastrar roteiro{% endif %}</button>

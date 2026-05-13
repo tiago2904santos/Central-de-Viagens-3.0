@@ -30,7 +30,7 @@
               {% csrf_token %}
               {% block wizard_content %}{% endblock %}
               {% block wizard_actions %}
-              {% include "oficios/partials/wizard_actions.html" with wizard_back_url=wizard_back_url wizard_back_label=wizard_back_label oficio=oficio wizard_finalizar=wizard_finalizar only %}
+              {% include "oficios/partials/wizard_actions.html" with wizard_back_url=wizard_back_url wizard_back_label=wizard_back_label oficio=oficio wizard_finalizar=wizard_finalizar oficio_completo=oficio_completo|default:False only %}
               {% endblock %}
             </form>
           </main>

@@ -178,7 +178,7 @@ class WizardDocumentosAssinarPdfLinkTests(TestCase):
         tpl = Path(settings.BASE_DIR) / "templates" / "oficios" / "wizard_documentos.html"
         s = tpl.read_text(encoding="utf-8")
         idx = s.index("Assinar documentos")
-        window = s[max(0, idx - 500) : idx + 30]
+        window = s[max(0, idx - 120) : idx + 40]
         self.assertIn("href=", window)
         self.assertIn("wizard_assinaturas", window)
         self.assertNotIn("formaction", window)

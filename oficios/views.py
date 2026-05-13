@@ -59,6 +59,7 @@ from .presenters import apresentar_oficio_wizard_summary
 from .presenters import apresentar_oficio_wizard_steps
 from .selectors import get_oficio_by_id
 from .selectors import get_modelo_motivo_by_id
+from .selectors import map_assinatura_pdf_oficio_por_ids
 from .selectors import buscar_viaturas_para_oficio
 from .selectors import get_viatura_por_placa_normalizada
 from .selectors import viatura_para_resultado_busca
@@ -80,10 +81,28 @@ from .services import gerar_resposta_documento_oficio
 from .services import gerar_resposta_justificativa_documento
 from .services import garantir_roteiro_vinculado_ao_oficio
 from .services import redirect_para_corrigir_documento_oficio
+from .services import oficio_esta_completo_para_finalizar
 from .services import validar_oficio_para_documento
 
 
 logger = logging.getLogger(__name__)
+
+
+def _wizard_normalizar_acao(post, *, default: str = "wizard_next") -> str:
+    action = (post.get("action") or default).strip()
+    if action == "save_continue":
+        return "wizard_next"
+    return action
+
+
+def _wizard_persist_action_para_dados_viajantes(nav_action: str) -> str:
+    if nav_action == "wizard_next":
+        return "save_continue"
+    return "save_draft"
+
+
+def _wizard_footer_ctx(oficio):
+    return {"oficio_completo": oficio_esta_completo_para_finalizar(oficio)}
 
 
 def _wizard_roteiro_step_status(oficio):
@@ -150,12 +169,20 @@ def _wizard_dados_viajantes_context(*, form, oficio, avaliacao=None, mostrar_pen
         "oficio": oficio,
         "wizard_back_url": reverse("oficios:index"),
         "wizard_back_label": "Voltar para lista",
+        **_wizard_footer_ctx(oficio),
     }
 
 
-def _redirect_after_dados_viajantes_save(request, oficio, *, created=False):
-    action = request.POST.get("action")
-    if action == "save_continue":
+def _redirect_after_dados_viajantes_save(request, oficio, *, nav_action: str, created=False):
+    if nav_action in ("wizard_back", "save_draft_list"):
+        messages.success(
+            request,
+            "Ofício cadastrado com sucesso."
+            if created
+            else "Dados e viajantes salvos. Retornamos à lista de ofícios.",
+        )
+        return redirect("oficios:index")
+    if nav_action == "wizard_next":
         messages.success(
             request,
             "Ofício cadastrado com sucesso."
@@ -205,12 +232,18 @@ def _wizard_transporte_context(*, form, oficio):
         "api_viatura_placa_url": reverse("oficios:api_viatura_por_placa", args=[oficio.pk]),
         "wizard_back_url": reverse("oficios:dados_viajantes", args=[oficio.pk]),
         "wizard_back_label": "Voltar",
+        **_wizard_footer_ctx(oficio),
     }
 
 
-def _redirect_after_transporte_save(request, oficio):
-    action = request.POST.get("action")
-    if action == "save_continue":
+def _redirect_after_transporte_save(request, oficio, *, nav_action: str):
+    if nav_action == "wizard_back":
+        messages.success(request, "Transporte salvo.")
+        return redirect("oficios:dados_viajantes", pk=oficio.pk)
+    if nav_action == "save_draft_list":
+        messages.success(request, "Transporte salvo. Retornamos à lista de ofícios.")
+        return redirect("oficios:index")
+    if nav_action == "wizard_next":
         messages.success(request, "Transporte salvo. Continue para a próxima etapa quando estiver pronto.")
         return redirect("oficios:wizard_roteiro", pk=oficio.pk)
     messages.success(request, "Rascunho do transporte salvo.")
@@ -221,9 +254,10 @@ def index(request):
     q = request.GET.get("q", "").strip()
     status = request.GET.get("status", "").strip()
     oficios = listar_oficios(q=q, status=status or None)
+    sig_map = map_assinatura_pdf_oficio_por_ids([o.pk for o in oficios])
     cards = []
     for oficio in oficios:
-        card = apresentar_oficio_card(oficio)
+        card = apresentar_oficio_card(oficio, assinatura_pdf=sig_map.get(oficio.pk))
         card["actions"] = apresentar_acoes_oficio(
             editar_url=reverse("oficios:editar", args=[oficio.pk]),
             excluir_url=reverse("oficios:excluir", args=[oficio.pk]),
@@ -267,8 +301,10 @@ def dados_viajantes(request, pk):
     form = OficioDadosViajantesForm(request.POST or None, instance=oficio)
     _prepare_dados_viajantes_form(form)
     if request.method == "POST" and form.is_valid():
-        oficio = atualizar_oficio_dados_viajantes(oficio, form, action=request.POST.get("action", "save_draft"))
-        return _redirect_after_dados_viajantes_save(request, oficio)
+        nav_action = _wizard_normalizar_acao(request.POST)
+        persist_action = _wizard_persist_action_para_dados_viajantes(nav_action)
+        oficio = atualizar_oficio_dados_viajantes(oficio, form, action=persist_action)
+        return _redirect_after_dados_viajantes_save(request, oficio, nav_action=nav_action, created=False)
     avaliacao = avaliar_oficio_dados_viajantes(form=form, oficio=oficio)
     mostrar_pendencias_documento = request.GET.get("documento_incompleto") == "1"
     return render(
@@ -288,12 +324,13 @@ def transporte(request, pk):
     form = OficioTransporteForm(request.POST or None, instance=oficio)
     _prepare_transporte_form(form)
     if request.method == "POST" and form.is_valid():
+        nav_action = _wizard_normalizar_acao(request.POST)
         oficio = atualizar_oficio_transporte(
             oficio,
             form,
-            action=request.POST.get("action", "save_draft"),
+            action="save_continue" if nav_action == "wizard_next" else "save_draft",
         )
-        return _redirect_after_transporte_save(request, oficio)
+        return _redirect_after_transporte_save(request, oficio, nav_action=nav_action)
     return render(
         request,
         "oficios/wizard_transporte.html",
@@ -319,8 +356,8 @@ def wizard_roteiro(request, pk):
         )
         if form.is_valid() and validated["ok"]:
             atualizar_roteiro(roteiro, form, roteiro_state, validated, diarias_resultado)
-            action = request.POST.get("action") or "save_draft"
-            if action == "save_continue":
+            nav_action = _wizard_normalizar_acao(request.POST)
+            if nav_action == "wizard_next":
                 messages.success(
                     request,
                     "Roteiro e diárias salvos. Continue para a próxima etapa quando estiver pronto.",
@@ -328,6 +365,12 @@ def wizard_roteiro(request, pk):
                 if oficio_exige_justificativa(oficio):
                     return redirect("oficios:wizard_justificativa", pk=oficio.pk)
                 return redirect("oficios:wizard_documentos", pk=oficio.pk)
+            if nav_action == "wizard_back":
+                messages.success(request, "Roteiro e diárias salvos.")
+                return redirect("oficios:transporte", pk=oficio.pk)
+            if nav_action == "save_draft_list":
+                messages.success(request, "Roteiro e diárias salvos. Retornamos à lista de ofícios.")
+                return redirect("oficios:index")
             messages.success(request, "Rascunho do roteiro salvo.")
             return redirect("oficios:wizard_roteiro", pk=oficio.pk)
         for error in validated.get("errors", []):
@@ -368,6 +411,7 @@ def wizard_roteiro(request, pk):
             "wizard_back_url": reverse("oficios:transporte", args=[oficio.pk]),
             "wizard_back_label": "Voltar",
             "roteiro_editor_oficio": True,
+            **_wizard_footer_ctx(oficio),
         }
     )
     return render(request, "oficios/wizard_roteiro.html", context)
@@ -384,13 +428,19 @@ def wizard_justificativa(request, pk):
     )
 
     if request.method == "POST" and form.is_valid():
-        action = request.POST.get("action") or "save_draft"
+        nav_action = _wizard_normalizar_acao(request.POST)
         atualizar_justificativa_oficio(
             oficio,
             form,
-            action="save_continue" if action == "save_continue" else "save_draft",
+            action="save_continue" if nav_action == "wizard_next" else "save_draft",
         )
-        if action == "save_continue":
+        if nav_action == "wizard_back":
+            messages.success(request, "Justificativa salva.")
+            return redirect("oficios:wizard_roteiro", pk=oficio.pk)
+        if nav_action == "save_draft_list":
+            messages.success(request, "Justificativa salva. Retornamos à lista de ofícios.")
+            return redirect("oficios:index")
+        if nav_action == "wizard_next":
             messages.success(
                 request,
                 "Justificativa salva. Continue para documentos quando estiver pronto.",
@@ -424,6 +474,7 @@ def wizard_justificativa(request, pk):
             "justificativa_ctx": apresentar_justificativa_wizard_context(oficio),
             "justificativa_obrigatoria": obrigatoria,
             "modelos_justificativa_url": reverse("justificativas:index"),
+            **_wizard_footer_ctx(oficio),
         },
     )
 
@@ -439,8 +490,8 @@ def wizard_documentos(request, pk):
     doc_status = "complete" if aval_doc["status"] == "complete" else "incomplete"
 
     if request.method == "POST":
-        action = request.POST.get("action") or "save_draft"
-        if action == "finalizar":
+        nav_action = _wizard_normalizar_acao(request.POST, default="save_draft")
+        if nav_action == "finalizar":
             aval = validar_oficio_para_documento(oficio)
             if aval["pendencias"]:
                 for msg in aval["pendencias"]:
@@ -449,6 +500,12 @@ def wizard_documentos(request, pk):
             oficio.status = Oficio.STATUS_FINALIZADO
             oficio.save(update_fields=["status", "updated_at"])
             messages.success(request, "Ofício finalizado com sucesso.")
+            return redirect("oficios:index")
+        if nav_action == "wizard_back":
+            messages.info(request, "Retornando à etapa anterior.")
+            return redirect("oficios:wizard_justificativa", pk=pk)
+        if nav_action == "save_draft_list":
+            messages.success(request, "Retornamos à lista de ofícios.")
             return redirect("oficios:index")
         messages.success(request, "Rascunho salvo.")
         return redirect("oficios:wizard_documentos", pk=pk)
@@ -480,6 +537,7 @@ def wizard_documentos(request, pk):
             "documentos_ctx": apresentar_oficio_wizard_documentos_context(oficio),
             "pendencias_documentos": pendencias,
             "mostrar_pendencias": bool(pendencias),
+            **_wizard_footer_ctx(oficio),
         },
     )
 

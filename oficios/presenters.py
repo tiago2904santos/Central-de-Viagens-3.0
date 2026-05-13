@@ -32,8 +32,8 @@ def _status_variant(status: str) -> str:
     return "status-chip--warning"
 
 
-def apresentar_oficio_card(oficio):
-    return {
+def apresentar_oficio_card(oficio, *, assinatura_pdf: str | None = None):
+    card = {
         "number_label": "N° do Ofício",
         "number": oficio.numero_formatado,
         "status": oficio.get_status_display(),
@@ -47,6 +47,13 @@ def apresentar_oficio_card(oficio):
             build_meta("Viajantes", str(oficio.servidores.count())),
         ],
     }
+    if oficio.status == Oficio.STATUS_FINALIZADO and assinatura_pdf == "assinado":
+        card["finalizacao_assinatura_badge"] = "Assinado"
+        card["finalizacao_assinatura_badge_class"] = "status-chip--success"
+    elif oficio.status == Oficio.STATUS_FINALIZADO and assinatura_pdf == "aguardando":
+        card["finalizacao_assinatura_badge"] = "Aguardando assinatura"
+        card["finalizacao_assinatura_badge_class"] = "status-chip--warning"
+    return card
 
 
 def _motorista_label_oficio(oficio):

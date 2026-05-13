@@ -397,6 +397,11 @@ def validar_oficio_para_documento(oficio):
     return {"status": status, "pendencias": pendencias, "checks": checks}
 
 
+def oficio_esta_completo_para_finalizar(oficio: Oficio) -> bool:
+    """Indica se o ofício cumpre requisitos documentais, sem considerar assinatura digital."""
+    return validar_oficio_para_documento(oficio)["status"] == "complete"
+
+
 def redirect_para_corrigir_documento_oficio(oficio):
     """Primeira etapa do wizard com pendência relevante para download documental."""
     dados = avaliar_oficio_dados_viajantes(oficio=oficio)
