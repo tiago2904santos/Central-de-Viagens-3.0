@@ -81,6 +81,7 @@ class FormatInstitucionalRodapeTests(SimpleTestCase):
         }
         out = format_institucional_rodape_linha(inst)
         self.assertIn("Assessoria de Comunicacao Social", out)
+        self.assertIn("Social - Rua", out)
         self.assertIn("Rua Izabel Gomes Posselt", out)
         self.assertIn("Curitiba", out)
         self.assertIn("PR", out)

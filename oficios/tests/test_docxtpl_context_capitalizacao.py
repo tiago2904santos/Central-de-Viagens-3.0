@@ -28,6 +28,16 @@ class BuildOficioCapitalizacaoTests(TestCase):
         self.assertIn(" de ", f" {ctx['unidade']} ")
         self.assertIn(" de ", f" {ctx['nome_orgao']} ")
 
+    def test_cabecalho_orgao_maiusculo_com_entrada_title_case(self):
+        cfg = ConfiguracaoSistema.get_singleton()
+        cfg.nome_orgao = "Departamento de Polícia"
+        cfg.unidade = "Delegacia Regional de Londrina"
+        cfg.save(update_fields=["nome_orgao", "unidade"])
+        oficio = Oficio.objects.create()
+        ctx = build_oficio_docxtpl_context(oficio)
+        self.assertEqual(ctx["nome_orgao_cabecalho"], "DEPARTAMENTO DE POLÍCIA")
+        self.assertEqual(ctx["unidade_cabecalho"], "DELEGACIA REGIONAL DE LONDRINA")
+
     def test_justificativa_rodape_nao_todo_maiusculo(self):
         cfg = ConfiguracaoSistema.get_singleton()
         cfg.divisao = "ASSESSORIA DE COMUNICAÇÃO SOCIAL"
