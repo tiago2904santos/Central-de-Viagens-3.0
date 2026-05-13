@@ -29,6 +29,9 @@ class RouteAuthenticationError(RouteServiceError):
 class RouteValidationError(RouteServiceError):
     user_message = "Dados do roteiro insuficientes ou inválidos para calcular a rota."
 
+    def __init__(self, message=None, *, user_message=None):
+        super().__init__(message, user_message=user_message or message or self.user_message)
+
 
 class RouteDailyRoundTripBlockedError(RouteServiceError):
     user_message = "Desative o modo bate-volta diário para calcular a rota pelo mapa."

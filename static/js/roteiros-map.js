@@ -428,15 +428,19 @@
     var urlPreview = form.getAttribute('data-api-calcular-rota-preview-url');
     var hasSaved = !!rid;
     var roteiro = window.RoteirosEditor;
+    var previewPayload = (roteiro && roteiro.buildRoutePreviewPayload && roteiro.buildRoutePreviewPayload()) || null;
+    var usePreviewPayload = !!(previewPayload && urlPreview);
     if (isDailyRoundTripActive()) {
       showError('Desative o modo bate-volta diário para calcular a rota pelo mapa.');
       return;
     }
-    if (!hasSaved && (!roteiro || !roteiro.canCalculateRoutePreview || !roteiro.canCalculateRoutePreview())) {
+    if (!hasSaved && !previewPayload) {
       showError('Defina origem e destinos antes de calcular a rota.');
       return;
     }
-    var targetUrl = hasSaved ? urlPersistido : (urlPreview || (roteiro && roteiro.getPreviewEndpointUrl && roteiro.getPreviewEndpointUrl()));
+    var targetUrl = usePreviewPayload
+      ? urlPreview
+      : (hasSaved ? urlPersistido : (roteiro && roteiro.getPreviewEndpointUrl && roteiro.getPreviewEndpointUrl()));
     if (!targetUrl) return;
 
     showError('');
@@ -447,9 +451,9 @@
       (form.querySelector('[name=csrfmiddlewaretoken]') &&
         form.querySelector('[name=csrfmiddlewaretoken]').value);
 
-    var payload = hasSaved
-      ? { roteiro_id: rid, force_recalculate: !!force }
-      : ((roteiro && roteiro.buildRoutePreviewPayload && roteiro.buildRoutePreviewPayload()) || null);
+    var payload = usePreviewPayload
+      ? previewPayload
+      : (hasSaved ? { roteiro_id: rid, force_recalculate: !!force } : null);
     if (!payload) {
       setLoading(false);
       showError('Defina origem e destinos antes de calcular a rota.');
@@ -476,7 +480,7 @@
           return;
         }
         var route = res.body.route;
-        if (!hasSaved && roteiro && typeof roteiro.applyRoutePreviewResult === 'function') {
+        if (usePreviewPayload && roteiro && typeof roteiro.applyRoutePreviewResult === 'function') {
           roteiro.applyRoutePreviewResult(res.body, { overwriteAdditional: !!force });
         }
         initial.route = route;
@@ -618,6 +622,12 @@
       }, 350);
     });
     window.addEventListener('roteiros:route-state-changed', refreshRouteReadyState);
+    form.addEventListener('autosave:created', function (event) {
+      var data = event && event.detail ? event.detail : {};
+      if (!data || !data.object_id) return;
+      rid = String(data.object_id);
+      refreshRouteReadyState();
+    });
     refreshRouteReadyState();
   }
 

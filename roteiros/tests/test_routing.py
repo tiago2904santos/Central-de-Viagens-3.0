@@ -603,6 +603,17 @@ class RoteirosRoutingTests(TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertIn("Salve o roteiro", resp.json()["message"])
 
+    def test_calcular_rota_endpoint_sem_destinos_retorna_motivo_especifico(self):
+        roteiro = Roteiro.objects.create(
+            tipo=Roteiro.TIPO_AVULSO,
+            origem_estado=self.estado,
+            origem_cidade=self.cidade_sede,
+        )
+        url = reverse("roteiros:calcular_rota")
+        resp = self._csrf_post_json(url, {"roteiro_id": roteiro.pk})
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("pelo menos dois pontos", resp.json()["message"])
+
     def test_calcular_rota_endpoint_bloqueia_modo_bate_volta(self):
         roteiro = Roteiro.objects.create(
             tipo=Roteiro.TIPO_AVULSO,
