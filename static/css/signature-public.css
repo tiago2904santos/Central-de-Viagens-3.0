@@ -117,7 +117,7 @@
   flex-direction: column;
   gap: 0;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   padding: var(--space-5);
 }
 
@@ -232,7 +232,8 @@
   height: 100%;
   max-height: 100%;
   min-height: 0;
-  overflow: hidden;
+  min-width: 0;
+  overflow: visible;
   position: static;
 }
 
@@ -260,7 +261,10 @@
 .signature-info-panel__body {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Detalhes em várias colunas (desktop): 2 colunas; ecrãs largos 3 */
@@ -323,6 +327,7 @@
   display: block;
   font-size: var(--font-size-sm);
   font-weight: 600;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 

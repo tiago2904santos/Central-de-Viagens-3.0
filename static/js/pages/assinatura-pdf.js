@@ -211,6 +211,10 @@ function initEditor(root) {
     labelWrap = null;
 
     const n     = pdfDoc.numPages;
+    const dpr   = Math.min(
+      typeof window !== "undefined" && window.devicePixelRatio ? window.devicePixelRatio : 1,
+      2,
+    );
     const scale = BASE_SCALE * zoom;
 
     for (let i = 1; i <= n; i++) {
@@ -219,16 +223,17 @@ function initEditor(root) {
       wrap.className      = "assinatura-page-wrap";
       wrap.dataset.pageNum = String(i);
       const canvas = document.createElement("canvas");
-      const vp     = page.getViewport({ scale });
-      canvas.width        = vp.width;
-      canvas.height       = vp.height;
-      canvas.style.width  = vp.width  + "px";
-      canvas.style.height = vp.height + "px";
+      const vpCss  = page.getViewport({ scale });
+      const vpHi   = page.getViewport({ scale: scale * dpr });
+      canvas.width        = Math.floor(vpHi.width);
+      canvas.height       = Math.floor(vpHi.height);
+      canvas.style.width  = Math.floor(vpCss.width) + "px";
+      canvas.style.height = Math.floor(vpCss.height) + "px";
       canvas.className    = "assinatura-page-canvas";
       wrap.appendChild(canvas);
       pagesCol.appendChild(wrap);
       pageWraps.push(wrap);
-      await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+      await page.render({ canvasContext: canvas.getContext("2d"), viewport: vpHi }).promise;
     }
 
     if (!labelEl) {
