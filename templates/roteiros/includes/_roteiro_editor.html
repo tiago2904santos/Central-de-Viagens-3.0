@@ -48,7 +48,9 @@
               {% endfor %}
             </div>
             {% endif %}
-            {% if roteiro_seed_source_label %}<div class="alert alert-info py-2" role="status">{{ roteiro_seed_source_label }}</div>{% endif %}
+            {% if roteiro_seed_source_label %}
+            <p class="form-text text-muted mb-2" role="status">{{ roteiro_seed_source_label }}</p>
+            {% endif %}
 
             {% include "roteiros/partials/roteiro/source.html" %}
             {% include "components/domain/sede_destinos.html" %}

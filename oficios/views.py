@@ -344,13 +344,13 @@ def wizard_roteiro(request, pk):
     roteiro = oficio.roteiro
     qtd_viajantes = oficio.servidores.count()
 
-    form = RoteiroForm(request.POST or None, instance=roteiro)
-    preparar_querysets_formulario_roteiro(
-        form, method=request.method, post=request.POST, instance=roteiro
-    )
     route_options, route_state_map = carregar_opcoes_rotas_avulsas_salvas()
 
     if request.method == "POST":
+        form = RoteiroForm(request.POST, instance=roteiro)
+        preparar_querysets_formulario_roteiro(
+            form, method=request.method, post=request.POST, instance=roteiro
+        )
         roteiro_state, validated, diarias_resultado = validar_submissao_editor_roteiro(
             request.POST, route_state_map, roteiro=roteiro
         )
@@ -379,6 +379,21 @@ def wizard_roteiro(request, pk):
     else:
         destinos_atuais, trechos_list, roteiro_state = preparar_estado_editor_roteiro_para_get(
             roteiro=roteiro
+        )
+        form_initial = {}
+        if not (roteiro.origem_estado_id or roteiro.origem_cidade_id):
+            se_id = roteiro_state.get("sede_estado_id")
+            sc_id = roteiro_state.get("sede_cidade_id")
+            if se_id:
+                form_initial["origem_estado"] = se_id
+            if sc_id:
+                form_initial["origem_cidade"] = sc_id
+        form = RoteiroForm(
+            instance=roteiro,
+            initial=form_initial if form_initial else None,
+        )
+        preparar_querysets_formulario_roteiro(
+            form, method=request.method, post=request.POST, instance=roteiro
         )
 
     dados_av = avaliar_oficio_dados_viajantes(oficio=oficio)

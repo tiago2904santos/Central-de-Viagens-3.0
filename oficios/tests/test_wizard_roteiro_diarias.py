@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -136,3 +138,40 @@ class OficioWizardRoteiroDiariasTests(TestCase):
 
         self.assertContains(response, f'<option value="{est.pk}" selected')
         self.assertContains(response, f'<option value="{cidade_sede.pk}" selected')
+
+    @patch("cadastros.services.consultar_cep_externo")
+    def test_etapa3_preenche_sede_via_cep_sem_cidade_sede_padrao_fk(self, mock_consulta_cep):
+        """Com apenas CEP nas Configurações, ViaCEP resolve UF/localidade e casa com a base."""
+        est, _ = Estado.objects.get_or_create(
+            sigla="ZZ",
+            defaults={"nome": "Estado ZZ Teste", "codigo_ibge": 99},
+        )
+        cidade_cep, _ = Cidade.objects.get_or_create(
+            estado=est,
+            nome="Município CEP Wizard Teste",
+            defaults={"uf": "ZZ"},
+        )
+        mock_consulta_cep.return_value = {
+            "cep": "01001-000",
+            "logradouro": "",
+            "bairro": "",
+            "cidade": "Município CEP Wizard Teste",
+            "uf": "ZZ",
+        }
+        cfg = ConfiguracaoSistema.get_singleton()
+        cfg.cidade_sede_padrao = None
+        cfg.uf = ""
+        cfg.cidade_endereco = ""
+        cfg.cep = "01001000"
+        cfg.save()
+
+        oficio = self._oficio_ate_transporte([self.servidor_a.pk])
+        response = self.client.get(reverse("oficios:wizard_roteiro", args=[oficio.pk]))
+        self.assertEqual(response.status_code, 200)
+        mock_consulta_cep.assert_called()
+        oficio.refresh_from_db()
+        roteiro = oficio.roteiro
+        self.assertIsNone(roteiro.origem_estado_id)
+        self.assertIsNone(roteiro.origem_cidade_id)
+        self.assertContains(response, f'<option value="{est.pk}" selected')
+        self.assertContains(response, f'<option value="{cidade_cep.pk}" selected')
