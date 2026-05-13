@@ -262,23 +262,29 @@ def _draw_signature_stamp_content(
     linhas = [
         (dados_carimbo.nome_assinante, name_size),
         (f"CPF: {dados_carimbo.cpf_mascarado}", 5.2),
+        (f"Data: {data_formatada}", 5.0),
+        (f"Codigo: {dados_carimbo.codigo_verificacao}", 4.8),
     ]
-    if dados_carimbo.cargo_assinante:
-        linhas.append((f"Cargo: {dados_carimbo.cargo_assinante}", 4.8))
-    linhas.extend(
-        [
-            (f"Data: {data_formatada}", 5.0),
-            (f"Codigo: {dados_carimbo.codigo_verificacao}", 4.8),
-        ]
-    )
-    for line, font_size in linhas[:4]:
+    for line, font_size in linhas:
         c.setFont(SIGNATURE_LABEL_FONT_BODY, font_size)
         c.drawString(text_left, y, _ellipsize_to_width(line, SIGNATURE_LABEL_FONT_BODY, font_size, text_width))
         y -= 8
 
     link_size = 4.2
-    hash_label = f"Hash: {dados_carimbo.hash_curto}" if dados_carimbo.hash_curto else dados_carimbo.organizacao_label
-    link_linha = _ellipsize_to_width(hash_label, SIGNATURE_LABEL_FONT_BODY, link_size, text_width)
+    if dados_carimbo.url_validacao:
+        link_linha = _validation_link_text(
+            dados_carimbo.url_validacao,
+            SIGNATURE_LABEL_FONT_BODY,
+            link_size,
+            text_width,
+        )
+    else:
+        link_linha = _ellipsize_to_width(
+            dados_carimbo.organizacao_label,
+            SIGNATURE_LABEL_FONT_BODY,
+            link_size,
+            text_width,
+        )
     c.setFont(SIGNATURE_LABEL_FONT_BODY, link_size)
     c.drawString(text_left, y, link_linha)
     _ = padding  # reservado para alinhamentos futuros

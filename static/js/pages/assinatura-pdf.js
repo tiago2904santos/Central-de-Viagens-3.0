@@ -31,7 +31,7 @@ function readFitShrinkFromRoot(el) {
   return clamp(v, 0.25, 1);
 }
 
-function buildLabelHtml(signer, url, code) {
+function buildLabelHtml(signer, url, _code) {
   const safe = (s) =>
     String(s || "")
       .replace(/&/g, "&amp;")
@@ -46,8 +46,9 @@ function buildLabelHtml(signer, url, code) {
     '<div class="assinatura-label__body">' +
     '<div class="assinatura-label__title">DOCUMENTO ASSINADO ELETRONICAMENTE</div>' +
     '<div class="assinatura-label__name">' + safe(signer || "-") + "</div>" +
-    '<div class="assinatura-label__meta">Verifique em: ' + shortUrl + "</div>" +
-    '<div class="assinatura-label__code">Código: ' + safe(code || "-") + "</div>" +
+    (u
+      ? '<div class="assinatura-label__meta">Validação: ' + shortUrl + "</div>"
+      : '<div class="assinatura-label__meta">Confira o documento antes de assinar.</div>') +
     "</div>" +
     "</div>"
   );

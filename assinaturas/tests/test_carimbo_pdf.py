@@ -44,6 +44,19 @@ def _dados() -> DadosCarimbo:
     )
 
 
+def _dados_com_cargo_e_hash() -> DadosCarimbo:
+    d = _dados()
+    return DadosCarimbo(
+        nome_assinante=d.nome_assinante,
+        cpf_mascarado=d.cpf_mascarado,
+        data_hora_assinatura=d.data_hora_assinatura,
+        codigo_verificacao=d.codigo_verificacao,
+        url_validacao=d.url_validacao,
+        cargo_assinante="Delegado",
+        hash_curto="abcdef123456",
+    )
+
+
 class CarimboPdfTests(TestCase):
     def test_renderizar_aparencia_retorna_pdf_bytes(self):
         raw = renderizar_aparencia_assinatura(_dados(), 155, 54)
@@ -86,6 +99,15 @@ class CarimboPdfTests(TestCase):
             with self.assertRaises(ValueError) as ctx:
                 aplicar_carimbo_pdf(b"%PDF-1.4", _dados(), None)
             self.assertIn("página", str(ctx.exception).lower())
+
+    def test_etiqueta_nao_exibe_cargo_nem_hash_mesmo_quando_preenchidos(self):
+        pdf_in = _minimal_valid_pdf_bytes()
+        out, _meta = aplicar_carimbo_pdf(pdf_in, _dados_com_cargo_e_hash(), None)
+        text = "".join((p.extract_text() or "") for p in PdfReader(io.BytesIO(out)).pages)
+        self.assertNotIn("Cargo:", text)
+        self.assertNotIn("Hash:", text)
+        self.assertIn("verifique em", text.lower())
+        self.assertIn("CV-2026-A1B2C3-D4E5", text)
 
     def test_reportlab_pdf_simples_em_memoria(self):
         buf = io.BytesIO()
