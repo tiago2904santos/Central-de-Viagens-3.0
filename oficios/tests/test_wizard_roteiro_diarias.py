@@ -3,6 +3,9 @@ from django.test import TestCase
 from django.urls import reverse
 
 from cadastros.models import Cargo
+from cadastros.models import ConfiguracaoSistema
+from cadastros.models import Estado
+from cadastros.models import Cidade
 from cadastros.models import Servidor
 from cadastros.models import Unidade
 from cadastros.models import Viatura
@@ -114,3 +117,22 @@ class OficioWizardRoteiroDiariasTests(TestCase):
         response = self.client.get(reverse("oficios:wizard_documentos", args=[oficio.pk]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Documentos")
+
+    def test_etapa3_preenche_sede_a_partir_das_configuracoes(self):
+        """Roteiro sem origem salva recebe UF/cidade do singleton de configuração."""
+        est = Estado.objects.create(nome="Paraná", sigla="PR")
+        cidade_sede = Cidade.objects.create(nome="Curitiba", estado=est)
+        cfg = ConfiguracaoSistema.get_singleton()
+        cfg.cidade_sede_padrao = cidade_sede
+        cfg.save()
+
+        oficio = self._oficio_ate_transporte([self.servidor_a.pk])
+        response = self.client.get(reverse("oficios:wizard_roteiro", args=[oficio.pk]))
+        self.assertEqual(response.status_code, 200)
+        oficio.refresh_from_db()
+        roteiro = oficio.roteiro
+        self.assertIsNone(roteiro.origem_estado_id)
+        self.assertIsNone(roteiro.origem_cidade_id)
+
+        self.assertContains(response, f'<option value="{est.pk}" selected')
+        self.assertContains(response, f'<option value="{cidade_sede.pk}" selected')

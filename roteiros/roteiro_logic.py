@@ -646,6 +646,29 @@ def _get_roteiro_saved_routes(oficio, include_ids=None):
     )
 
 
+def _maybe_apply_sede_padrao_configuracao(roteiro, state):
+    """
+    Pré-preenche UF/cidade da sede no estado do editor a partir das Configurações,
+    apenas quando o roteiro ainda não tem origem persistida.
+    """
+    if roteiro.origem_estado_id or roteiro.origem_cidade_id:
+        return
+    if state.get('sede_estado_id') or state.get('sede_cidade_id'):
+        return
+    from cadastros.services import resolver_sede_ids_desde_configuracao
+
+    estado_id, cidade_id, aviso = resolver_sede_ids_desde_configuracao()
+    if estado_id and cidade_id:
+        state['sede_estado_id'] = estado_id
+        state['sede_cidade_id'] = cidade_id
+        hint = 'Sede sugerida a partir das Configurações do sistema.'
+        prev = (state.get('seed_source_label') or '').strip()
+        state['seed_source_label'] = f"{prev} {hint}".strip() if prev else hint
+    elif aviso:
+        prev = (state.get('seed_source_label') or '').strip()
+        state['seed_source_label'] = f"{prev} {aviso}".strip() if prev else aviso
+
+
 def _build_roteiro_state_from_roteiro_evento(roteiro, seed_source_label='PrÃ©-preenchido com o roteiro salvo.'):
     state = _build_roteiro_state_from_saved_trechos(
         roteiro,
@@ -667,6 +690,7 @@ def _build_roteiro_state_from_roteiro_evento(roteiro, seed_source_label='PrÃ©-
     if not state['retorno']['chegada_data']:
         state['retorno']['chegada_data'], state['retorno']['chegada_hora'] = _split_route_datetime(roteiro.retorno_chegada_dt)
     state['bate_volta_diario'] = _infer_roteiro_bate_volta_diario_from_state(state)
+    _maybe_apply_sede_padrao_configuracao(roteiro, state)
     return state
 
 
@@ -693,6 +717,7 @@ def _build_roteiro_state_from_saved_trechos(roteiro, seed_source_label=''):
         ).order_by('ordem', 'id')
     )
     if not trechos_salvos:
+        _maybe_apply_sede_padrao_configuracao(roteiro, state)
         return state
 
     ordem = 0
@@ -749,6 +774,7 @@ def _build_roteiro_state_from_saved_trechos(roteiro, seed_source_label=''):
             state['trechos'].append(trecho_payload)
             ordem += 1
 
+    _maybe_apply_sede_padrao_configuracao(roteiro, state)
     return state
 
 

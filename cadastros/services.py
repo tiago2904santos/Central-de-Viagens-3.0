@@ -2,13 +2,17 @@ from django.db import transaction
 
 from core.deletion import DelecaoProtegidaError
 from core.deletion import excluir_com_protecao
+from core.normalizers import normalize_digits
 from core.normalizers import normalize_spaces
 from core.normalizers import remove_accents
 from .models import AssinaturaConfiguracao
 from .models import Cargo
 from .models import Cidade
 from .models import Combustivel
+from .models import ConfiguracaoSistema
 from .models import Estado
+from .services_via_cep import ViaCEPNotFoundError
+from .services_via_cep import ViaCEPServiceError
 from .services_via_cep import consultar_cep as consultar_cep_externo
 
 
@@ -42,6 +46,54 @@ def resolver_cidade_sede_por_endereco(uf, cidade_endereco):
         if _normalize_for_match(cidade.nome) == alvo:
             return cidade
     return None
+
+
+def resolver_sede_ids_desde_configuracao():
+    """
+    Resolve (estado_id, cidade_id, aviso_ui) a partir do singleton de configuração.
+
+    Ordem: FK cidade_sede_padrao; texto UF + cidade_endereco; CEP (ViaCEP) + localidade.
+    Retorna aviso_ui curto quando não for possível resolver (para exibição discreta no editor).
+    """
+    cfg = ConfiguracaoSistema.get_singleton()
+    if getattr(cfg, "cidade_sede_padrao_id", None):
+        cidade = (
+            Cidade.objects.select_related("estado")
+            .filter(pk=cfg.cidade_sede_padrao_id)
+            .first()
+        )
+        if cidade and cidade.estado_id:
+            return (int(cidade.estado_id), int(cidade.pk), "")
+    cidade_txt = resolver_cidade_sede_por_endereco(cfg.uf, cfg.cidade_endereco)
+    if cidade_txt and cidade_txt.estado_id:
+        return (int(cidade_txt.estado_id), int(cidade_txt.pk), "")
+    cep = normalize_digits(cfg.cep or "")
+    if len(cep) == 8:
+        try:
+            payload = consultar_cep_externo(cep)
+        except (ViaCEPServiceError, ViaCEPNotFoundError):
+            return (
+                None,
+                None,
+                "Não foi possível identificar cidade/UF pelo CEP das Configurações. "
+                "Informe a sede manualmente ou ajuste o CEP nas Configurações.",
+            )
+        uf = (payload.get("uf") or "").strip()
+        loc = (payload.get("cidade") or "").strip()
+        cidade_cep = resolver_cidade_sede_por_endereco(uf, loc)
+        if cidade_cep and cidade_cep.estado_id:
+            return (int(cidade_cep.estado_id), int(cidade_cep.pk), "")
+        return (
+            None,
+            None,
+            "O CEP das Configurações foi encontrado, mas o município não está cadastrado na base. "
+            "Cadastre a cidade ou informe a sede manualmente.",
+        )
+    return (
+        None,
+        None,
+        "Defina CEP ou cidade sede nas Configurações do sistema para pré-preencher a sede automaticamente.",
+    )
 
 
 @transaction.atomic
