@@ -56,8 +56,9 @@
               data-label-title="{{ label_context.title }}"
               data-label-status="{{ label_context.status_label }}"
               data-verification-code="{{ label_context.verification_code }}"
+              data-verification-url="{{ verification_url|default:'' }}"
               data-organization-label="{{ label_context.organization_label }}"
-              data-worker-src="{% static 'vendor/pdfjs/pdf.worker.min.js' %}?v=20260512"
+              data-worker-src="{% static 'vendor/pdfjs/pdf.worker.min.js' %}?v=20260513"
               aria-label="Documento para leitura e assinatura"
             >
               <div class="signature-document-viewer__toolbar">
@@ -66,10 +67,13 @@
                   <span id="assinatura-pdf-meta">Carregando…</span>
                   <span id="assinatura-pdf-error" class="signature-pdf-error" role="alert" hidden></span>
                 </div>
-                <div class="signature-document-viewer__zoom btn-group" aria-label="Controles de zoom">
-                  <button type="button" class="btn btn-secondary app-btn btn-sm app-btn--sm btn-icon app-btn--icon" id="assinatura-zoom-out" aria-label="Diminuir zoom">−</button>
-                  <button type="button" class="btn btn-secondary app-btn btn-sm app-btn--sm" id="assinatura-zoom-reset">Ajustar largura</button>
-                  <button type="button" class="btn btn-secondary app-btn btn-sm app-btn--sm btn-icon app-btn--icon" id="assinatura-zoom-in" aria-label="Aumentar zoom">+</button>
+                <div class="signature-document-viewer__toolbar-actions">
+                  <div class="signature-document-viewer__zoom btn-group" aria-label="Controles de zoom">
+                    <button type="button" class="btn btn-secondary app-btn btn-sm app-btn--sm btn-icon app-btn--icon" id="assinatura-zoom-out" aria-label="Diminuir zoom">−</button>
+                    <button type="button" class="btn btn-secondary app-btn btn-sm app-btn--sm" id="assinatura-zoom-reset">Ajustar largura</button>
+                    <button type="button" class="btn btn-secondary app-btn btn-sm app-btn--sm btn-icon app-btn--icon" id="assinatura-zoom-in" aria-label="Aumentar zoom">+</button>
+                  </div>
+                  <a class="btn btn-outline-secondary app-btn btn-sm app-btn--sm" href="{{ pdf_url }}" target="_blank" rel="noopener noreferrer">Abrir PDF em nova aba</a>
                 </div>
               </div>
               <div class="signature-document-viewer__canvas" id="assinatura-editor-scroll">
@@ -291,7 +295,7 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script src="{% static 'vendor/pdfjs/pdf.min.js' %}?v=20260512"></script>
-  <script type="module" src="{% static 'js/pages/assinatura-pdf.js' %}?v=20260512"></script>
-  <script src="{% static 'js/pages/signature-public.js' %}?v=20260512"></script>
+  <script src="{% static 'vendor/pdfjs/pdf.min.js' %}?v=20260513"></script>
+  <script type="module" src="{% static 'js/pages/assinatura-pdf.js' %}?v=20260513"></script>
+  <script src="{% static 'js/pages/signature-public.js' %}?v=20260513"></script>
 {% endblock %}

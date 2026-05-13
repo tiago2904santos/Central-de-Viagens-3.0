@@ -275,6 +275,13 @@ def assinatura_token(request, token):
         pedido.ip_visualizacao = _request_ip(request)
         pedido.user_agent_visualizacao = _request_ua(request)
         pedido.save(update_fields=["status", "visualizado_em", "ip_visualizacao", "user_agent_visualizacao"])
+    verification_url = ""
+    assinatura = getattr(pedido, "assinatura", None)
+    codigo = getattr(assinatura, "codigo_verificacao", "") if assinatura else ""
+    if codigo:
+        verification_url = request.build_absolute_uri(
+            reverse("assinaturas:assinatura-verificar-codigo", kwargs={"codigo": codigo})
+        )
     return render(
         request,
         "assinaturas/assinatura_token.html",
@@ -284,6 +291,7 @@ def assinatura_token(request, token):
             "artefato": pedido.artefato,
             "cpf_mascarado": mascarar_cpf_assinatura(pedido.cpf_assinante_snapshot),
             "pdf_url": reverse("assinaturas:assinatura-token-pdf-original", kwargs={"token": pedido.token}),
+            "verification_url": verification_url,
             "public_context": build_signature_public_context(pedido),
             "label_context": build_signature_label_context(pedido),
         },

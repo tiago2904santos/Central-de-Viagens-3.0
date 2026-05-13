@@ -213,7 +213,7 @@ function initEditor(root) {
     const n     = pdfDoc.numPages;
     const dpr   = Math.min(
       typeof window !== "undefined" && window.devicePixelRatio ? window.devicePixelRatio : 1,
-      2,
+      3,
     );
     const scale = BASE_SCALE * zoom;
 

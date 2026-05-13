@@ -135,7 +135,9 @@
   min-height: min(28vh, 18rem);
   min-height: min(28dvh, 18rem);
   min-width: 0;
-  overflow: hidden;
+  /* Evita cortar textos longos no painel lateral; barras de rolagem ficam nos filhos */
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .signature-signing-layout__document {
@@ -145,7 +147,8 @@
   max-height: 100%;
   min-height: 0;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: visible;
+  overflow-y: hidden;
 }
 
 .signature-signing-layout__side {
@@ -155,7 +158,8 @@
   max-height: 100%;
   min-height: 0;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: visible;
+  overflow-y: auto;
 }
 
 .signature-document-viewer {
@@ -184,6 +188,16 @@
   position: sticky;
   top: 0;
   z-index: 12;
+}
+
+.signature-document-viewer__toolbar-actions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .signature-document-viewer__meta {
@@ -328,6 +342,7 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   overflow-wrap: anywhere;
+  white-space: normal;
   word-break: break-word;
 }
 
@@ -489,7 +504,9 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   margin: 0;
-  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .signature-modal__actions {
@@ -519,6 +536,9 @@
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .signature-success-card__header,
@@ -599,12 +619,12 @@
 .assinatura-label__meta,
 .assinatura-label__code {
   font-size: 0.43rem;
-  line-height: 1.18;
+  line-height: 1.25;
   margin-top: 0.05rem;
   opacity: 0.88;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
 }
 
 @media (max-width: 1024px) {
