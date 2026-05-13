@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from cadastros.models import Estado
+
 
 class RouteServiceError(Exception):
     """Erro base do serviço de rotas (mensagem segura para o cliente)."""
@@ -55,3 +57,22 @@ class RouteCoordinateError(RouteServiceError):
         "Não foi possível calcular a rota porque um dos municípios selecionados "
         "não possui latitude/longitude cadastrada."
     )
+
+    def __init__(self, message=None, *, user_message=None, cidade=None):
+        if cidade is not None:
+            uf = ""
+            estado = getattr(cidade, "estado", None)
+            if estado is not None:
+                uf = (getattr(estado, "sigla", None) or "").strip()
+            elif cidade.estado_id:
+                uf = (Estado.objects.filter(pk=cidade.estado_id).values_list("sigla", flat=True).first() or "").strip()
+            nome = (getattr(cidade, "nome", None) or "Município").strip() or "Município"
+            label = f"{nome}/{uf}" if uf else nome
+            resolved = (
+                f"Não foi possível calcular a rota porque o município {label} "
+                "não possui latitude e longitude cadastradas. "
+                "Atualize o cadastro da cidade antes de calcular a rota."
+            )
+            super().__init__(message or resolved, user_message=resolved)
+            return
+        super().__init__(message, user_message=user_message)

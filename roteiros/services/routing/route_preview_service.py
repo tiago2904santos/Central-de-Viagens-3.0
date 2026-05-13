@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from .openrouteservice import get_openrouteservice_provider
 from .route_exceptions import (
+    RouteCoordinateError,
     RouteDailyRoundTripBlockedError,
     RouteServiceError,
     RouteValidationError,
@@ -105,7 +106,7 @@ def build_preview_points(payload: Dict[str, Any]) -> List[PreviewPoint]:
     points: List[PreviewPoint] = []
     origem = cidades_map[oid]
     if origem.latitude is None or origem.longitude is None:
-        raise RouteValidationError(f"Cidade sem coordenadas: {origem.nome}")
+        raise RouteCoordinateError(cidade=origem)
     points.append(
         PreviewPoint(
             idx=0,
@@ -120,7 +121,7 @@ def build_preview_points(payload: Dict[str, Any]) -> List[PreviewPoint]:
     for i, d in enumerate(destinos_norm, start=1):
         c = cidades_map[d["cidade_id"]]
         if c.latitude is None or c.longitude is None:
-            raise RouteValidationError(f"Cidade sem coordenadas: {c.nome}")
+            raise RouteCoordinateError(cidade=c)
         points.append(
             PreviewPoint(
                 idx=i,
@@ -136,7 +137,7 @@ def build_preview_points(payload: Dict[str, Any]) -> List[PreviewPoint]:
     if incluir_retorno and rid is not None:
         r = cidades_map[rid]
         if r.latitude is None or r.longitude is None:
-            raise RouteValidationError(f"Cidade sem coordenadas: {r.nome}")
+            raise RouteCoordinateError(cidade=r)
         points.append(
             PreviewPoint(
                 idx=len(points),

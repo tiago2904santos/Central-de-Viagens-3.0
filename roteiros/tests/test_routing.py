@@ -24,6 +24,7 @@ from roteiros.services.routing.route_preview_service import (
 )
 from roteiros.services.routing.route_exceptions import (
     RouteAuthenticationError,
+    RouteCoordinateError,
     RouteProviderUnavailable,
     RouteValidationError,
 )
@@ -370,6 +371,36 @@ class RoteirosRoutingTests(TestCase):
         self.assertEqual(len(points), 3)
         self.assertEqual(points[0]["cidade_id"], self.cidade_sede.pk)
         self.assertEqual(points[-1]["cidade_id"], self.cidade_sede.pk)
+
+    def test_build_route_points_sem_coordenadas_menciona_municipio(self):
+        cidade_sem = Cidade.objects.create(
+            nome="SEM_LATLNG_TESTE",
+            estado=self.estado,
+            uf="PR",
+            latitude=None,
+            longitude=None,
+        )
+        roteiro = Roteiro.objects.create(
+            tipo=Roteiro.TIPO_AVULSO,
+            origem_estado=self.estado,
+            origem_cidade=cidade_sem,
+        )
+        RoteiroDestino.objects.create(
+            roteiro=roteiro, estado=self.estado, cidade=self.cidade_a, ordem=0
+        )
+        RoteiroTrecho.objects.create(
+            roteiro=roteiro,
+            ordem=0,
+            tipo=RoteiroTrecho.TIPO_IDA,
+            origem_estado=self.estado,
+            origem_cidade=cidade_sem,
+            destino_estado=self.estado,
+            destino_cidade=self.cidade_a,
+        )
+        with self.assertRaises(RouteCoordinateError) as ctx:
+            build_route_points_for_roteiro(roteiro)
+        self.assertIn("SEM_LATLNG_TESTE", ctx.exception.user_message)
+        self.assertIn("PR", ctx.exception.user_message)
 
     def test_cache_por_assinatura_sem_chamar_api(self):
         roteiro = Roteiro.objects.create(

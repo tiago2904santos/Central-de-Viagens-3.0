@@ -19,7 +19,7 @@ def _label_cidade(cidade: Cidade) -> str:
 
 def _coords_cidade(cidade: Cidade) -> Tuple[float, float]:
     if cidade.latitude is None or cidade.longitude is None:
-        raise RouteCoordinateError()
+        raise RouteCoordinateError(cidade=cidade)
     return (float(cidade.latitude), float(cidade.longitude))
 
 
