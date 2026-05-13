@@ -578,7 +578,7 @@ def wizard_assinaturas_documentos(request, pk):
         request,
         "oficios/wizard_assinaturas.html",
         {
-            "page_title": "Assinaturas digitais",
+            "page_title": "Central de assinaturas",
             "wizard_header": apresentar_oficio_wizard_header("assinaturas"),
             "wizard_steps": apresentar_oficio_wizard_steps(
                 oficio=oficio,

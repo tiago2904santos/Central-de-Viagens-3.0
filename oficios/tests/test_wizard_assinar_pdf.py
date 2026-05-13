@@ -90,7 +90,7 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         disp = r.get("Content-Disposition") or ""
         self.assertNotIn("attachment", disp.lower())
         self.assertContains(r, "Gerar solicitação")
-        self.assertContains(r, "Assinaturas digitais")
+        self.assertContains(r, "Central de assinaturas")
         self.assertNotContains(r, "Confirmar assinatura")
         self.assertNotContains(r, "Arraste a etiqueta")
         self.assertTemplateUsed(r, "oficios/wizard_assinaturas.html")
@@ -133,8 +133,7 @@ class WizardAssinaturasEtapa6Tests(TestCase):
         self.assertContains(r, "Copiar link")
         self.assertContains(r, "/assinaturas/assinar/")
         self.assertContains(r, pedido.token)
-        self.assertContains(r, "Enviar")
-        self.assertContains(r, 'aria-disabled="true"')
+        self.assertNotContains(r, "Enviar")
 
     @mock.patch("oficios.assinaturas_central.validar_oficio_para_documento", return_value=_validacao_limpa())
     def test_post_segundo_pedido_nao_duplica(self, _m_val):
@@ -177,8 +176,13 @@ class WizardDocumentosAssinarPdfLinkTests(TestCase):
     def test_template_link_assinaturas_e_anchor_get(self):
         tpl = Path(settings.BASE_DIR) / "templates" / "oficios" / "wizard_documentos.html"
         s = tpl.read_text(encoding="utf-8")
+<<<<<<< HEAD
         idx = s.index("Assinar documentos")
         window = s[max(0, idx - 120) : idx + 40]
+=======
+        idx = s.index("Central de assinaturas")
+        window = s[max(0, idx - 500) : idx + 30]
+>>>>>>> 226662567af82c2d7179a76b1defea6c445b86a9
         self.assertIn("href=", window)
         self.assertIn("wizard_assinaturas", window)
         self.assertNotIn("formaction", window)

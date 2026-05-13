@@ -29,7 +29,7 @@
             <div class="app-form-shell app-form-shell--oficio form-shell">
 
               <header class="assinaturas-center-hero">
-                <h2>Assinaturas digitais</h2>
+                <h2>Central de assinaturas</h2>
                 <p>
                   Ofício {{ oficio.numero_formatado }} — confira os documentos no estado atual e gere solicitações de assinatura quando necessário.
                 </p>
@@ -84,7 +84,7 @@
                       <section class="assinaturas-link-pedido" aria-labelledby="link-pedido-titulo-{{ documento.key }}">
                         <h4 class="assinaturas-link-pedido__title" id="link-pedido-titulo-{{ documento.key }}">Link para o assinante</h4>
                         <p class="assinaturas-link-pedido__hint doc-muted">
-                          Copie o endereço abaixo e envie manualmente ao assinante. O envio automático pelo sistema ficará disponível em breve.
+                          Copie o endereço abaixo e envie manualmente ao assinante.
                         </p>
                         <div class="assinaturas-link-pedido__row">
                           <input
@@ -101,13 +101,6 @@
                               data-copy-value="{{ documento.link_pedido_assinatura }}"
                               data-copy-done="Link copiado"
                             >Copiar link</button>
-                            <button
-                              type="button"
-                              class="btn btn-primary app-btn app-btn--primary assinaturas-link-pedido__send"
-                              disabled
-                              title="Em desenvolvimento"
-                              aria-disabled="true"
-                            >Enviar</button>
                           </div>
                         </div>
                       </section>

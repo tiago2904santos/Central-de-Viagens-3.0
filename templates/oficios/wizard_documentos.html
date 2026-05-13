@@ -494,12 +494,7 @@
             <a
               class="btn btn-secondary app-btn app-btn--secondary"
               href="{% url 'oficios:wizard_assinaturas' oficio.pk %}"
-            >Assinar documentos</a>
-            <button
-              class="btn btn-secondary app-btn app-btn--secondary"
-              type="button"
-              data-verify-oficio-pdf-url="{% url 'oficios:wizard_verificar_pdf_oficio' oficio.pk %}"
-            >Verificar assinatura</button>
+            >Central de assinaturas</a>
           {% elif documentos_ctx.documentos_inline.oficio.disponivel and documentos_ctx.generation_status.pdf_available %}
             {% if not documentos_ctx.generation_status.documentos_persist_artefatos %}
               <span class="doc-muted oficio-documentos-sig-hint" role="note">Assinatura digital desativada: defina <code>DOCUMENTOS_PERSIST_ARTEFATOS=true</code> no ambiente.</span>
