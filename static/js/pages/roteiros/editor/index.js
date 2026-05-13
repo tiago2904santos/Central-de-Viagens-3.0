@@ -139,6 +139,18 @@ export function initRoteirosEditor() {
     if (digits.length === 3) return digits.slice(0, 2) + ':' + digits.slice(2);
     return digits.slice(0, 2) + ':' + digits.slice(2, 4);
   }
+  function applyHhmmInputMask(el) {
+    if (!el || applyingState) return;
+    var norm = normalizeDurationInput(el.value);
+    if (norm === el.value) return;
+    var pos = norm.length;
+    el.value = norm;
+    try {
+      el.setSelectionRange(pos, pos);
+    } catch (e) {
+      /* ignore */
+    }
+  }
   function parseDurationInput(value) {
     var text = String(value || '').trim(); if (!text) return null;
     var norm = text.indexOf(':') !== -1 ? text : normalizeDurationInput(text);
@@ -1231,6 +1243,9 @@ export function initRoteirosEditor() {
   });
   $('trechos-gerados-container').addEventListener('input', function(e) {
     var c = e.target.closest('.card[data-key]'); if (!c || applyingState) return;
+    if (e.target.classList.contains('trecho-tempo-viagem-hhmm') || e.target.classList.contains('trecho-tempo-adicional-hhmm')) {
+      applyHhmmInputMask(e.target);
+    }
     var n = e.target.name||'';
     if (n.indexOf('_saida_')!==-1||n.indexOf('_tempo_adicional_min')!==-1||n.indexOf('_tempo_cru_estimado_min')!==-1||e.target.classList.contains('trecho-tempo-viagem-hhmm')||e.target.classList.contains('trecho-tempo-adicional-hhmm')) {
       if (n.indexOf('_tempo_adicional_min') !== -1) e.target.dataset.manual = '1';
@@ -1260,6 +1275,9 @@ export function initRoteirosEditor() {
     if (!el) return;
     el.addEventListener('input', function() {
       if (applyingState) return;
+      if (id === 'id_retorno_tempo_viagem_hhmm' || id === 'id_retorno_tempo_adicional_hhmm') {
+        applyHhmmInputMask(el);
+      }
       if (id === 'id_retorno_tempo_adicional_hhmm') {
         var rh = $('id_retorno_tempo_adicional_min');
         if (rh) rh.dataset.manual = '1';
