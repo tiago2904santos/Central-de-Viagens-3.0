@@ -273,7 +273,7 @@ def apresentar_oficio_wizard_header(etapa_atual):
         "roteiro": "Roteiro e diárias",
         "justificativa": "Justificativa",
         "documentos": "Documentos",
-        "assinaturas": "Assinaturas digitais",
+        "assinaturas": "Central de assinaturas",
         "resumo": "Documentos",
     }
     return {
@@ -339,7 +339,7 @@ def apresentar_oficio_wizard_steps(
         {"key": "roteiro", "number": 3, "title": "Roteiro e diárias"},
         {"key": "justificativa", "number": 4, "title": "Justificativa"},
         {"key": "documentos", "number": 5, "title": "Documentos"},
-        {"key": "assinaturas", "number": 6, "title": "Assinaturas digitais"},
+        {"key": "assinaturas", "number": 6, "title": "Central de assinaturas"},
     ]
     for step in steps:
         key = step["key"]
