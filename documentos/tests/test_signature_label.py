@@ -1,4 +1,5 @@
 import hashlib
+import io
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
@@ -18,6 +19,7 @@ from documentos.services.signing.position import parse_signature_position_from_p
 from documentos.services.signing.workflow import assinar_artefato_pdf
 from documentos.services.signing.workflow import contar_paginas_pdf_artefato
 from oficios.models import Oficio
+from pypdf import PdfReader
 
 
 def _minimal_valid_pdf_bytes() -> bytes:
@@ -78,6 +80,23 @@ class LabelOverlayPdfTests(TestCase):
         )
         self.assertEqual(meta.get("stamp"), "label_overlay")
         self.assertIn(b"DOCUMENTO ASSINADO", out)
+
+    def test_overlay_nao_exibe_prefixo_sha256_como_codigo(self):
+        raw = _minimal_valid_pdf_bytes()
+        pos = SignaturePositionNormalizada(0, 0.05, 0.05, 0.55, 0.14)
+        digest = "a" * 64
+        prefix = digest[:12]
+        out, meta = aplicar_etiqueta_assinatura_pdf(
+            raw,
+            pos,
+            signer_name="Teste",
+            verification_url="https://exemplo.invalido/assinaturas/verificar/CV-2099-ABCDEF/",
+            code_short=prefix,
+        )
+        self.assertEqual(meta.get("stamp"), "label_overlay")
+        text = "".join((p.extract_text() or "") for p in PdfReader(io.BytesIO(out)).pages)
+        self.assertNotIn(prefix, text)
+        self.assertIn("Validação", text)
 
 
 @override_settings(DOCUMENTOS_PERSIST_ARTEFATOS=True, SIGNATURE_BACKEND="disabled")

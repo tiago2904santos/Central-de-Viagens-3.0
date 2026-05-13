@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import logging
+import re
 from typing import Any
 
 from pypdf import PdfReader
@@ -17,6 +18,56 @@ logger = logging.getLogger(__name__)
 def _page_dimensions_pt(page) -> tuple[float, float]:
     mb = page.mediabox
     return float(mb.width), float(mb.height)
+
+
+def _looks_like_sha256_prefix(value: str) -> bool:
+    """Fragmentos de hash SHA-256 não devem aparecer como «código» legível na etiqueta."""
+    s = (value or "").strip()
+    if len(s) != 12:
+        return False
+    return bool(re.fullmatch(r"[0-9a-fA-F]{12}", s))
+
+
+def _wrap_lines_for_width(
+    c,
+    text: str,
+    *,
+    font_name: str,
+    font_size: float,
+    max_width: float,
+    max_lines: int,
+) -> list[str]:
+    """Quebra texto em linhas que cabem em ``max_width`` (medido com a fonte já activa)."""
+    text = (text or "").strip()
+    if not text:
+        return []
+    c.setFont(font_name, font_size)
+    if c.stringWidth(text, font_name, font_size) <= max_width:
+        return [text]
+    lines: list[str] = []
+    current = ""
+    for ch in text:
+        trial = current + ch
+        if c.stringWidth(trial, font_name, font_size) <= max_width:
+            current = trial
+            continue
+        if current:
+            lines.append(current)
+            current = ch
+        else:
+            lines.append(ch)
+            current = ""
+        if len(lines) >= max_lines:
+            break
+    if len(lines) < max_lines and current:
+        lines.append(current)
+    elif current and lines:
+        last = lines[-1].rstrip()
+        if len(last) > 4:
+            lines[-1] = last[:-3].rstrip() + "…"
+        else:
+            lines[-1] = (last + "…")[: max_width // max(font_size, 1)]
+    return lines
 
 
 def _build_label_overlay_pdf(
@@ -63,14 +114,43 @@ def _build_label_overlay_pdf(
     name = (signer_name or "—")[:64]
     c.drawString(llx + pad, lly + hh - pad - fs_title - fs_body - 4, name)
 
-    meta = f"Verifique em: {verification_url[:90]}{'…' if len(verification_url) > 90 else ''}"
-    c.setFont("Helvetica", fs_meta)
-    c.drawString(llx + pad, lly + pad + fs_meta + 6, meta)
-
-    code = f"Código: {code_short}"
-    c.drawString(llx + pad, lly + pad, code)
-
     qr_size = min(inner_h - 18, inner_w * 0.28, 52)
+    if pos.qr and qr_size > 14:
+        qr_reserved = qr_size + pad * 1.5
+    else:
+        qr_reserved = pad
+
+    url_max_w = max(inner_w - qr_reserved, inner_w * 0.45)
+    reserved_top = lly + hh - pad - fs_title - fs_body - 8
+    url_heading = "Validação (URL):" if "verificar" in (verification_url or "").lower() else "Documento (URL):"
+    y_meta = lly + pad
+    c.setFont("Helvetica-Bold", fs_meta * 0.92)
+    c.drawString(llx + pad, y_meta, url_heading)
+    y_meta += fs_meta * 1.1
+
+    c.setFont("Helvetica", fs_meta)
+    url_lines = _wrap_lines_for_width(
+        c,
+        verification_url,
+        font_name="Helvetica",
+        font_size=fs_meta,
+        max_width=url_max_w,
+        max_lines=3,
+    )
+    for ln in url_lines:
+        if y_meta + fs_meta > reserved_top:
+            break
+        c.drawString(llx + pad, y_meta, ln)
+        y_meta += fs_meta + 1.2
+
+    code_line = ""
+    cs = (code_short or "").strip()
+    if cs and not _looks_like_sha256_prefix(cs):
+        code_line = f"Código: {cs[:48]}{'…' if len(cs) > 48 else ''}"
+
+    if code_line and y_meta + fs_meta + 2 <= reserved_top:
+        c.drawString(llx + pad, y_meta + 2, code_line)
+
     if pos.qr and qr_size > 14:
         try:
             import qrcode

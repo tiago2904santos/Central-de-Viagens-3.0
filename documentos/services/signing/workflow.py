@@ -72,7 +72,7 @@ def assinar_artefato_pdf(
             signature_position,
             signer_name=_nome_assinante(request),
             verification_url=_url_verificacao_artefato(request, artefato),
-            code_short=(artefato.hash_sha256 or "")[:12],
+            code_short="",
         )
     pos_audit = signature_position.to_audit_dict() if signature_position else None
     signed, meta = assinar_pdf_final(pdf_bytes, signature_position=pos_audit)
