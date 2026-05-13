@@ -55,7 +55,6 @@ NAVIGATION_ITEMS = [
         ],
     },
     {"id": "roteiros", "label": "Roteiros", "url_name": "roteiros:index", "icon": "RT"},
-    {"id": "eventos", "label": "Eventos", "url_name": "eventos:index", "icon": "EV"},
     {"id": "oficios", "label": "Ofícios", "url_name": "oficios:index", "icon": "OF"},
     {"id": "termos", "label": "Termos", "url_name": "termos:index", "icon": "TM"},
     {
@@ -64,31 +63,6 @@ NAVIGATION_ITEMS = [
         "url_name": "justificativas:index",
         "icon": "JS",
     },
-    {
-        "id": "planos-trabalho",
-        "label": "Planos de Trabalho",
-        "url_name": "planos_trabalho:index",
-        "icon": "PT",
-    },
-    {
-        "id": "ordens-servico",
-        "label": "Ordens de Serviço",
-        "url_name": "ordens_servico:index",
-        "icon": "OS",
-    },
-    {
-        "id": "prestacoes-contas",
-        "label": "Prestações de Contas",
-        "url_name": "prestacoes_contas:index",
-        "icon": "PC",
-    },
-    {
-        "id": "diario-bordo",
-        "label": "Diário de Bordo",
-        "url_name": "diario_bordo:index",
-        "icon": "DB",
-    },
-    {"id": "assinaturas", "label": "Assinaturas", "url_name": "assinaturas:index", "icon": "AS"},
 ]
 
 
