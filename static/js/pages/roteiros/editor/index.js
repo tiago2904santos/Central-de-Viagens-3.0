@@ -303,6 +303,11 @@ export function initRoteirosEditor() {
     $('id_retorno_chegada_hora').value = last.chegada_hora || (fallbackRetorno && fallbackRetorno.chegada_hora) || '';
     $('id_retorno_tempo_cru_estimado_min').value = last.tempo_cru_estimado_min || '';
     $('id_retorno_tempo_adicional_min').value = last.tempo_adicional_min || '0';
+    var raHx = $('id_retorno_tempo_adicional_hhmm');
+    if (raHx) {
+      var am0 = parseInt($('id_retorno_tempo_adicional_min').value || 0, 10) || 0;
+      raHx.value = am0 ? formatDurationInput(am0) : '';
+    }
     $('id_retorno_duracao_estimada_min').value = last.duracao_estimada_min || '';
   }
   function splitLoopTrechosAndRetorno(trechos) {
@@ -421,6 +426,7 @@ export function initRoteirosEditor() {
       var parsed = parseDurationInput(norm);
       var cruAtual = parseInt((cruInput || {}).value || 0, 10) || 0;
       if (document.activeElement === tvInput) {
+        if (norm !== tvInput.value) tvInput.value = norm;
         if (cruInput) cruInput.value = parsed != null ? String(parsed) : '';
       } else if (cruAtual > 0) {
         tvInput.value = formatDurationInput(cruAtual);
@@ -430,8 +436,26 @@ export function initRoteirosEditor() {
         tvInput.value = '';
       }
     }
+    var addHhmm = card.querySelector('.trecho-tempo-adicional-hhmm');
+    var add = 0;
+    if (addHhmm && document.activeElement === addHhmm) {
+      var na = normalizeDurationInput(addHhmm.value);
+      var pa = parseDurationInput(na);
+      if (na !== addHhmm.value) addHhmm.value = na;
+      add = pa != null ? pa : 0;
+      if (addInput) {
+        addInput.value = String(add);
+        addInput.dataset.manual = '1';
+      }
+    } else if (addInput) {
+      add = parseInt(addInput.value || 0, 10);
+      if (Number.isNaN(add) || add < 0) add = 0;
+      addInput.value = String(add);
+      if (addHhmm && document.activeElement !== addHhmm) {
+        addHhmm.value = add ? formatDurationInput(add) : '';
+      }
+    }
     var cru = parseInt((cruInput || {}).value || 0, 10) || 0;
-    var add = parseInt((addInput || {}).value || 0, 10); if (Number.isNaN(add) || add < 0) add = 0; if (addInput) addInput.value = String(add);
     var total = cru + add;
     card.dataset.tempoCruMin = cru ? String(cru) : ''; card.dataset.tempoTotalMin = total ? String(total) : '';
     if (durInput) durInput.value = total ? String(total) : '';
@@ -465,6 +489,7 @@ export function initRoteirosEditor() {
       var p2 = parseDurationInput(n2);
       var cruAtual2 = parseInt((cruI || {}).value || 0, 10) || 0;
       if (document.activeElement === tvI) {
+        if (n2 !== tvI.value) tvI.value = n2;
         if (cruI) cruI.value = p2 != null ? String(p2) : '';
       } else if (cruAtual2 > 0) {
         tvI.value = formatDurationInput(cruAtual2);
@@ -474,13 +499,39 @@ export function initRoteirosEditor() {
         tvI.value = '';
       }
     }
+    var addH = $('id_retorno_tempo_adicional_hhmm');
+    var add2 = 0;
+    if (addH && document.activeElement === addH) {
+      var n3 = normalizeDurationInput(addH.value);
+      var p3 = parseDurationInput(n3);
+      if (n3 !== addH.value) addH.value = n3;
+      add2 = p3 != null ? p3 : 0;
+      if (addI) {
+        addI.value = String(add2);
+        addI.dataset.manual = '1';
+      }
+    } else if (addI) {
+      add2 = parseInt(addI.value || 0, 10);
+      if (Number.isNaN(add2) || add2 < 0) add2 = 0;
+      addI.value = String(add2);
+      if (addH && document.activeElement !== addH) {
+        addH.value = add2 ? formatDurationInput(add2) : '';
+      }
+    }
     if (cruI && String(cruI.value || '').trim() === '') {
       var sd = $('id_retorno_saida_data').value || ''; var sh = $('id_retorno_saida_hora').value || '';
       var cd = $('id_retorno_chegada_data').value || ''; var ch = $('id_retorno_chegada_hora').value || '';
       if (sd && sh && cd && ch) { var sD = new Date(sd+'T'+sh); var eD = new Date(cd+'T'+ch); if (!Number.isNaN(sD.getTime()) && !Number.isNaN(eD.getTime()) && eD >= sD) { var dc = Math.round((eD - sD) / 60000); if (cruI) cruI.value = dc > 0 ? String(dc) : ''; } }
     }
     var cru2 = parseInt((cruI || {}).value || 0, 10) || 0;
-    var add2 = parseInt((addI || {}).value || 0, 10); if (Number.isNaN(add2) || add2 < 0) add2 = 0; if (addI) addI.value = String(add2);
+    if (addI) {
+      add2 = parseInt(addI.value || 0, 10);
+      if (Number.isNaN(add2) || add2 < 0) add2 = 0;
+      addI.value = String(add2);
+    }
+    if (addH && document.activeElement !== addH) {
+      addH.value = add2 ? formatDurationInput(add2) : '';
+    }
     var tot2 = cru2 + add2; if (durI) durI.value = tot2 ? String(tot2) : '';
     if (tvI && document.activeElement !== tvI) tvI.value = cru2 > 0 ? formatDurationInput(cru2) : '';
     if ($('id_retorno_tempo_total')) $('id_retorno_tempo_total').value = tot2 ? hhmm(tot2) : '';
@@ -695,7 +746,7 @@ export function initRoteirosEditor() {
           '</div></div></div>' +
           '<div class="col-12"><div class="roteiro-editor__grid oficio-roteiro-time-calc-grid align-items-end">' +
             '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo de viagem</label><input type="text" class="form-control trecho-tempo-viagem-hhmm" value="'+esc(formatDurationInput(cru))+'" placeholder="00:00" inputmode="numeric" maxlength="5" autocomplete="off"><input type="hidden" name="trecho_'+o+'_tempo_cru_estimado_min" value="'+esc(cru)+'" ></div>' +
-            '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo adicional</label><input type="number" min="0" class="form-control" name="trecho_'+o+'_tempo_adicional_min" value="'+esc(add)+'" ></div>' +
+            '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo adicional</label><div class="input-group"><button type="button" class="btn btn-outline-secondary trecho-tempo-add-btn" data-tempo-add-delta="-15" aria-label="Menos 15 minutos">−</button><input type="text" class="form-control trecho-tempo-adicional-hhmm" value="'+esc(add ? formatDurationInput(add) : '')+'" placeholder="00:00" inputmode="numeric" maxlength="5" autocomplete="off"><button type="button" class="btn btn-outline-secondary trecho-tempo-add-btn" data-tempo-add-delta="15" aria-label="Mais 15 minutos">+</button></div><input type="hidden" name="trecho_'+o+'_tempo_adicional_min" value="'+esc(add)+'" ></div>' +
             '<div class="field-span-4"><label class="roteiro-editor__field-label">Tempo total</label><input type="text" class="form-control trecho-tempo-total" value="" readonly></div>' +
           '</div></div>' +
         '</div>' +
@@ -1156,11 +1207,37 @@ export function initRoteirosEditor() {
   $('btn-adicionar-destino').addEventListener('click', function() { addDestinoRow({ estado_id: destinoEstadoDefaultId||null, cidade_id: null }).then(function() { renderTrechos(captureCurrentState()); scheduleRealtimeDiarias(); scheduleAutosave(); }); });
   $('id_origem_estado').addEventListener('change', function() { if (applyingState) return; loadCities($('id_origem_cidade'), $('id_origem_estado').value, null).then(function() { renderTrechos(captureCurrentState()); scheduleRealtimeDiarias(); scheduleAutosave(); }); });
   $('id_origem_cidade').addEventListener('change', function() { if (applyingState) return; renderTrechos(captureCurrentState()); scheduleRealtimeDiarias(); scheduleAutosave(); });
+  $('trechos-gerados-container').addEventListener('click', function(e) {
+    var stepBtn = e.target.closest('.trecho-tempo-add-btn');
+    if (stepBtn && !applyingState) {
+      var card = stepBtn.closest('.card[data-key]');
+      if (card) {
+        var delta = parseInt(stepBtn.getAttribute('data-tempo-add-delta') || '0', 10);
+        if (delta) {
+          var o = card.dataset.ordem;
+          var hid = card.querySelector('[name="trecho_' + o + '_tempo_adicional_min"]');
+          if (hid) {
+            var cur = parseInt(hid.value || 0, 10) || 0;
+            hid.value = String(Math.max(0, cur + delta));
+            hid.dataset.manual = '1';
+            e.preventDefault();
+            recalcCard(card, true);
+            updateResumo(); scheduleRealtimeDiarias(); scheduleAutosave();
+            return;
+          }
+        }
+      }
+    }
+  });
   $('trechos-gerados-container').addEventListener('input', function(e) {
     var c = e.target.closest('.card[data-key]'); if (!c || applyingState) return;
     var n = e.target.name||'';
-    if (n.indexOf('_saida_')!==-1||n.indexOf('_tempo_adicional_min')!==-1||n.indexOf('_tempo_cru_estimado_min')!==-1||e.target.classList.contains('trecho-tempo-viagem-hhmm')) {
+    if (n.indexOf('_saida_')!==-1||n.indexOf('_tempo_adicional_min')!==-1||n.indexOf('_tempo_cru_estimado_min')!==-1||e.target.classList.contains('trecho-tempo-viagem-hhmm')||e.target.classList.contains('trecho-tempo-adicional-hhmm')) {
       if (n.indexOf('_tempo_adicional_min') !== -1) e.target.dataset.manual = '1';
+      if (e.target.classList.contains('trecho-tempo-adicional-hhmm')) {
+        var h = c.querySelector('[name="trecho_' + c.dataset.ordem + '_tempo_adicional_min"]');
+        if (h) h.dataset.manual = '1';
+      }
       recalcCard(c, true);
     }
     updateResumo(); scheduleRealtimeDiarias(); scheduleAutosave();
@@ -1168,15 +1245,43 @@ export function initRoteirosEditor() {
   $('trechos-gerados-container').addEventListener('change', function(e) {
     var c = e.target.closest('.card[data-key]'); if (!c || applyingState) return;
     var n = e.target.name||'';
-    if (n.indexOf('_saida_')!==-1||n.indexOf('_tempo_adicional_min')!==-1||n.indexOf('_tempo_cru_estimado_min')!==-1||e.target.classList.contains('trecho-tempo-viagem-hhmm')) {
+    if (n.indexOf('_saida_')!==-1||n.indexOf('_tempo_adicional_min')!==-1||n.indexOf('_tempo_cru_estimado_min')!==-1||e.target.classList.contains('trecho-tempo-viagem-hhmm')||e.target.classList.contains('trecho-tempo-adicional-hhmm')) {
       if (n.indexOf('_tempo_adicional_min') !== -1) e.target.dataset.manual = '1';
+      if (e.target.classList.contains('trecho-tempo-adicional-hhmm')) {
+        var h2 = c.querySelector('[name="trecho_' + c.dataset.ordem + '_tempo_adicional_min"]');
+        if (h2) h2.dataset.manual = '1';
+      }
       recalcCard(c, true);
     }
     updateResumo(); scheduleRealtimeDiarias(); scheduleAutosave();
   });
-  ['id_retorno_saida_data','id_retorno_saida_hora','id_retorno_chegada_data','id_retorno_chegada_hora','id_retorno_tempo_viagem_hhmm','id_retorno_tempo_adicional_min'].forEach(function(id) {
-    $(id).addEventListener('input', function() { if (applyingState) return; if (id === 'id_retorno_tempo_adicional_min') this.dataset.manual = '1'; recalcRetorno(id.indexOf('saida_')!==-1||id.indexOf('tempo_')!==-1); scheduleRealtimeDiarias(); scheduleAutosave(); notifyRouteStateChanged(); });
-    $(id).addEventListener('change', function() { if (applyingState) return; recalcRetorno(true); scheduleRealtimeDiarias(); scheduleAutosave(); });
+  ['id_retorno_saida_data','id_retorno_saida_hora','id_retorno_chegada_data','id_retorno_chegada_hora','id_retorno_tempo_viagem_hhmm','id_retorno_tempo_adicional_hhmm'].forEach(function(id) {
+    var el = $(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+      if (applyingState) return;
+      if (id === 'id_retorno_tempo_adicional_hhmm') {
+        var rh = $('id_retorno_tempo_adicional_min');
+        if (rh) rh.dataset.manual = '1';
+      }
+      recalcRetorno(id.indexOf('saida_')!==-1||id.indexOf('tempo_')!==-1);
+      scheduleRealtimeDiarias(); scheduleAutosave(); notifyRouteStateChanged();
+    });
+    el.addEventListener('change', function() { if (applyingState) return; recalcRetorno(true); scheduleRealtimeDiarias(); scheduleAutosave(); });
+  });
+  [['retorno_tempo_add_menos', -15], ['retorno_tempo_add_mais', 15]].forEach(function(pair) {
+    var btn = $(pair[0]);
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      if (applyingState) return;
+      var hid = $('id_retorno_tempo_adicional_min');
+      if (!hid) return;
+      var cur = parseInt(hid.value || 0, 10) || 0;
+      hid.value = String(Math.max(0, cur + pair[1]));
+      hid.dataset.manual = '1';
+      recalcRetorno(true);
+      scheduleRealtimeDiarias(); scheduleAutosave(); notifyRouteStateChanged();
+    });
   });
   if ($('id_roteiro_busca')) {
     $('id_roteiro_busca').addEventListener('input', function() {
