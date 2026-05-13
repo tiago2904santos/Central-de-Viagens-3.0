@@ -165,3 +165,48 @@ Foram escondidos da navegacao principal e do dashboard os modulos falso-prontos/
 - `python manage.py check` deve continuar sem erros.
 - Falhas de teste existentes devem estar registradas e priorizadas.
 - A Fase 2 deve focar em persistencia/consistencia de Ofícios, roteiro, diarias e documentos, sem implementar e-Protocolo, WhatsApp ou Prestacao de Contas.
+
+## Correções manuais do cadastro de Ofícios
+
+Esta secção consolida o saneamento da Fase 1 aplicado ao fluxo de Ofícios, roteiros, documentos e assinaturas (ordem de implementação 1 a 8), com foco no que o utilizador vê e no que foi coberto por testes automatizados.
+
+### Problema e solução (resumo)
+
+| Problema | Solução |
+| --- | --- |
+| Etapa 3 (roteiro) não refletia sede resolvida por CEP/config quando o roteiro ainda não tinha origem gravada | No GET do wizard de roteiro, o estado da sede passa a alimentar o `initial` do formulário e os querysets de cidade antes da renderização; aviso de origem da sede em texto discreto. |
+| Mapa/rota com mensagem genérica ou sem município | Garantida mensagem amigável nos fluxos de routing e testes no JSON de preview. |
+| Tempos em HH:mm pouco consistentes no editor | Máscara em tempo real nos trechos e no retorno, com passo ±15 alinhado. |
+| Cabeçalhos/rodapés documentais com capitalização incorreta | Reforço via formatadores/contextos e testes em `documentos` e `oficios`. |
+| Rodapé do wizard (voltar, rascunho, finalizar) e lista | Rótulos alinhados; ao voltar em documentos persiste artefacto em cache quando aplicável; justificativa permite voltar/guardar rascunho sem bloquear por texto obrigatório nessas ações; cartão de lista mostra estado final unificado com assinatura quando existir PDF assinado. |
+| Página pública de assinatura com texto cortado e preview pouco nítido | CSS com menos `overflow: hidden` nos painéis, texto com quebra de linha, DPR até 3 no canvas PDF.js, link para abrir o PDF noutro separador; URL absoluta de verificação no dataset quando já existe código. |
+| Etiqueta no PDF assinado com hash/cargo visíveis | Carimbo ReportLab deixa de desenhar cargo e linha “Hash: …”; última linha usa texto de validação (`verifique em …`) com a URL; pré-visualização JS da etiqueta alinhada (sem linha de código). |
+
+### Ficheiros principais
+
+- Ofícios / roteiros: `oficios/views.py`, `oficios/presenters.py`, `templates/oficios/partials/wizard_actions.html`, `templates/oficios/wizard_documentos.html`, `templates/oficios/wizard_roteiro.html`, `templates/roteiros/includes/_roteiro_editor.html`, `static/js/pages/roteiros/editor/index.js`, testes em `oficios/tests/` e `roteiros/tests/test_routing.py`.
+- Documentos: `documentos/tests/test_formatters.py`, `oficios/tests/test_docxtpl_context_capitalizacao.py`, `documentos/services/signing/label_overlay.py` (comportamento de prefixo SHA-256 já coberto por testes).
+- Assinaturas: `assinaturas/views.py`, `templates/assinaturas/assinatura_token.html`, `templates/assinaturas/base_publica_assinatura.html`, `static/css/signature-public.css`, `static/js/pages/assinatura-pdf.js`, `assinaturas/services/carimbo_pdf.py`, `assinaturas/tests/test_carimbo_pdf.py`, `oficios/tests/test_wizard_assinar_pdf.py` (resolução de marcador de merge no teste do template).
+
+### Teste manual sugerido
+
+1. Configurar sede em **Cadastros → Configuração** (CEP e/ou cidade padrão), abrir Ofício novo na etapa **Roteiro** e confirmar que origem/cidade aparecem coerentes e o aviso de origem é legível sem destaque excessivo.
+2. Abrir mapa de rota com município sem coordenadas (dados de teste) e confirmar mensagem explícita na UI.
+3. Editar tempos de trecho e de retorno com teclado e botões ±15.
+4. Gerar DOCX/PDF de ofício, justificativa e termo e rever cabeçalhos/rodapés (maiúsculas institucionais e endereço sem `title()` cego).
+5. No wizard, usar **Voltar**, **Salvar como rascunho** e **Finalizar**; na lista, verificar texto “Finalizado — …” quando aplicável.
+6. Abrir link público de assinatura: conferir painel de detalhes, zoom, “Abrir PDF em nova aba” e, após assinatura com etiqueta, abrir o PDF e confirmar ausência de “Cargo:” e “Hash:” na etiqueta e presença da linha de validação/URL.
+
+### Teste automatizado
+
+- `python manage.py check` e `python manage.py makemigrations --check --dry-run` executados durante a fase sem pendências.
+- Suítes relevantes: `oficios`, `roteiros`, `assinaturas`, `documentos` (nomeadamente `test_signature_label`, `test_carimbo_pdf`, `test_routing`).
+- Execução segmentada de regressão da Fase 1: `python manage.py test oficios roteiros documentos assinaturas` — OK (335 testes, 1 ignorado).
+- Nota: `python manage.py test` completo pode ainda falhar em testes legados de `cadastros` não relacionados a este saneamento (já registado na secção 3 e 16 deste relatório).
+
+### Pendências
+
+- Testes legados de `cadastros` continuam desalinhados com a arquitetura atual (URLs e mocks).
+- WeasyPrint pode emitir avisos em ambiente sem bibliotecas nativas; não bloqueia os testes executados aqui.
+- Assinatura pendente sem `AssinaturaDigital` ainda não tem URL absoluta de verificação no dataset da página pública (só após existir código).
+- Fase 2: persistência fina de roteiro/diárias, UX de pendências na etapa Documentos e eventual limpeza de código legado de eventos em roteiros.
