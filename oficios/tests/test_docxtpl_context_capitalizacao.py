@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from cadastros.models import ConfiguracaoSistema
+from oficios.docxtpl_context import build_justificativa_docxtpl_context
 from oficios.docxtpl_context import build_oficio_docxtpl_context
 from oficios.models import Oficio
 
@@ -26,3 +27,21 @@ class BuildOficioCapitalizacaoTests(TestCase):
         self.assertEqual(ctx["unidade_cabecalho"], "DELEGACIA REGIONAL DE POLÍCIA DE LONDRINA")
         self.assertIn(" de ", f" {ctx['unidade']} ")
         self.assertIn(" de ", f" {ctx['nome_orgao']} ")
+
+    def test_justificativa_rodape_nao_todo_maiusculo(self):
+        cfg = ConfiguracaoSistema.get_singleton()
+        cfg.divisao = "ASSESSORIA DE COMUNICAÇÃO SOCIAL"
+        cfg.unidade = "UNIDADE TESTE"
+        cfg.logradouro = "RUA EXEMPLO"
+        cfg.numero = "1"
+        cfg.bairro = "BAIRRO"
+        cfg.cidade_endereco = "CURITIBA"
+        cfg.uf = "PR"
+        cfg.cep = "80000000"
+        cfg.telefone = "4133334444"
+        cfg.email = "TESTE@EX.COM"
+        cfg.save()
+        oficio = Oficio.objects.create()
+        ctx = build_justificativa_docxtpl_context(oficio)
+        self.assertIn("Assessoria de Comunicação Social", ctx["unidade_rodape"])
+        self.assertNotEqual(ctx["unidade_rodape"].strip(), ctx["unidade_rodape"].upper())

@@ -11,11 +11,13 @@ from typing import Any
 
 from django.utils import timezone
 
+from core.normalizers import normalize_upper
 from cadastros.selectors import build_configuracao_context
 from documentos.services.timing import measure_step
 from documentos.services.formatters import format_city_uf
 from documentos.services.formatters import format_currency_br
 from documentos.services.formatters import format_document_display
+from documentos.services.formatters import format_institucional_rodape_linha
 from documentos.services.formatters import format_valor_extenso_display
 
 from justificativas.models import Justificativa
@@ -111,7 +113,7 @@ def _txt(v: object) -> str:
 
 def _hdr(v: object) -> str:
     t = _txt(v)
-    return t.upper() if t else ""
+    return normalize_upper(t) if t else ""
 
 
 def _fmt_date(d: date | datetime | None) -> str:
@@ -502,7 +504,7 @@ def _build_justificativa_docxtpl_context_impl(oficio: Oficio) -> dict[str, Any]:
         "cargo_assinante_justificativa": cargo_a,
         "divisao": _hdr(inst.get("divisao")),
         "unidade": _hdr(unidade),
-        "unidade_rodape": _txt(unidade),
+        "unidade_rodape": format_institucional_rodape_linha(inst),
         "endereco": _build_endereco(inst),
         "email": (_txt(inst.get("email")) or "").lower(),
         "telefone": _txt(inst.get("telefone_formatado") or inst.get("telefone")),

@@ -12,6 +12,7 @@ from documentos.services.templates import DocumentTemplateRegistry
 from documentos.services.templates import default_template_registry
 from documentos.services.types import DocumentoFormato
 from documentos.services.types import DocumentoTipo
+from documentos.services.formatters import format_institucional_rodape_linha
 
 from oficios.documents import VarianteTermo
 from oficios.documents import build_termo_payload
@@ -94,7 +95,7 @@ def _legacy_docx_context(payload: dict) -> dict:
         "endereco": endereco,
         "telefone": institucional.get("telefone_formatado") or institucional.get("telefone") or "",
         "email": institucional.get("email") or "",
-        "unidade_rodape": institucional.get("unidade") or termo.get("oficio", {}).get("origem") or "",
+        "unidade_rodape": format_institucional_rodape_linha(institucional),
         "data_do_evento": viagem.get("periodo") or viagem.get("saida") or "",
         "destino": viagem.get("destinos_texto") or viagem.get("destino_principal") or "",
         "nome_servidor": participante.get("nome") or "",

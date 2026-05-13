@@ -6,6 +6,7 @@ from documentos.services.formatters import (
     format_city_uf,
     format_currency_br,
     format_document_display,
+    format_institucional_rodape_linha,
     format_valor_extenso_display,
     preserve_known_acronyms,
 )
@@ -63,3 +64,26 @@ class FormatCurrencyBrTests(SimpleTestCase):
     def test_vazio(self):
         self.assertEqual(format_currency_br(None), "")
         self.assertEqual(format_currency_br(""), "")
+
+
+class FormatInstitucionalRodapeTests(SimpleTestCase):
+    def test_rodape_title_case_e_email_minusculo(self):
+        inst = {
+            "divisao": "ASSESSORIA DE COMUNICACAO SOCIAL",
+            "logradouro": "RUA IZABEL GOMES POSSELT",
+            "numero": "103",
+            "bairro": "ALTO BOQUEIRAO",
+            "cidade_endereco": "CURITIBA",
+            "uf": "PR",
+            "cep_formatado": "81850-716",
+            "telefone_formatado": "(41) 3235-6476",
+            "email": "COMUNICACAO@PC.PR.GOV.BR",
+        }
+        out = format_institucional_rodape_linha(inst)
+        self.assertIn("Assessoria de Comunicacao Social", out)
+        self.assertIn("Rua Izabel Gomes Posselt", out)
+        self.assertIn("Curitiba", out)
+        self.assertIn("PR", out)
+        self.assertIn("81850-716", out)
+        self.assertIn("(41) 3235-6476", out)
+        self.assertIn("comunicacao@pc.pr.gov.br", out)

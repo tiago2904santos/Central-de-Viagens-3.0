@@ -165,6 +165,48 @@ def format_document_display(value: object) -> str:
     return (prefix + body).strip()
 
 
+def format_institucional_rodape_linha(inst: dict) -> str:
+    """
+    Linha de rodapé institucional (justificativa/termo): nome em title case,
+    endereço com vírgulas, telefone e e-mail (e-mail em minúsculas).
+    """
+    nome_src = str(inst.get("divisao") or "").strip() or str(inst.get("unidade") or "").strip() or str(inst.get("nome_orgao") or "").strip()
+    titulo = format_document_display(nome_src) if nome_src else ""
+
+    log = str(inst.get("logradouro") or "").strip()
+    log_fmt = format_document_display(log) if log else ""
+    num = str(inst.get("numero") or "").strip()
+    bai = str(inst.get("bairro") or "").strip()
+    bai_fmt = format_document_display(bai) if bai else ""
+    linha1 = ", ".join([p for p in (log_fmt, num, bai_fmt) if p])
+
+    cidade = str(inst.get("cidade_endereco") or "").strip()
+    uf = str(inst.get("uf") or "").strip().upper()
+    cidade_uf = ""
+    if cidade and uf:
+        cidade_uf = format_city_uf(f"{cidade}/{uf}")
+    elif cidade:
+        cidade_uf = format_document_display(cidade)
+    elif uf:
+        cidade_uf = uf
+
+    cep = str(inst.get("cep_formatado") or inst.get("cep") or "").strip()
+    cep_part = f"CEP {cep}" if cep else ""
+
+    endereco = ", ".join(x for x in (linha1, cidade_uf, cep_part) if x)
+
+    mid_parts = [p for p in (titulo, endereco) if p]
+    mid = " - ".join(mid_parts)
+
+    tel = str(inst.get("telefone_formatado") or inst.get("telefone") or "").strip()
+    em = str(inst.get("email") or "").strip().lower()
+    tail = " – ".join([p for p in (tel, em) if p])
+
+    if mid and tail:
+        return f"{mid}, {tail}"
+    return mid or tail
+
+
 def format_city_uf(value: object) -> str:
     """
     Normaliza "LONDRINA/PR" ou "LONDRINA / PR" para "Londrina/PR" (espaço único junto à barra).
