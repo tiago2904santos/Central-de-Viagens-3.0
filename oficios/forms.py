@@ -222,17 +222,9 @@ class OficioDadosViajantesForm(OficioForm):
 
         if self.is_bound and "servidores_termo_autorizacao_present" not in self.data:
             termos = servidores
-        invalidos = [servidor for servidor in termos if servidor.pk not in servidor_ids]
-        if invalidos:
-            self.add_error(
-                "servidores_termo_autorizacao",
-                "Selecione para termo apenas servidores que tambem estao na equipe do oficio.",
-            )
-            cleaned["servidores_termo_autorizacao"] = [
-                servidor for servidor in termos if servidor.pk in servidor_ids
-            ]
-        else:
-            cleaned["servidores_termo_autorizacao"] = termos
+        cleaned["servidores_termo_autorizacao"] = [
+            servidor for servidor in termos if servidor.pk in servidor_ids
+        ]
         return cleaned
 
 

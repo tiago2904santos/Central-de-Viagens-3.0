@@ -170,16 +170,17 @@
     }
 
     function renderSelectedItem(item) {
-      const card = createElement("div", "oficio-equipe-picker__selected-card");
-      const copy = createElement("div", "oficio-equipe-picker__selected-copy");
-      const name = createElement("span", "oficio-equipe-picker__selected-name", item.label);
+      const card = createElement("div", "oficio-equipe-picker__selected-card oficio-viajante-card");
+      const copy = createElement("div", "oficio-equipe-picker__selected-copy oficio-viajante-card__body");
+      const name = createElement("span", "oficio-equipe-picker__selected-name oficio-viajante-card__name", item.label);
       const metaParts = [item.cargo, item.unidade].filter(Boolean);
       const meta = createElement(
         "span",
-        "oficio-equipe-picker__selected-meta",
+        "oficio-equipe-picker__selected-meta oficio-viajante-card__meta",
         metaParts.length ? metaParts.join(" • ") : "Dados complementares não informados",
       );
-      const remove = createElement("button", "oficio-equipe-picker__remove", "x");
+      const remove = createElement("button", "oficio-equipe-picker__remove oficio-viajante-card__remove", "x");
+      card.dataset.value = item.value;
       remove.type = "button";
       remove.setAttribute("aria-label", `Remover ${item.label}`);
       remove.addEventListener("click", () => removeItem(item.value));

@@ -84,12 +84,11 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertContains(response, "Protocolo")
         self.assertContains(response, "Custeio")
         self.assertContains(response, "Motivo")
-        self.assertContains(response, "Termos de Autoriza")
-        self.assertContains(response, "Escolha quais viajantes devem ter termo gerado.")
-        self.assertContains(response, "0 com termo")
-        self.assertContains(response, "0 sem termo")
-        self.assertContains(response, "data-oficio-termos-summary")
-        self.assertContains(response, "oficio-termos-selector__list")
+        self.assertNotContains(response, "<h3>Termos de Autoriza")
+        self.assertNotContains(response, "Escolha quais viajantes devem ter termo gerado.")
+        self.assertNotContains(response, "data-oficio-termos-summary")
+        self.assertNotContains(response, "oficio-termos-selector__list")
+        self.assertContains(response, "oficio-termos-selector-field")
         self.assertContains(response, 'name="servidores_termo_autorizacao_present"')
         self.assertContains(response, 'name="servidores_termo_autorizacao"')
         self.assertContains(response, "app-termos-selector__native")
@@ -260,7 +259,7 @@ class OficioWizardDadosViajantesTests(TestCase):
         self.assertEqual(set(oficio.servidores.all()), {self.servidor, self.outro_servidor})
         self.assertEqual(list(oficio.servidores_termo_autorizacao.all()), [self.servidor])
 
-    def test_post_dados_viajantes_nao_permite_termo_fora_da_equipe(self):
+    def test_post_dados_viajantes_ignora_termo_fora_da_equipe(self):
         oficio = Oficio.objects.create(
             numero=1,
             ano=2026,
@@ -279,11 +278,10 @@ class OficioWizardDadosViajantesTests(TestCase):
             ),
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(
-            response,
-            "Selecione para termo apenas servidores que tambem estao na equipe do oficio.",
-        )
+        self.assertEqual(response.status_code, 302)
+        oficio.refresh_from_db()
+        self.assertEqual(list(oficio.servidores.all()), [self.servidor])
+        self.assertEqual(list(oficio.servidores_termo_autorizacao.all()), [])
 
     def test_get_dados_viajantes_reexibe_servidores_de_termo_marcados(self):
         oficio = Oficio.objects.create(

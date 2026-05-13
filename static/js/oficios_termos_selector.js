@@ -6,17 +6,6 @@
     return element;
   }
 
-  function optionInfo(option) {
-    const metaParts = [option.dataset.cargo, option.dataset.rg, option.dataset.cpf].filter(Boolean);
-    return {
-      cargo: option.dataset.cargo || "",
-      cpf: option.dataset.cpf || "",
-      label: option.dataset.main || (option.textContent || "").trim(),
-      meta: metaParts.length ? metaParts.join(" · ") : option.dataset.meta || option.dataset.unidade || "",
-      value: option.value,
-    };
-  }
-
   function selectedValues(select) {
     return new Set(Array.from(select.selectedOptions).map((option) => option.value));
   }
@@ -29,32 +18,23 @@
     target.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  function updateSummary(summary, withTerm, withoutTerm) {
-    if (!summary) return;
-    summary.textContent = `${withTerm} com termo · ${withoutTerm} sem termo`;
-  }
-
-  function renderOptionButton(item, selected, label, modifier, onClick) {
+  function buildOption(label, modifier, active, onClick) {
     const button = createElement(
       "button",
-      `oficio-termos-selector__option oficio-termos-selector__option--${modifier}`,
+      `oficio-viajante-card__termo-option oficio-viajante-card__termo-option--${modifier}`,
       label,
     );
     button.type = "button";
-    button.setAttribute("aria-pressed", selected ? "true" : "false");
-    button.classList.toggle("oficio-termos-selector__option--active", selected);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+    button.classList.toggle("oficio-viajante-card__termo-option--active", active);
     button.addEventListener("click", onClick);
-    button.dataset.value = item.value;
     return button;
   }
 
   function init(root) {
     const source = document.querySelector("select[name='servidores']");
     const target = root.querySelector("select[name='servidores_termo_autorizacao']");
-    const list = root.querySelector("[data-oficio-termos-list]");
-    const empty = root.querySelector("[data-oficio-termos-empty]");
-    const summary = root.querySelector("[data-oficio-termos-summary]");
-    if (!source || !target || !list || !empty) return;
+    if (!source || !target) return;
 
     target.classList.add("app-termos-selector__native");
     target.setAttribute("aria-hidden", "true");
@@ -62,6 +42,11 @@
 
     const knownSelected = new Set(Array.from(source.selectedOptions).map((option) => option.value));
     let selectedForTerm = selectedValues(target);
+    let renderQueued = false;
+
+    function sourceValues() {
+      return new Set(Array.from(source.selectedOptions).filter((option) => option.value).map((option) => option.value));
+    }
 
     function setTermValue(value, enabled) {
       if (enabled) selectedForTerm.add(value);
@@ -69,64 +54,50 @@
       render();
     }
 
-    function renderItem(option) {
-      const item = optionInfo(option);
-      const enabled = selectedForTerm.has(item.value);
-      const card = createElement(
-        "article",
-        `oficio-termos-selector__item${enabled ? " oficio-termos-selector__item--active" : ""}`,
-      );
-      card.dataset.value = item.value;
+    function renderControl(card, value) {
+      card.querySelector(".oficio-viajante-card__termo")?.remove();
 
-      const identity = createElement("div", "oficio-termos-selector__identity");
-      const name = createElement("strong", "oficio-termos-selector__name", item.label);
-      const meta = createElement(
-        "span",
-        "oficio-termos-selector__meta",
-        item.meta || "Dados complementares nao informados",
-      );
-      identity.appendChild(name);
-      identity.appendChild(meta);
+      const enabled = selectedForTerm.has(value);
+      const row = createElement("div", "oficio-viajante-card__termo");
+      const label = createElement("span", "oficio-viajante-card__termo-label", "Termo de Autorização");
+      const choices = createElement("div", "oficio-viajante-card__termo-choice");
 
-      const toggle = createElement("div", "oficio-termos-selector__toggle");
-      toggle.setAttribute("aria-label", `Termo de Autorizacao para ${item.label}`);
-      toggle.appendChild(
-        renderOptionButton(item, !enabled, "Não gerar termo", "no", () => setTermValue(item.value, false)),
-      );
-      toggle.appendChild(
-        renderOptionButton(item, enabled, "Gerar termo", "yes", () => setTermValue(item.value, true)),
-      );
+      choices.appendChild(buildOption("Não gerar", "no", !enabled, () => setTermValue(value, false)));
+      choices.appendChild(buildOption("Gerar", "yes", enabled, () => setTermValue(value, true)));
 
-      card.appendChild(identity);
-      card.appendChild(toggle);
-      return card;
+      row.appendChild(label);
+      row.appendChild(choices);
+      card.appendChild(row);
+      card.classList.toggle("oficio-viajante-card--termo", enabled);
     }
 
     function render() {
-      const selectedOptions = Array.from(source.selectedOptions).filter((option) => option.value);
-      const sourceValues = new Set(selectedOptions.map((option) => option.value));
+      renderQueued = false;
+      const currentSourceValues = sourceValues();
 
-      selectedOptions.forEach((option) => {
-        if (!knownSelected.has(option.value)) {
+      Array.from(source.selectedOptions).forEach((option) => {
+        if (option.value && !knownSelected.has(option.value)) {
           selectedForTerm.add(option.value);
           knownSelected.add(option.value);
         }
       });
 
-      selectedForTerm = new Set(Array.from(selectedForTerm).filter((value) => sourceValues.has(value)));
+      selectedForTerm = new Set(Array.from(selectedForTerm).filter((value) => currentSourceValues.has(value)));
       syncTarget(target, selectedForTerm);
 
-      list.innerHTML = "";
-      selectedOptions.forEach((option) => list.appendChild(renderItem(option)));
-
-      const withTerm = selectedForTerm.size;
-      const withoutTerm = Math.max(selectedOptions.length - withTerm, 0);
-      updateSummary(summary, withTerm, withoutTerm);
-      empty.hidden = selectedOptions.length > 0;
-      list.hidden = selectedOptions.length === 0;
+      document.querySelectorAll(".oficio-equipe-picker__selected-card[data-value]").forEach((card) => {
+        const value = card.dataset.value || "";
+        if (currentSourceValues.has(value)) renderControl(card, value);
+      });
     }
 
-    source.addEventListener("change", render);
+    function scheduleRender() {
+      if (renderQueued) return;
+      renderQueued = true;
+      window.requestAnimationFrame(render);
+    }
+
+    source.addEventListener("change", scheduleRender);
     render();
   }
 

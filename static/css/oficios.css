@@ -523,14 +523,14 @@
 }
 
 .oficio-equipe-picker__selected-card {
-  align-items: center;
+  align-items: start;
   background: var(--color-card);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-control);
   box-shadow: var(--shadow-xs);
-  display: flex;
+  display: grid;
   gap: var(--space-3);
-  justify-content: space-between;
+  grid-template-columns: minmax(0, 1fr) auto;
   min-width: 0;
   padding: var(--space-3) var(--space-4);
 }
@@ -588,124 +588,43 @@
   margin: 0;
 }
 
+.oficio-termos-selector-field,
 .app-termos-selector__native {
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
-  position: absolute;
-  white-space: nowrap;
-  width: 1px;
+  display: none;
 }
 
-.oficio-termos-selector {
-  background: linear-gradient(180deg, var(--color-surface), var(--color-card));
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  display: grid;
-  gap: var(--space-4);
-  padding: var(--space-5);
-}
-
-.oficio-termos-selector__header {
-  align-items: flex-start;
-  display: flex;
-  gap: var(--space-4);
-  justify-content: space-between;
-}
-
-.oficio-termos-selector__header h3 {
-  color: var(--color-heading);
-  font-size: var(--font-size-lg);
-  font-weight: 800;
-  line-height: 1.2;
-  margin: 0;
-}
-
-.oficio-termos-selector__header p {
-  color: var(--color-muted);
-  font-size: var(--font-size-sm);
-  line-height: 1.45;
-  margin: var(--space-1) 0 0;
-}
-
-.oficio-termos-selector__summary {
-  align-items: center;
-  background: var(--color-primary-soft);
-  border: 1px solid rgba(21, 91, 154, 0.24);
-  border-radius: 999px;
-  color: var(--color-primary);
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  line-height: 1;
-  min-height: 30px;
-  padding: 0 var(--space-3);
-  white-space: nowrap;
-}
-
-.oficio-termos-selector__list {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.oficio-termos-selector__item {
-  align-content: start;
-  background: var(--color-card);
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs);
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: minmax(0, 1fr);
-  min-width: 0;
-  padding: var(--space-4);
-}
-
-.oficio-termos-selector__item--active {
+.oficio-viajante-card--termo {
   border-color: rgba(22, 128, 90, 0.28);
   box-shadow: 0 0 0 1px rgba(22, 128, 90, 0.28), var(--shadow-xs);
 }
 
-.oficio-termos-selector__identity {
+.oficio-viajante-card__termo {
+  align-items: center;
+  border-top: 1px solid var(--color-border-soft);
   display: grid;
-  gap: var(--space-1);
-  min-width: 0;
+  gap: var(--space-2);
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding-top: var(--space-3);
 }
 
-.oficio-termos-selector__toggle {
+.oficio-viajante-card__termo-label {
+  color: var(--color-muted-strong);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+}
+
+.oficio-viajante-card__termo-choice {
   background: var(--color-input-bg);
   border: 1px solid var(--color-border-soft);
   border-radius: var(--radius-control);
   display: grid;
   gap: 2px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(86px, 1fr));
   padding: 3px;
 }
 
-.oficio-termos-selector__name {
-  color: var(--color-heading);
-  font-size: var(--font-size-sm);
-  font-weight: 800;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.oficio-termos-selector__meta {
-  color: var(--color-muted);
-  font-size: var(--font-size-xs);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.oficio-termos-selector__option {
+.oficio-viajante-card__termo-option {
   align-items: center;
   background: transparent;
   border: 1px solid transparent;
@@ -724,37 +643,26 @@
   width: 100%;
 }
 
-.oficio-termos-selector__option:hover,
-.oficio-termos-selector__option:focus {
+.oficio-viajante-card__termo-option:hover,
+.oficio-viajante-card__termo-option:focus {
   color: var(--color-heading);
   outline: 0;
 }
 
-.oficio-termos-selector__option--no.oficio-termos-selector__option--active {
+.oficio-viajante-card__termo-option--no.oficio-viajante-card__termo-option--active {
   background: var(--color-warning-soft);
   border-color: var(--color-accent-border-soft);
   color: var(--color-warning);
 }
 
-.oficio-termos-selector__option--yes.oficio-termos-selector__option--active {
+.oficio-viajante-card__termo-option--yes.oficio-viajante-card__termo-option--active {
   background: var(--color-success-soft);
   border-color: rgba(22, 128, 90, 0.28);
   color: var(--color-success);
 }
 
-.oficio-termos-selector__option--active {
+.oficio-viajante-card__termo-option--active {
   box-shadow: var(--shadow-xs);
-}
-
-.oficio-termos-selector__empty {
-  background: var(--color-input-bg);
-  border: 1px dashed var(--color-border-soft);
-  border-radius: var(--radius-control);
-  color: var(--color-muted);
-  font-size: var(--font-size-sm);
-  margin: 0;
-  padding: var(--space-4);
-  text-align: center;
 }
 
 @media (max-width: 720px) {
@@ -772,23 +680,14 @@
     grid-template-columns: 1fr;
   }
 
-  .oficio-termos-selector__list {
-    grid-template-columns: 1fr;
-  }
-
-  .oficio-termos-selector__header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .oficio-termos-selector__summary {
-    justify-content: center;
-    width: 100%;
-  }
-
   .oficio-equipe-picker__selected-card:only-child,
   .oficio-equipe-picker__selected-card:last-child:nth-child(odd) {
     grid-column: auto;
+  }
+
+  .oficio-viajante-card__termo {
+    align-items: stretch;
+    grid-template-columns: 1fr;
   }
 }
 
