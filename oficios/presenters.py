@@ -47,12 +47,9 @@ def apresentar_oficio_card(oficio, *, assinatura_pdf: str | None = None):
             build_meta("Viajantes", str(oficio.servidores.count())),
         ],
     }
-    if oficio.status == Oficio.STATUS_FINALIZADO and assinatura_pdf == "assinado":
-        card["finalizacao_assinatura_badge"] = "Assinado"
-        card["finalizacao_assinatura_badge_class"] = "status-chip--success"
-    elif oficio.status == Oficio.STATUS_FINALIZADO and assinatura_pdf == "aguardando":
-        card["finalizacao_assinatura_badge"] = "Aguardando assinatura"
-        card["finalizacao_assinatura_badge_class"] = "status-chip--warning"
+    if oficio.status == Oficio.STATUS_FINALIZADO and assinatura_pdf in ("assinado", "aguardando"):
+        suffix = "Assinado" if assinatura_pdf == "assinado" else "Aguardando assinatura"
+        card["status"] = f"Finalizado — {suffix}"
     return card
 
 

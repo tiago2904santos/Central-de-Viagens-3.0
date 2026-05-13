@@ -436,10 +436,15 @@ def wizard_justificativa(request, pk):
     oficio = get_oficio_by_id(pk)
     obrigatoria = oficio_exige_justificativa(oficio)
     inst = get_or_create_justificativa_oficio(oficio)
+    bypass_texto_obrigatorio = False
+    if request.method == "POST":
+        raw_action = (request.POST.get("action") or "").strip()
+        if raw_action in ("wizard_back", "save_draft_list"):
+            bypass_texto_obrigatorio = True
     form = JustificativaOficioForm(
         request.POST or None,
         instance=inst,
-        obrigatoria=obrigatoria,
+        obrigatoria=bool(obrigatoria and not bypass_texto_obrigatorio),
     )
 
     if request.method == "POST" and form.is_valid():
@@ -517,6 +522,9 @@ def wizard_documentos(request, pk):
             messages.success(request, "Ofício finalizado com sucesso.")
             return redirect("oficios:index")
         if nav_action == "wizard_back":
+            from documentos.services.warm_cache import ensure_document_artifact_cached
+
+            ensure_document_artifact_cached(oficio)
             messages.info(request, "Retornando à etapa anterior.")
             return redirect("oficios:wizard_justificativa", pk=pk)
         if nav_action == "save_draft_list":
