@@ -521,7 +521,30 @@ class RoteirosRoutingTests(TestCase):
         url = reverse("roteiros:calcular_rota")
         resp = self._csrf_post_json(url, {"roteiro_id": roteiro.pk})
         self.assertEqual(resp.status_code, 400)
-        self.assertIn("latitude", resp.json()["message"].lower())
+        msg = resp.json()["message"]
+        self.assertIn("SEM_COORD", msg)
+        self.assertIn("PR", msg)
+        self.assertIn("latitude", msg.lower())
+
+    def test_calcular_rota_preview_json_cita_municipio_sem_coordenadas(self):
+        sem_coord = Cidade.objects.create(
+            nome="PREVIEW_SEM_LAT",
+            estado=self.estado,
+            uf="PR",
+            latitude=None,
+            longitude=None,
+        )
+        url = reverse("roteiros:calcular_rota_preview")
+        payload = {
+            "origem_cidade_id": self.cidade_sede.pk,
+            "destinos": [{"cidade_id": sem_coord.pk, "uuid": "d1"}],
+            "incluir_retorno": False,
+        }
+        resp = self._csrf_post_json(url, payload)
+        self.assertEqual(resp.status_code, 400)
+        msg = resp.json().get("message", "")
+        self.assertIn("PREVIEW_SEM_LAT", msg)
+        self.assertIn("PR", msg)
 
     def test_falha_provedor_nao_apaga_rota_calculada_anterior(self):
         roteiro = Roteiro.objects.create(
