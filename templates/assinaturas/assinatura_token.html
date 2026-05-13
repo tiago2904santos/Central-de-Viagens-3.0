@@ -57,7 +57,7 @@
               data-label-status="{{ label_context.status_label }}"
               data-verification-code="{{ label_context.verification_code }}"
               data-organization-label="{{ label_context.organization_label }}"
-              data-worker-src="{% static 'vendor/pdfjs/pdf.worker.min.js' %}"
+              data-worker-src="{% static 'vendor/pdfjs/pdf.worker.min.js' %}?v=20260512"
               aria-label="Documento para leitura e assinatura"
             >
               <div class="signature-document-viewer__toolbar">
@@ -291,7 +291,7 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script src="{% static 'vendor/pdfjs/pdf.min.js' %}"></script>
-  <script type="module" src="{% static 'js/pages/assinatura-pdf.js' %}"></script>
-  <script src="{% static 'js/pages/signature-public.js' %}"></script>
+  <script src="{% static 'vendor/pdfjs/pdf.min.js' %}?v=20260512"></script>
+  <script type="module" src="{% static 'js/pages/assinatura-pdf.js' %}?v=20260512"></script>
+  <script src="{% static 'js/pages/signature-public.js' %}?v=20260512"></script>
 {% endblock %}
